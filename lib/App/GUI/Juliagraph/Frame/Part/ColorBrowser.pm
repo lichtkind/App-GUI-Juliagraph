@@ -6,15 +6,23 @@ package App::GUI::Juliagraph::Frame::Part::ColorBrowser;
 use base qw/Wx::Panel/;
 use App::GUI::Juliagraph::SliderCombo;
 use App::GUI::Juliagraph::ColorDisplay;
-use Graphics::Toolkit::Color;
+use Graphics::Toolkit::Color qw/color/;
+
+my $RGB = Graphics::Toolkit::Color::Space::Hub::get_space('RGB');
+my $HSL = Graphics::Toolkit::Color::Space::Hub::get_space('HSL');
 
 sub new {
-    my ( $class, $parent, $type, $init  ) = @_;
-    return unless ref $init eq 'HASH' and exists $init->{'red'}and exists $init->{'green'}and exists $init->{'blue'};
+    my ( $class, $parent, $type, $init_color ) = @_;
+    $init_color = color( $init_color );
+    return unless ref $init_color;
 
     my $self = $class->SUPER::new( $parent, -1);
 
-    $self->{'init'} = $init;
+    $self->{'init'} = $init_color;
+    $self->{'call_back'} = sub {};
+
+    my @rgb = $init_color->values('RGB');
+    my @hsl = $init_color->values('HSL');
 
     $self->{'red'}   =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' R  ', "red part of $type color",    0, 255,  0);
     $self->{'green'} =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' G  ', "green part of $type color",  0, 255,  0);
@@ -22,20 +30,22 @@ sub new {
     $self->{'hue'}   =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' H  ', "hue of $type color",         0, 359,  0);
     $self->{'sat'}   =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' S  ', "saturation of $type color",  0, 100,  0);
     $self->{'light'} =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' L  ', "lightness of $type color",   0, 100,  0);
-    $self->{'display'}= App::GUI::Juliagraph::ColorDisplay->new( $self, 25, 10, $init);
+    $self->{'display'} = App::GUI::Juliagraph::ColorDisplay->new( $self, 25, 10, $init_color->values(as => 'hash') );
     $self->{'display'}->SetToolTip("$type color monitor");
 
     my $rgb2hsl = sub {
         my @rgb = ($self->{'red'}->GetValue, $self->{'green'}->GetValue, $self->{'blue'}->GetValue);
-        my @hsl = Graphics::Toolkit::Color::Value::hsl_from_rgb( @rgb );
+        my @hsl = $HSL->deconvert( [$RGB->normalize( \@rgb )], 'RGB');
+        @hsl = $HSL->denormalize( \@hsl );
         $self->{'hue'}->SetValue( $hsl[0], 1 );
         $self->{'sat'}->SetValue( $hsl[1], 1 );
         $self->{'light'}->SetValue( $hsl[2], 1 );
         $self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     my $hsl2rgb = sub {
-        my @rgb = Graphics::Toolkit::Color::Value::rgb_from_hsl(
-            $self->{'hue'}->GetValue,  $self->{'sat'}->GetValue, $self->{'light'}->GetValue );
+        my @hsl = ($self->{'hue'}->GetValue, $self->{'sat'}->GetValue, $self->{'light'}->GetValue);
+        my @rgb = $HSL->convert( [$HSL->normalize( \@hsl )], 'RGB');
+        @rgb = $RGB->denormalize( \@rgb );
         $self->{'red'}->SetValue( $rgb[0], 1 );
         $self->{'green'}->SetValue( $rgb[1], 1 );
         $self->{'blue'}->SetValue( $rgb[2], 1 );
