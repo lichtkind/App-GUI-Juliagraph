@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Juliagraph::SliderCombo;
+package App::GUI::Juliagraph::Widget::SliderCombo;
 use base qw/Wx::Panel/;
 
 sub new {

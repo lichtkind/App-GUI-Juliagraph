@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Juliagraph::ProgressBar;
+package App::GUI::Juliagraph::Widget::ProgressBar;
 use base qw/Wx::Panel/;
 
 sub new {

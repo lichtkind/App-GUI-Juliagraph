@@ -68,7 +68,7 @@ INI file for tweaking them later
 Please note that quick preview gets only triggered by the pendulum
 controls (section X, Y Z and R).
 
-After first use of the program, a config file .harmonograph will be
+After first use of the program, a config file I<~/.config/juliagraph> will be
 created in you home directory. You may move it into "Documents" or your
 local directory you start the app from.
 
@@ -80,11 +80,11 @@ creating together spiraling pictures :
 
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wirbel.jpg"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/hose.png"      alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wirbel_4.png"  alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/df.png"        alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wolke.png"     alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/examples/wirbel.jpg"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/examples/hose.png"      alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/examples/wirbel_4.png"  alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/examples/df.png"        alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/examples/wolke.png"     alt=""  width="300" height="300">
 </p>
 
 
@@ -283,7 +283,7 @@ Herbert Breunung (lichtkind@cpan.org)
 
 =head1 COPYRIGHT
 
-Copyright(c) 2022 by Herbert Breunung
+Copyright(c) 2023 by Herbert Breunung
 
 All rights reserved.
 This program is free software and can be used and distributed

@@ -8,14 +8,11 @@ use Wx::AUI;
 
 package App::GUI::Juliagraph::Frame;
 use base qw/Wx::Frame/;
-use App::GUI::Juliagraph::Frame::Part::Pendulum;
-use App::GUI::Juliagraph::Frame::Part::ColorFlow;
-use App::GUI::Juliagraph::Frame::Part::ColorBrowser;
-use App::GUI::Juliagraph::Frame::Part::ColorPicker;
-use App::GUI::Juliagraph::Frame::Part::PenLine;
+use App::GUI::Juliagraph::Frame::Part::Form;
+use App::GUI::Juliagraph::Frame::Part::Color;
 use App::GUI::Juliagraph::Frame::Part::Board;
 use App::GUI::Juliagraph::Dialog::About;
-use App::GUI::Juliagraph::ProgressBar;
+use App::GUI::Juliagraph::Widget::ProgressBar;
 use App::GUI::Juliagraph::Settings;
 use App::GUI::Juliagraph::Config;
 
@@ -32,29 +29,18 @@ sub new {
 
     # create GUI parts
     $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
-    $self->{'tab'}{'pendulum'}  = Wx::Panel->new($self->{'tabs'});
-    $self->{'tab'}{'pen'}       = Wx::Panel->new($self->{'tabs'});
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'pendulum'}, 'Simple Cells');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'pen'},      'Pen Settings');
+    $self->{'tab'}{'form'}  = App::GUI::Juliagraph::Frame::Part::Form->new( $self->{'tabs'} );
+    $self->{'tab'}{'color'} = App::GUI::Juliagraph::Frame::Part::Color->new( $self->{'tabs'} );
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'form'},   'Form Settings');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},  'Color Settings');
 
-    $self->{'pendulum'}{'x'}    = App::GUI::Juliagraph::Frame::Part::Pendulum->new( $self->{'tab'}{'pendulum'}, 'x','pendulum in x direction (left to right)', 1, 30);
-    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x/;
+    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/form color/;
 
-    $self->{'color'}{'start'}   = App::GUI::Juliagraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
-    $self->{'color'}{'end'}     = App::GUI::Juliagraph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'end',  { red => 110, green => 20, blue => 20 } );
-
-    $self->{'color'}{'startio'} = App::GUI::Juliagraph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'Start Color IO', $self->{'config'}->get_value('color') , 162, 1);
-    $self->{'color'}{'endio'}   = App::GUI::Juliagraph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'End Color IO', $self->{'config'}->get_value('color') , 162, 7);
-
-    $self->{'color_flow'}       = App::GUI::Juliagraph::Frame::Part::ColorFlow->new( $self->{'tab'}{'pen'}, $self );
-    $self->{'line'}             = App::GUI::Juliagraph::Frame::Part::PenLine->new( $self->{'tab'}{'pen'} );
-
-    $self->{'progress'}            = App::GUI::Juliagraph::ProgressBar->new( $self, 450, 5, { red => 20, green => 20, blue => 110 });
+    $self->{'progress'}            = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 5, { red => 20, green => 20, blue => 110 });
     $self->{'board'}               = App::GUI::Juliagraph::Frame::Part::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}     = App::GUI::Juliagraph::Dialog::About->new();
 
     my $btnw = 50; my $btnh     = 40;# button width and height
-    #Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'exit'},  sub { $self->Close; } );
     $self->{'btn'}{'dir'}       = Wx::Button->new( $self, -1, 'Dir',   [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, 'INI',   [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[$btnw, $btnh] );
@@ -96,23 +82,23 @@ sub new {
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'},  sub { draw( $self ) });
     Wx::Event::EVT_CLOSE( $self, sub {
-        my $all_color = $self->{'config'}->get_value('color');
-        my $startc = $self->{'color'}{'startio'}->get_data;
-        my $endc = $self->{'color'}{'endio'}->get_data;
-        for my $name (keys %$endc){
-            $all_color->{$name} = $endc->{$name} unless exists $all_color->{$name};
-        }
-        for my $name (keys %$startc){
-            $all_color->{$name} = $startc->{$name} unless exists $all_color->{$name};
-        }
-        for my $name (keys %$all_color){
-            if (exists $startc->{$name} and exists $endc->{$name}){
-                $endc->{$name} = $startc->{$name} if $startc->{$name}[0] != $all_color->{$name}[0]
-                                                  or $startc->{$name}[1] != $all_color->{$name}[1]
-                                                  or $startc->{$name}[2] != $all_color->{$name}[2];
-                $all_color->{$name} = $endc->{$name};
-            } else { delete $all_color->{$name} }
-        }
+        #~ my $all_color = $self->{'config'}->get_value('color');
+        #~ my $startc = $self->{'color'}{'startio'}->get_data;
+        #~ my $endc = $self->{'color'}{'endio'}->get_data;
+        #~ for my $name (keys %$endc){
+            #~ $all_color->{$name} = $endc->{$name} unless exists $all_color->{$name};
+        #~ }
+        #~ for my $name (keys %$startc){
+            #~ $all_color->{$name} = $startc->{$name} unless exists $all_color->{$name};
+        #~ }
+        #~ for my $name (keys %$all_color){
+            #~ if (exists $startc->{$name} and exists $endc->{$name}){
+                #~ $endc->{$name} = $startc->{$name} if $startc->{$name}[0] != $all_color->{$name}[0]
+                                                  #~ or $startc->{$name}[1] != $all_color->{$name}[1]
+                                                  #~ or $startc->{$name}[2] != $all_color->{$name}[2];
+                #~ $all_color->{$name} = $endc->{$name};
+            #~ } else { delete $all_color->{$name} }
+        #~ }
         $self->{'config'}->save();
         $self->{'dialog'}{$_}->Destroy() for qw/about/;
         $_[1]->Skip(1)
@@ -188,33 +174,6 @@ sub new {
     my $all_attr    = $std_attr | &Wx::wxALL;
     my $line_attr    = $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT ;
 
-     my $pendulum_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $pendulum_sizer->AddSpacer(15);
-    $pendulum_sizer->Add( $self->{'pendulum'}{'x'},   0, $vert_attr| &Wx::wxLEFT, 15);
-    $pendulum_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pendulum'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $pendulum_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-    $self->{'tab'}{'pendulum'}->SetSizer( $pendulum_sizer );
-
-    my $pen_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $pen_sizer->AddSpacer(5);
-    $pen_sizer->Add( $self->{'line'},             0, $vert_attr, 10);
-    $pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $pen_sizer->Add( $self->{'color_flow'},       0, $vert_attr, 15);
-    $pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $pen_sizer->AddSpacer(10);
-    $pen_sizer->Add( Wx::StaticText->new( $self->{'tab'}{'pen'}, -1, 'Start Color', [-1,-1], [-1,-1], &Wx::wxALIGN_CENTRE_HORIZONTAL), 0, &Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW|&Wx::wxALL, 5);
-    $pen_sizer->Add( $self->{'color'}{'start'},   0, $vert_attr, 0);
-    $pen_sizer->AddSpacer( 5);
-    $pen_sizer->Add( Wx::StaticText->new( $self->{'tab'}{'pen'}, -1, 'End Color', [-1,-1], [-1,-1], &Wx::wxALIGN_CENTRE_HORIZONTAL), 0, &Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW|&Wx::wxALL, 5);
-    $pen_sizer->Add( $self->{'color'}{'end'},     0, $vert_attr, 0);
-    $pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $pen_sizer->AddSpacer(10);
-    $pen_sizer->Add( $self->{'color'}{'startio'}, 0, $vert_attr,  5);
-    $pen_sizer->Add( $self->{'color'}{'endio'},   0, $vert_attr,  5);
-
-    $pen_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
-    $self->{'tab'}{'pen'}->SetSizer( $pen_sizer );
-
     my $cmdi_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $image_lbl = Wx::StaticText->new( $self, -1, 'Image:' );
     $cmdi_sizer->Add( $image_lbl,     0, $all_attr, 15 );
@@ -254,7 +213,7 @@ sub new {
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
     $self->{'btn'}{'draw'}->SetFocus;
-    my $size = [1260, 820];
+    my $size = [1100, 820];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);
@@ -267,10 +226,7 @@ sub new {
 
 sub init {
     my ($self) = @_;
-    $self->{'pendulum'}{$_}->init() for qw/x/;
-    $self->{'color'}{$_}->init() for qw/start end/;
-    $self->{ $_ }->init() for qw/color_flow line/;
-    $self->{'progress'}->set_color( { red => 20, green => 20, blue => 110 } );
+    $self->{'tab'}{$_}->init() for qw/form color/;
     $self->sketch( );
     $self->SetStatusText( "all settings are set to default", 1);
 }
@@ -329,27 +285,22 @@ sub save_image_dialog {
 sub get_data {
     my $self = shift;
     {
-        x => $self->{'pendulum'}{'x'}->get_data,
-        start_color => $self->{'color'}{'start'}->get_data,
-        end_color => $self->{'color'}{'end'}->get_data,
-        color_flow => $self->{'color_flow'}->get_data,
-        line => $self->{'line'}->get_data,
+        form => $self->{'tab'}{'form'}->get_data,
+        color => $self->{'tab'}{'color'}->get_data,
     }
 }
 
 sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH';
-    $self->{'pendulum'}{$_}->set_data( $data->{$_} ) for qw/x y z r/;
-    $self->{'color'}{$_}->set_data( $data->{ $_.'_color' } ) for qw/start end/;
-    $self->{ $_ }->set_data( $data->{ $_ } ) for qw/color_flow line/;
+    $self->{'tab'}{$_}->set_data( $data->{$_} ) for qw/form color/;
 }
 
 sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
     $self->{'progress'}->set_percentage( 0 );
-    $self->{'progress'}->set_color( $self->{'color'}{'start'}->get_data );
+#    $self->{'progress'}->set_color( $self->{'color'}{'start'}->get_data );
     $self->{'board'}->set_data( $self->get_data );
     $self->{'board'}->Refresh;
     $self->SetStatusText( "done complete drawing", 0 );
@@ -363,45 +314,6 @@ sub sketch {
     $self->{'board'}->set_sketch_flag( );
     $self->{'board'}->Refresh;
     $self->SetStatusText( "done sketching a preview", 0 );
-}
-
-sub update_base_name {
-    my ($self) = @_;
-    my $file = $self->{'txt'}{'file_bname'}->GetValue;
-    $self->{'config'}->set_value('file_base_name', $file);
-    $self->{'config'}->set_value('file_base_counter', 1);
-    $self->inc_base_counter();
-}
-
-sub inc_base_counter {
-    my ($self) = @_;
-    my $dir = $self->{'config'}->get_value('file_base_dir');
-    $dir = App::GUI::Juliagraph::Settings::expand_path( $dir );
-    my $base = File::Spec->catfile( $dir, $self->{'config'}->get_value('file_base_name') );
-    my $cc = $self->{'config'}->get_value('file_base_counter');
-    while (1){
-        last unless -e $base.'_'.$cc.'.svg'
-                 or -e $base.'_'.$cc.'.png'
-                 or -e $base.'_'.$cc.'.jpg'
-                 or -e $base.'_'.$cc.'.gif'
-                 or -e $base.'_'.$cc.'.ini';
-        $cc++;
-    }
-    $self->{'txt'}{'file_bnr'}->SetValue( $cc );
-    $self->{'config'}->set_value('file_base_counter', $cc);
-    $self->{'last_file_settings'} = get_data( $self );
-}
-
-
-sub change_base_dir {
-    my $self = shift;
-    my $dialog = Wx::DirDialog->new ( $self, "Select a directory to store a series of files", $self->{'config'}->get_value('file_base_dir'));
-    return if $dialog->ShowModal == &Wx::wxID_CANCEL;
-    my $new_dir = $dialog->GetPath;
-    $new_dir = App::GUI::Juliagraph::Settings::shrink_path( $new_dir ) . '/';
-    $self->{'txt'}{'file_bdir'}->SetValue( $new_dir );
-    $self->{'config'}->set_value('file_base_dir', $new_dir);
-    $self->update_base_name();
 }
 
 sub base_path {
