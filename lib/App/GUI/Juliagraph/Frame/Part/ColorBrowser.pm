@@ -4,8 +4,8 @@ use Wx;
 
 package App::GUI::Juliagraph::Frame::Part::ColorBrowser;
 use base qw/Wx::Panel/;
-use App::GUI::Juliagraph::SliderCombo;
-use App::GUI::Juliagraph::ColorDisplay;
+use App::GUI::Juliagraph::Widget::SliderCombo;
+use App::GUI::Juliagraph::Widget::ColorDisplay;
 use Graphics::Toolkit::Color qw/color/;
 
 my $RGB = Graphics::Toolkit::Color::Space::Hub::get_space('RGB');

@@ -2,28 +2,36 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Juliagraph::Frame::Part::Color;
+package App::GUI::Juliagraph::Frame::Panel::Form;
 use base qw/Wx::Panel/;
 use App::GUI::Juliagraph::Widget::SliderCombo;
 
 sub new {
-    my ( $class, $parent ) = @_;
+    my ( $class, $parent) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
     $self->{'callback'} = sub {};
 
-    #~ $self->{'on'} = Wx::CheckBox->new( $self, -1, '', [-1,-1],[-1,-1], 1 );
+    $self->{'type'} = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1],[-1,-1], ['Julia','Mandelbrot'] );
+
+    my $const_lbl  = Wx::StaticText->new($self, -1, 'C o n s t a n t :' );
+    my $exp_lbl  = Wx::StaticText->new($self, -1, 'E x p :' );
+    my $pos_lbl  = Wx::StaticText->new($self, -1, 'P o s i t i o n : ' );
+    my $zoom_lbl  = Wx::StaticText->new($self, -1, 'Z o o m : ' );
+
+    $self->{'const'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [80, -1] );
+    $self->{'const_i'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [80, -1] );
+    $self->{'pos_x'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [120, -1] );
+    $self->{'pos_y'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [120, -1] );
+    $self->{'zoom'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [80, -1] );
+    $self->{'exp'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[65, -1], [2,3,4,5,6,7,8,9,10,11,12]);
+    $self->{'exp'}->SetToolTip('exponent of iterator variable');
+
+
+    #$self->{'on'} = Wx::CheckBox->new( $self, -1, '', [-1,-1],[-1,-1], 1 );
     #~ $self->{'on'}->SetToolTip('set partial pendulum on or off');
+    #~ $self->{'frequency'}  = App::GUI::Juliagraph::SliderCombo->new( $self, 100, 'f', 'frequency of '.$help, 1, $max, 1 );
 
-    #~ my $lbl  = Wx::StaticText->new($self, -1, uc($label) );
-
-    #~ $self->{'frequency'}  = App::GUI::Juliagraph::SliderCombo->new
-                        #~ ( $self, 100, 'f', 'frequency of '.$help, 1, $max, 1 );
-    #~ $self->{'freq_dez'} = App::GUI::Juliagraph::SliderCombo->new
-                        #~ ( $self, 100, 'f dec.', 'decimals of frequency at '.$help, 0, 1000, 0);
-    #~ $self->{'invert_freq'} = Wx::CheckBox->new( $self, -1, ' Inv.');
-    #~ $self->{'invert_freq'}->SetToolTip('invert (1/x) pendulum frequency');
-    #~ $self->{'direction'} = Wx::CheckBox->new( $self, -1, ' Dir.');
     #~ $self->{'direction'}->SetToolTip('invert pendulum direction (to counter clockwise)');
     #~ $self->{'half_off'} = Wx::CheckBox->new( $self, -1, ' 2');
     #~ $self->{'half_off'}->SetToolTip('pendulum starts with offset of half rotation');
@@ -32,21 +40,26 @@ sub new {
     #~ $self->{'offset'} = App::GUI::Juliagraph::SliderCombo->new
                             #~ ($self, 110, 'Offset', 'additional offset pendulum starts with (0 - quater rotation)', 0, 100, 0);
 
-    #~ $self->{'radius'} = App::GUI::Juliagraph::SliderCombo->new( $self, 100, 'r', 'radius or amplitude of pendulum swing', 0, 150, 100);
-    #~ $self->{'damp'} = App::GUI::Juliagraph::SliderCombo->new( $self, 100, 'Damp', 'damping factor (diminishes amplitude over time)', 0, 1000, 0);
+    #~ $self->{'radius'} = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 100, 'r', 'radius or amplitude of pendulum swing', 0, 150, 100);
+    #~ $self->{'damp'} = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 100, 'Damp', 'damping factor (diminishes amplitude over time)', 0, 1000, 0);
 
 
-    #~ Wx::Event::EVT_CHECKBOX( $self, $self->{'on'},          sub { $self->update_enable(); $self->{'callback'}->() });
-    #~ Wx::Event::EVT_CHECKBOX( $self, $self->{'invert_freq'}, sub {                         $self->{'callback'}->() });
+    #~ Wx::Event::EVT_RADIOBOX( $self, $self->{'on'},          sub { $self->update_enable(); $self->{'callback'}->() });
+    #~ Wx::Event::EVT_TEXT( $self, $self->{'invert_freq'}, sub {                         $self->{'callback'}->() });
     #~ Wx::Event::EVT_CHECKBOX( $self, $self->{'direction'},   sub {                         $self->{'callback'}->() });
     #~ Wx::Event::EVT_CHECKBOX( $self, $self->{'half_off'},    sub {                         $self->{'callback'}->() });
     #~ Wx::Event::EVT_CHECKBOX( $self, $self->{'quarter_off'}, sub {                         $self->{'callback'}->() });
 
-    #~ my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    #~ $f_sizer->Add( $self->{'frequency'}, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 49);
-    #~ $f_sizer->Add( $self->{'freq_dez'}, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT,  11);
-    #~ $f_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $item_prop = &Wx::wxALIGN_LEFT|&Wx::wxLEFT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW;
+    my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $f_sizer->Add( $const_lbl, 1, $item_prop, 0);
+    $f_sizer->Add( $self->{'const'}, 1, $item_prop, 30);
+    $f_sizer->Add( $self->{'const_i'}, 1, $item_prop, 10);
+    $f_sizer->Add( $exp_lbl, 1, $item_prop, 40);
+    $f_sizer->Add( $self->{'exp'}, 1, $item_prop, 20);
+    $f_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
+    #~ my $r_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     #~ my $r_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     #~ $r_sizer->Add( $self->{'on'},       0, &Wx::wxALIGN_LEFT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW|&Wx::wxLEFT, 0);
     #~ $r_sizer->Add( $lbl,                0, &Wx::wxALIGN_LEFT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW|&Wx::wxALL, 12);
@@ -62,19 +75,24 @@ sub new {
     #~ $o_sizer->Add( $self->{'offset'},      0, &Wx::wxALIGN_LEFT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW|&Wx::wxLEFT,  0);
     #~ $o_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    #~ my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    #~ $sizer->Add( $r_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
-    #~ $sizer->Add( $f_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
-    #~ $sizer->Add( $o_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
-    #~ $self->SetSizer($sizer);
+    my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $sizer->Add( $self->{'type'},  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->AddSpacer( 15 );
+    $sizer->Add( $f_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $pos_lbl,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $self->{'pos_x'},  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $self->{'pos_y'},  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $zoom_lbl,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $self->{'zoom'},  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $self->SetSizer($sizer);
 
-    #~ $self->init();
+    #$self->init();
     $self;
 }
 
 sub init {
     my ( $self ) = @_;
-#    $self->set_data ({ on => $self->{'initially_on'}, radius => 1, frequency => 1, offset => 0, damp => 0} );
+    # $self->set_data ({ on => $self->{'initially_on'}, radius => 1, frequency => 1, offset => 0, damp => 0} );
 }
 
 sub get_data {
@@ -94,7 +112,7 @@ sub SetCallBack {
     my ( $self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'callback'} = $code;
-    #$self->{ $_ }->SetCallBack( $code ) for qw /radius damp frequency freq_dez offset/;
+#    $self->{ $_ }->SetCallBack( $code ) for qw /radius damp frequency freq_dez offset/;
 }
 
 

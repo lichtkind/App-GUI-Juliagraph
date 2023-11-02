@@ -8,8 +8,8 @@ use Wx::AUI;
 
 package App::GUI::Juliagraph::Frame;
 use base qw/Wx::Frame/;
-use App::GUI::Juliagraph::Frame::Part::Form;
-use App::GUI::Juliagraph::Frame::Part::Color;
+use App::GUI::Juliagraph::Frame::Panel::Form;
+use App::GUI::Juliagraph::Frame::Panel::Color;
 use App::GUI::Juliagraph::Frame::Part::Board;
 use App::GUI::Juliagraph::Dialog::About;
 use App::GUI::Juliagraph::Widget::ProgressBar;
@@ -29,8 +29,8 @@ sub new {
 
     # create GUI parts
     $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
-    $self->{'tab'}{'form'}  = App::GUI::Juliagraph::Frame::Part::Form->new( $self->{'tabs'} );
-    $self->{'tab'}{'color'} = App::GUI::Juliagraph::Frame::Part::Color->new( $self->{'tabs'} );
+    $self->{'tab'}{'form'}  = App::GUI::Juliagraph::Frame::Panel::Form->new( $self->{'tabs'} );
+    $self->{'tab'}{'color'} = App::GUI::Juliagraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'form'},   'Form Settings');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},  'Color Settings');
 

@@ -10,8 +10,6 @@ my $file_name = File::Spec->catfile( File::HomeDir->my_home, '.config', 'juliagr
 my $dir = '';
 my $default = {
     file_base_dir => '~',
-    file_base_name => 'good',
-    file_base_counter => 0,
     file_base_ending => 'png',
     image_size => 600,
     open_dir => '~',
@@ -19,8 +17,12 @@ my $default = {
     write_dir => '~',
     last_settings => [],
     tips => 1,
+    color_set => {
+        grey => ['#FFF', '#BBB', '#888', '#444','#000' ],
+        basic => ['#FFF', '#F00', '#0F0', '#00F','#000' ],
+    },
     color => {
-        bright_blue      => [  98, 156, 249 ],
+        bright_blue      => [  98, 156, 249],
         marsala          => [ 149,  82,  81],
         radiandorchid    => [ 181, 101, 167],
         emerald          => [   0, 155, 119],
@@ -175,7 +177,8 @@ my $default = {
         buttercream      => [ 239, 225, 206],
         desertmist       => [ 224, 181, 137],
         willow           => [ 154, 139,  79],
-},};
+},
+};
 
 sub new {
     my ($pkg) = @_;
