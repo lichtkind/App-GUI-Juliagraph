@@ -286,7 +286,7 @@ sub get_data {
     my $self = shift;
     {
         form => $self->{'tab'}{'form'}->get_data,
-        color => $self->{'tab'}{'color'}->get_data,
+        color => $self->{'tab'}{'color'}->get_settings,
     }
 }
 

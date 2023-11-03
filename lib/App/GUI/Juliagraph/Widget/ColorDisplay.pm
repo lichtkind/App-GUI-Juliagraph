@@ -6,9 +6,8 @@ package App::GUI::Juliagraph::Widget::ColorDisplay;
 use base qw/Wx::Panel/;
 
 sub new {
-    my ( $class, $parent, $x, $y, $init_color  ) = @_;
-    return unless ref $init_color eq 'HASH' and
-           exists $init_color->{'red'} and exists $init_color->{'green'} and exists $init_color->{'blue'};
+    my ( $class, $parent, $x, $y, $nr, $init  ) = @_;
+    return unless ref $init eq 'HASH' and exists $init->{'red'} and exists $init->{'green'}and exists $init->{'blue'};
 
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y]);
 
@@ -20,8 +19,9 @@ sub new {
         $dc->SetBackground( Wx::Brush->new( $bg_color, &Wx::wxBRUSHSTYLE_SOLID ) );
         $dc->Clear();
     } );
-    $self->{'init'} = $init_color;
-    $self->set_color( $init_color);
+    $self->{'init'} = $init;
+    $self->{'nr'} = $nr;
+    $self->set_color( $init );
     $self;
 }
 
@@ -29,6 +29,8 @@ sub init {
     my ($self) = @_;
     $self->set_color( $self->{'init'} );
 }
+
+sub get_nr { $_[0]->{'nr'} }
 
 sub set_color {
     my ( $self, $color ) = @_;

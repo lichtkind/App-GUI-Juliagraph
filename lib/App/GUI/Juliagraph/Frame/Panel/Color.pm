@@ -29,7 +29,8 @@ sub new {
     $self->{'state_colors'}       = [ color('white')->gradient( to => 'black', steps => $self->{'state_count'}) ];
     $self->{'state_colors'}[$_]   = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
     $self->{'state_marker'}       = [ map { App::GUI::Juliagraph::Widget::PositionMarker->new($self, $self->{'rule_square_size'}, 20, $_, '', $default_color_def) } 0 ..$self->{'last_state'} ];
-    $self->{'state_pic'}[$_]      = App::GUI::Juliagraph::Widget::ColorDisplay->new($self, $self->{'rule_square_size'}, $self->{'rule_square_size'}, $_, $self->{'state_colors'}[$_]->rgb_hash) for 0 .. $self->{'last_state'};
+    $self->{'state_pic'}[$_]      = App::GUI::Juliagraph::Widget::ColorDisplay->new($self, $self->{'rule_square_size'}, $self->{'rule_square_size'}, $_, $self->{'state_colors'}[$_]->values(as => 'hash'))
+        for 0 .. $self->{'last_state'};
     $self->{'color_set_store_lbl'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'color_set_f_lbl'}   = Wx::StaticText->new($self, -1, 'Colors Set Function' );
     $self->{'state_color_lbl'}   = Wx::StaticText->new($self, -1, 'Currently Used State Colors' );
@@ -132,6 +133,7 @@ sub new {
     #$self->init;
     $self->set_state_count( $self->{'state_count'} );
     $self->select_state ( $self->{'current_state'} );
+say "color tab -- $self";
     $self;
 }
 

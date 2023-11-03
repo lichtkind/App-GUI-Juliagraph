@@ -24,14 +24,13 @@ sub new {
     my @rgb = $init_color->values('RGB');
     my @hsl = $init_color->values('HSL');
 
-    $self->{'red'}   =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' R  ', "red part of $type color",    0, 255,  0);
-    $self->{'green'} =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' G  ', "green part of $type color",  0, 255,  0);
-    $self->{'blue'}  =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' B  ', "blue part of $type color",   0, 255,  0);
-    $self->{'hue'}   =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' H  ', "hue of $type color",         0, 359,  0);
-    $self->{'sat'}   =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' S  ', "saturation of $type color",  0, 100,  0);
-    $self->{'light'} =  App::GUI::Juliagraph::SliderCombo->new( $self, 100, ' L  ', "lightness of $type color",   0, 100,  0);
-    $self->{'display'} = App::GUI::Juliagraph::ColorDisplay->new( $self, 25, 10, $init_color->values(as => 'hash') );
-    $self->{'display'}->SetToolTip("$type color monitor");
+    $self->{'red'}   =  App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 290, ' R  ', "red part of $type color",    0, 255,  $rgb[0]);
+    $self->{'green'} =  App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 290, ' G  ', "green part of $type color",  0, 255,  $rgb[1]);
+    $self->{'blue'}  =  App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 290, ' B  ', "blue part of $type color",   0, 255,  $rgb[2]);
+    $self->{'hue'}   =  App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 290, ' H  ', "hue of $type color",         0, 359,  $hsl[0]);
+    $self->{'sat'}   =  App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 294, ' S   ', "saturation of $type color", 0, 100,  $hsl[1]);
+    $self->{'light'} =  App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 294, ' L   ', "lightness of $type color",  0, 100,  $hsl[2]);
+   # $self->{'display'}->SetToolTip("$type color monitor");
 
     my $rgb2hsl = sub {
         my @rgb = ($self->{'red'}->GetValue, $self->{'green'}->GetValue, $self->{'blue'}->GetValue);
@@ -40,7 +39,7 @@ sub new {
         $self->{'hue'}->SetValue( $hsl[0], 1 );
         $self->{'sat'}->SetValue( $hsl[1], 1 );
         $self->{'light'}->SetValue( $hsl[2], 1 );
-        $self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
+        $self->{'call_back'}->( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     my $hsl2rgb = sub {
         my @hsl = ($self->{'hue'}->GetValue, $self->{'sat'}->GetValue, $self->{'light'}->GetValue);
@@ -49,7 +48,7 @@ sub new {
         $self->{'red'}->SetValue( $rgb[0], 1 );
         $self->{'green'}->SetValue( $rgb[1], 1 );
         $self->{'blue'}->SetValue( $rgb[2], 1 );
-        $self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
+        $self->{'call_back'}->( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     $self->{'red'}->SetCallBack( $rgb2hsl );
     $self->{'green'}->SetCallBack( $rgb2hsl );
@@ -59,27 +58,15 @@ sub new {
     $self->{'light'}->SetCallBack( $hsl2rgb );
 
 
-    my $rh_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $rh_sizer->Add( $self->{'red'},  0, &Wx::wxGROW|&Wx::wxLEFT, 10);
-    $rh_sizer->Add( $self->{'hue'},  0, &Wx::wxGROW|&Wx::wxLEFT, 50);
-    $rh_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
-
-    my $gs_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $gs_sizer->Add( $self->{'green'},    0, &Wx::wxGROW|&Wx::wxLEFT, 10);
-    $gs_sizer->Add( $self->{'display'},  0, &Wx::wxGROW|&Wx::wxLEFT|&Wx::wxALIGN_CENTER_VERTICAL, 15);
-    $gs_sizer->Add( $self->{'sat'},      0, &Wx::wxGROW|&Wx::wxLEFT, 10);
-    $gs_sizer->Add( 0,                   0, &Wx::wxEXPAND | &Wx::wxGROW);
-
-    my $bl_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $bl_sizer->Add( $self->{'blue'},    0, &Wx::wxGROW|&Wx::wxLEFT, 10);
-    $bl_sizer->Add( $self->{'light'},   0, &Wx::wxGROW|&Wx::wxLEFT, 50);
-    $bl_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
-
-
+    my $attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxLEFT;
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $sizer->Add( $rh_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
-    $sizer->Add( $gs_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
-    $sizer->Add( $bl_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
+    $sizer->Add( $self->{'red'},  0, $attr, 10);
+    $sizer->Add( $self->{'green'},  0, $attr, 10);
+    $sizer->Add( $self->{'blue'},  0, $attr, 10);
+    $sizer->AddSpacer( 20 );
+    $sizer->Add( $self->{'hue'},  0, $attr, 10);
+    $sizer->Add( $self->{'sat'},  0, $attr, 10);
+    $sizer->Add( $self->{'light'},  0, $attr, 10);
 
     $self->SetSizer($sizer);
     $self;
@@ -93,13 +80,26 @@ sub init {
 sub get_data { $_[0]->{'display'}->get_color( ) }
 
 sub set_data {
-    my ( $self, $data ) = @_;
+    my ( $self, $data, $silent ) = @_;
     return unless ref $data eq 'HASH'
         and exists $data->{'red'} and exists $data->{'green'} and exists $data->{'blue'};
+
     $self->{'red'}->SetValue( $data->{'red'}, 1);
     $self->{'green'}->SetValue( $data->{'green'}, 1);
-    $self->{'blue'}->SetValue( $data->{'blue'} );
+    $self->{'blue'}->SetValue( $data->{'blue'}, 1 );
+    my @rgb = @$data{qw/red green blue/};
+    my @hsl = $HSL->deconvert( [$RGB->normalize( \@rgb )], 'RGB');
+    @hsl = $HSL->denormalize( \@hsl );
+    $self->{'hue'}->SetValue( $hsl[0], 1 );
+    $self->{'sat'}->SetValue( $hsl[1], 1 );
+    $self->{'light'}->SetValue( $hsl[2], 1 );
 }
 
+sub SetCallBack {
+    my ($self, $code) = @_;
+    return unless ref $code eq 'CODE';
+    $self->{'call_back'} = $code;
+}
 
 1;
+
