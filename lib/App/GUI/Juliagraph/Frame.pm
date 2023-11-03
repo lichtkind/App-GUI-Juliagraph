@@ -41,47 +41,12 @@ sub new {
     $self->{'dialog'}{'about'}     = App::GUI::Juliagraph::Dialog::About->new();
 
     my $btnw = 50; my $btnh     = 40;# button width and height
-    $self->{'btn'}{'dir'}       = Wx::Button->new( $self, -1, 'Dir',   [-1,-1],[$btnw, $btnh] );
-    $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, 'INI',   [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[$btnw, $btnh] );
-    $self->{'btn'}{'save_next'} = Wx::Button->new( $self, -1, '&Save', [-1,-1],[$btnw, $btnh] );
-    $self->{'txt'}{'file_bdir'} = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_dir'), [-1,-1],  [170, -1] );
-    $self->{'txt'}{'file_bname'}= Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_name'), [-1,-1],   [100, -1] );
-    $self->{'txt'}{'file_bnr'}  = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_counter'), [-1,-1], [ 36, -1], &Wx::wxTE_READONLY );
-
-    $self->{'btn'}{'dir'}->SetToolTip('select directory to save file series in');
-    $self->{'btn'}{'write_next'}->SetToolTip('save current image settings into text file with name seen in text field with added number and file ending .ini');
     $self->{'btn'}{'draw'}->SetToolTip('redraw the harmonographic image');
-    $self->{'btn'}{'save_next'}->SetToolTip('save current image into SVG file with name seen in text field with added number and file ending .svg');
-    $self->{'txt'}{'file_bname'}->SetToolTip("file base name (without ending) for a series of files you save (settings and images)");
-    $self->{'txt'}{'file_bnr'}->SetToolTip("index of file base name,\nwhen pushing Next button, image or settings are saved under Dir + File + Index + Ending");
 
 
-    #Wx::Event::EVT_TOGGLEBUTTON( $self, $self->{'btn'}{'tips'},  sub {
-    #    Wx::ToolTip::Enable( $_[1]->IsChecked );
-    #    $self->{'config'}->set_value('tips', $_[1]->IsChecked ? 1 : 0 );
-    #});
-    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
-    Wx::Event::EVT_KILL_FOCUS(        $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
-
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'dir'},  sub { $self->change_base_dir }) ;
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'write_next'},  sub {
-        my $data = get_data( $self );
-        $self->inc_base_counter unless App::GUI::Juliagraph::Settings::are_equal( $self->{'last_file_settings'}, $data );
-        my $path = $self->base_path . '.ini';
-        $self->write_settings_file( $path);
-        $self->{'config'}->add_setting_file( $path );
-        $self->{'last_file_settings'} = $data;
-    });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'save_next'},  sub {
-        my $data = get_data( $self );
-        $self->inc_base_counter unless App::GUI::Juliagraph::Settings::are_equal( $self->{'last_file_settings'}, $data );
-        my $path = $self->base_path . '.' . $self->{'config'}->get_value('file_base_ending');
-        $self->write_image( $path );
-        $self->{'last_file_settings'} = $data;
-    });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'},  sub { draw( $self ) });
-    Wx::Event::EVT_CLOSE( $self, sub {
+    Wx::Event::EVT_BUTTON(     $self, $self->{'btn'}{'draw'},  sub { draw( $self ) });
+    Wx::Event::EVT_CLOSE(      $self, sub {
         #~ my $all_color = $self->{'config'}->get_value('color');
         #~ my $startc = $self->{'color'}{'startio'}->get_data;
         #~ my $endc = $self->{'color'}{'endio'}->get_data;
@@ -182,24 +147,10 @@ sub new {
     $cmdi_sizer->Add( $self->{'btn'}{'draw'},      0, $all_attr, 5 );
     $cmdi_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    my $cmds_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    my $series_lbl = Wx::StaticText->new( $self, -1, 'Series:' );
-    $cmds_sizer->Add( $series_lbl,     0, $all_attr, 15 );
-    $cmds_sizer->Add( $self->{'btn'}{'dir'},         0, $all_attr, 5 );
-    $cmds_sizer->Add( $self->{'txt'}{'file_bdir'},   0, $all_attr, 5 );
-    $cmds_sizer->Add( $self->{'txt'}{'file_bname'},  0, $all_attr, 5 );
-    $cmds_sizer->Add( $self->{'txt'}{'file_bnr'},    0, $all_attr, 5 );
-    $cmds_sizer->Add( $self->{'btn'}{'save_next'},   0, $all_attr, 5 );
-    $cmds_sizer->Add( $self->{'btn'}{'write_next'},  0, $all_attr, 5 );
-    $cmds_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
-
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $board_sizer->Add( $self->{'board'}, 0, $all_attr,  5);
     $board_sizer->Add( $cmdi_sizer,      0, $vert_attr, 5);
     $board_sizer->Add( 0, 5);
-    $board_sizer->Add( Wx::StaticLine->new( $self, -1, [-1,-1], [ 125, 2] ),  0, $line_attr, 20);
-    $board_sizer->Add( 0, 5);
-    $board_sizer->Add( $cmds_sizer,      0, $vert_attr, 5);
     $board_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $setting_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);

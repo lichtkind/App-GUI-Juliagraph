@@ -133,7 +133,6 @@ sub new {
     #$self->init;
     $self->set_state_count( $self->{'state_count'} );
     $self->select_state ( $self->{'current_state'} );
-say "color tab -- $self";
     $self;
 }
 

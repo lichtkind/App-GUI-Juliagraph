@@ -177,8 +177,7 @@ my $default = {
         buttercream      => [ 239, 225, 206],
         desertmist       => [ 224, 181, 137],
         willow           => [ 154, 139,  79],
-},
-};
+},};
 
 sub new {
     my ($pkg) = @_;
@@ -196,11 +195,11 @@ sub load {
     while (<$FH>) {
         chomp;
         next unless $_ or substr( $_, 0, 1) eq '#';
-        if    (/^\s*(\w+):/)              { $data->{$cat} = [];    $cat = $1 }
-        elsif (/^\s+-\s+(.+)\s*$/)        { push @{$data->{$cat}}, $1        }
-        elsif (/^\s+\+\s+(\w+)\s*=\s*\[\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\]/)
-                                          { $data->{$cat}{$1} = [$2, $3, $4] }
-        elsif (/\s*(\w+)\s*=\s*(.+)\s*$/) { $data->{$1} = $2; $cat = ''      }
+        if    (/^\s*(\w+):/)              { $cat = $1 }
+        elsif (/^\s+\+\s+(\w+)\s*=\s*\[\s*(.+)\s*\]/)
+                                          { $data->{$cat}{$1} = [map {tr/ //d; $_} split /,/, $2] }
+        elsif (/^\s+-\s+(.+)\s*$/)        { push @{$data->{$cat}}, $1;          }
+        elsif (/\s*(\w+)\s*=\s*(.+)\s*$/) { $data->{$1} = $2; $cat = ''         }
     }
     close $FH;
     $data;
@@ -211,6 +210,7 @@ sub save {
     my $data = $self->{'data'};
     my $file = $self->{'path'};
     open my $FH, '>', $file or return "could not write $file: $!";
+    $" = ',';
     for my $key (sort keys %$data){
         my $val = $data->{ $key };
         if (ref $val eq 'ARRAY'){
@@ -218,7 +218,7 @@ sub save {
             say $FH "  - $_" for @$val;
         } elsif (ref $val eq 'HASH'){
             say $FH "$key:";
-            say $FH "  + $_ = [ $val->{$_}[0], $val->{$_}[1], $val->{$_}[2] ]" for sort keys %$val;
+            say $FH "  + $_ = [ @{$val->{$_}} ]" for sort keys %$val;
         } elsif (not ref $val){
             say $FH "$key = $val";
         }
@@ -239,7 +239,7 @@ sub set_value {
 
 sub add_setting_file {
     my ($self, $file) = @_;
-    $file = App::GUI::Harmonograph::Settings::shrink_path( $file );
+    $file = App::GUI::Cellgraph::Settings::shrink_path( $file );
     for my $f (@{$self->{'data'}{'last_settings'}}) { return if $f eq $file }
     push @{$self->{'data'}{'last_settings'}}, $file;
     shift @{$self->{'data'}{'last_settings'}} if @{$self->{'data'}{'last_settings'}} > 15;

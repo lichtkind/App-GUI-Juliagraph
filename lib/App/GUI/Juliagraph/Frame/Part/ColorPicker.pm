@@ -12,7 +12,6 @@ sub new {
 
     my $self = $class->SUPER::new( $parent, -1 );
 
-
     $self->{'colors'} = { %$colors }; # $frame->{'config'}->get_value('color')
     $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
     $self->{'color_index'} = 0;
@@ -24,9 +23,7 @@ sub new {
     $self->{'load'} = Wx::Button->new( $self, -1, 'Load',    [-1,-1], [$btnw, $btnh] );
     $self->{'del'}  = Wx::Button->new( $self, -1, 'Del',     [-1,-1], [$btnw, $btnh] );
     $self->{'save'} = Wx::Button->new( $self, -1, 'Save',    [-1,-1], [$btnw, $btnh] );
-say "color ", $self->get_current_color;
     $self->{'display'} = App::GUI::Juliagraph::Widget::ColorDisplay->new( $self, 25, 10, 0, $self->get_current_color );
-say "display ",$self->{'display'};
 
     $self->{'select'}->SetToolTip("select color in list directly");
     $self->{'<'}->SetToolTip("go to previous color in list");

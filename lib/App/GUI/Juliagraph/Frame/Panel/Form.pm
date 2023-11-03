@@ -18,6 +18,7 @@ sub new {
     my $exp_lbl  = Wx::StaticText->new($self, -1, 'E x p :' );
     my $pos_lbl  = Wx::StaticText->new($self, -1, 'P o s i t i o n : ' );
     my $zoom_lbl  = Wx::StaticText->new($self, -1, 'Z o o m : ' );
+    my $stop_lbl  = Wx::StaticText->new($self, -1, 'S t o p : ' );
 
     $self->{'const'}   = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [80, -1] );
     $self->{'const_i'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [80, -1] );
@@ -26,29 +27,17 @@ sub new {
     $self->{'zoom'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [80, -1] );
     $self->{'exp'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[65, -1], [2,3,4,5,6,7,8,9,10,11,12]);
     $self->{'exp'}->SetToolTip('exponent of iterator variable');
+    $self->{'stop'} = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[85, -1], [50,100, 400, 1000, 3000, 10000]);
 
 
     #$self->{'on'} = Wx::CheckBox->new( $self, -1, '', [-1,-1],[-1,-1], 1 );
-    #~ $self->{'on'}->SetToolTip('set partial pendulum on or off');
     #~ $self->{'frequency'}  = App::GUI::Juliagraph::SliderCombo->new( $self, 100, 'f', 'frequency of '.$help, 1, $max, 1 );
 
-    #~ $self->{'direction'}->SetToolTip('invert pendulum direction (to counter clockwise)');
-    #~ $self->{'half_off'} = Wx::CheckBox->new( $self, -1, ' 2');
-    #~ $self->{'half_off'}->SetToolTip('pendulum starts with offset of half rotation');
-    #~ $self->{'quarter_off'} = Wx::CheckBox->new( $self, -1, ' 4');
-    #~ $self->{'quarter_off'}->SetToolTip('pendulum starts with offset of quater rotation');
-    #~ $self->{'offset'} = App::GUI::Juliagraph::SliderCombo->new
-                            #~ ($self, 110, 'Offset', 'additional offset pendulum starts with (0 - quater rotation)', 0, 100, 0);
-
-    #~ $self->{'radius'} = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 100, 'r', 'radius or amplitude of pendulum swing', 0, 150, 100);
-    #~ $self->{'damp'} = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 100, 'Damp', 'damping factor (diminishes amplitude over time)', 0, 1000, 0);
 
 
     #~ Wx::Event::EVT_RADIOBOX( $self, $self->{'on'},          sub { $self->update_enable(); $self->{'callback'}->() });
     #~ Wx::Event::EVT_TEXT( $self, $self->{'invert_freq'}, sub {                         $self->{'callback'}->() });
     #~ Wx::Event::EVT_CHECKBOX( $self, $self->{'direction'},   sub {                         $self->{'callback'}->() });
-    #~ Wx::Event::EVT_CHECKBOX( $self, $self->{'half_off'},    sub {                         $self->{'callback'}->() });
-    #~ Wx::Event::EVT_CHECKBOX( $self, $self->{'quarter_off'}, sub {                         $self->{'callback'}->() });
 
     my $item_prop = &Wx::wxALIGN_LEFT|&Wx::wxLEFT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW;
     my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
@@ -84,6 +73,8 @@ sub new {
     $sizer->Add( $self->{'pos_y'},  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
     $sizer->Add( $zoom_lbl,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
     $sizer->Add( $self->{'zoom'},  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $stop_lbl,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $self->{'stop'},  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
     $self->SetSizer($sizer);
 
     #$self->init();
