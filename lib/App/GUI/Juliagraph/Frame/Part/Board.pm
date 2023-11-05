@@ -23,7 +23,8 @@ sub new {
 
     Wx::Event::EVT_PAINT( $self, sub {
         my( $self, $event ) = @_;
-        return unless ref $self->{'data'} and ref $self->{'data'}{'x'};
+say "paint";
+        return unless ref $self->{'data'};
         $self->{'x_pos'} = $self->GetPosition->x;
         $self->{'y_pos'} = $self->GetPosition->y;
 
@@ -39,6 +40,7 @@ sub new {
         }
         1;
     }); # Blit (xdest, ydest, width, height, DC *src, xsrc, ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false)
+    # Wx::Event::EVT_LEFT_DOWN( $self->{'board'}, sub {});
 
     return $self;
 }
@@ -56,9 +58,15 @@ sub set_sketch_flag { $_[0]->{'data'}{'sketch'} = 1 }
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
     my $background_color = Wx::Colour->new( 255, 255, 255 );
-    $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
+    my $black = Wx::Colour->new( 0, 0, 0 );
+    $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
-
+say "clear";
+    $dc->SetBrush( Wx::Brush->new( $black, &Wx::wxBRUSHSTYLE_SOLID) );
+    $dc->SetPen( Wx::Pen->new( $black, 1, &Wx::wxPENSTYLE_SOLID) );
+    for my $i (1..100){
+        $dc->DrawPoint( $i, $i );
+    }
 
     #~ my %var_names = ( x_time => '$tx', y_time => '$ty', z_time => '$tz', r_time => '$tr',
                       #~ x_freq => '$dtx', y_freq => '$dty', z_freq => '$dtz', r_freq => '$dtr',

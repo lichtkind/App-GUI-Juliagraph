@@ -2,9 +2,6 @@ use v5.12;
 use warnings;
 use utf8;
 use Wx::AUI;
-# fast preview
-# modular conections
-# X Y sync ? , undo ?
 
 package App::GUI::Juliagraph::Frame;
 use base qw/Wx::Frame/;
@@ -24,6 +21,7 @@ sub new {
     $self->SetStatusWidths(2, 800, 100);
     $self->SetStatusText( "no file loaded", 1 );
     $self->{'config'} = App::GUI::Juliagraph::Config->new();
+    $self->{'title'} = $title;
     Wx::ToolTip::Enable( $self->{'config'}->get_value('tips') );
     Wx::InitAllImageHandlers();
 
@@ -65,7 +63,7 @@ sub new {
             #~ } else { delete $all_color->{$name} }
         #~ }
         $self->{'config'}->save();
-        $self->{'dialog'}{$_}->Destroy() for qw/about/;
+        $self->{'dialog'}{about}->Destroy();
         $_[1]->Skip(1)
     });
 
@@ -128,8 +126,6 @@ sub new {
     Wx::Event::EVT_MENU( $self, 11500, sub { $self->Close });
     Wx::Event::EVT_MENU( $self, 12300, sub { $self->draw });
     Wx::Event::EVT_MENU( $self, 12400, sub { $self->save_image_dialog });
-    Wx::Event::EVT_MENU( $self, 13100, sub { $self->{'dialog'}{'function'}->ShowModal });
-    Wx::Event::EVT_MENU( $self, 13200, sub { $self->{'dialog'}{'interface'}->ShowModal });
     Wx::Event::EVT_MENU( $self, 13300, sub { $self->{'dialog'}{'about'}->ShowModal });
 
     my $std_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALIGN_CENTER_HORIZONTAL;
@@ -150,7 +146,6 @@ sub new {
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $board_sizer->Add( $self->{'board'}, 0, $all_attr,  5);
     $board_sizer->Add( $cmdi_sizer,      0, $vert_attr, 5);
-    $board_sizer->Add( 0, 5);
     $board_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $setting_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
@@ -164,15 +159,31 @@ sub new {
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
     $self->{'btn'}{'draw'}->SetFocus;
-    my $size = [1100, 820];
+    my $size = [1100, 805];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);
 
     $self->update_recent_settings_menu();
     $self->init();
-    $self->{'last_file_settings'} = get_data( $self );
     $self;
+}
+
+sub update_recent_settings_menu {
+    my ($self) = @_;
+    my $recent = $self->{'config'}->get_value('last_settings');
+    return unless ref $recent eq 'ARRAY';
+    my $set_menu_ID = 11300;
+    $self->{'setting_menu'}->Destroy( $set_menu_ID );
+    my $Recent_ID = $set_menu_ID + 1;
+    $self->{'recent_menu'} = Wx::Menu->new();
+    for (@$recent){
+        my $path = $_;
+        $self->{'recent_menu'}->Append($Recent_ID, $path);
+        Wx::Event::EVT_MENU( $self, $Recent_ID++, sub { $self->open_setting_file( $path ) });
+    }
+    $self->{'setting_menu'}->Insert( 2, $set_menu_ID, '&Recent', $self->{'recent_menu'}, 'recently saved settings' );
+
 }
 
 sub init {
@@ -180,6 +191,48 @@ sub init {
     $self->{'tab'}{$_}->init() for qw/form color/;
     $self->sketch( );
     $self->SetStatusText( "all settings are set to default", 1);
+    $self->set_settings_save(1);
+}
+
+sub draw {
+    my ($self) = @_;
+    $self->SetStatusText( "drawing .....", 0 );
+    $self->{'progress'}->set_percentage( 0 );
+#    $self->{'progress'}->set_color( $self->{'color'}{'start'}->get_data );
+    $self->{'board'}->set_data( $self->get_data );
+    $self->{'board'}->Refresh;
+    $self->SetStatusText( "done complete drawing", 0 );
+}
+
+sub sketch {
+    my ($self) = @_;
+    $self->SetStatusText( "sketching a preview .....", 0 );
+    $self->{'progress'}->set_percentage( 0 );
+    $self->{'board'}->set_data( $self->get_data );
+    $self->{'board'}->set_sketch_flag( );
+    $self->{'board'}->Refresh;
+    $self->SetStatusText( "done sketching a preview", 0 );
+    $self->set_settings_save(0);
+}
+
+
+sub get_data {
+    my $self = shift;
+    {
+        form => $self->{'tab'}{'form'}->get_data,
+        color => $self->{'tab'}{'color'}->get_settings,
+    }
+}
+sub set_data {
+    my ($self, $data) = @_;
+    return unless ref $data eq 'HASH';
+    $self->{'tab'}{$_}->set_data( $data->{$_} ) for qw/form color/;
+}
+
+sub set_settings_save {
+    my ($self, $status)  = @_;
+    $self->{'saved'} = $status;
+    $self->SetTitle( $self->{'title'} .($self->{'saved'} ? '': ' *'));
 }
 
 sub open_settings_dialog {
@@ -233,49 +286,6 @@ sub save_image_dialog {
     else     { $self->{'config'}->set_value('save_dir', App::GUI::Juliagraph::Settings::extract_dir( $path )) }
 }
 
-sub get_data {
-    my $self = shift;
-    {
-        form => $self->{'tab'}{'form'}->get_data,
-        color => $self->{'tab'}{'color'}->get_settings,
-    }
-}
-
-sub set_data {
-    my ($self, $data) = @_;
-    return unless ref $data eq 'HASH';
-    $self->{'tab'}{$_}->set_data( $data->{$_} ) for qw/form color/;
-}
-
-sub draw {
-    my ($self) = @_;
-    $self->SetStatusText( "drawing .....", 0 );
-    $self->{'progress'}->set_percentage( 0 );
-#    $self->{'progress'}->set_color( $self->{'color'}{'start'}->get_data );
-    $self->{'board'}->set_data( $self->get_data );
-    $self->{'board'}->Refresh;
-    $self->SetStatusText( "done complete drawing", 0 );
-}
-
-sub sketch {
-    my ($self) = @_;
-    $self->SetStatusText( "sketching a preview .....", 0 );
-    $self->{'progress'}->set_percentage( 0 );
-    $self->{'board'}->set_data( $self->get_data );
-    $self->{'board'}->set_sketch_flag( );
-    $self->{'board'}->Refresh;
-    $self->SetStatusText( "done sketching a preview", 0 );
-}
-
-sub base_path {
-    my ($self) = @_;
-    my $dir = $self->{'config'}->get_value('file_base_dir');
-    $dir = App::GUI::Juliagraph::Settings::expand_path( $dir );
-    File::Spec->catfile( $dir, $self->{'config'}->get_value('file_base_name') )
-        .'_'.$self->{'config'}->get_value('file_base_counter');
-
-}
-
 sub open_setting_file {
     my ($self, $file ) = @_;
     my $data = App::GUI::Juliagraph::Settings::load( $file );
@@ -304,23 +314,6 @@ sub write_settings_file {
     }
 }
 
-sub update_recent_settings_menu {
-    my ($self) = @_;
-    my $recent = $self->{'config'}->get_value('last_settings');
-    return unless ref $recent eq 'ARRAY';
-    my $set_menu_ID = 11300;
-    $self->{'setting_menu'}->Destroy( $set_menu_ID );
-    my $Recent_ID = $set_menu_ID + 1;
-    $self->{'recent_menu'} = Wx::Menu->new();
-    for (@$recent){
-        my $path = $_;
-        $self->{'recent_menu'}->Append($Recent_ID, $path);
-        Wx::Event::EVT_MENU( $self, $Recent_ID++, sub { $self->open_setting_file( $path ) });
-    }
-    $self->{'setting_menu'}->Insert( 2, $set_menu_ID, '&Recent', $self->{'recent_menu'}, 'recently saved settings' );
-
-}
-
 sub write_image {
     my ($self, $file)  = @_;
     $self->{'board'}->save_file( $file );
@@ -328,10 +321,4 @@ sub write_image {
     $self->SetStatusText( "saved image under: $file", 0 );
 }
 
-
-
 1;
-
-__END__
-
-# Wx::Event::EVT_LEFT_DOWN( $self->{'board'}, sub {});
