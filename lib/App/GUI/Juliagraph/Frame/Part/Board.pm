@@ -23,7 +23,6 @@ sub new {
 
     Wx::Event::EVT_PAINT( $self, sub {
         my( $self, $event ) = @_;
-say "paint";
         return unless ref $self->{'data'};
         $self->{'x_pos'} = $self->GetPosition->x;
         $self->{'y_pos'} = $self->GetPosition->y;
@@ -57,15 +56,46 @@ sub set_sketch_flag { $_[0]->{'data'}{'sketch'} = 1 }
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
-    my $background_color = Wx::Colour->new( 255, 255, 255 );
-    my $black = Wx::Colour->new( 0, 0, 0 );
+    my $background_color = Wx::Colour->new( 0, 0, 0 );
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
-say "clear";
-    $dc->SetBrush( Wx::Brush->new( $black, &Wx::wxBRUSHSTYLE_SOLID) );
-    $dc->SetPen( Wx::Pen->new( $black, 1, &Wx::wxPENSTYLE_SOLID) );
-    for my $i (1..100){
-        $dc->DrawPoint( $i, $i );
+
+    my $stop = 255;
+    my @c = map {Wx::Colour->new( $stop-$_, $stop-$_, $stop-$_ )} 0 .. $stop;
+    if ($self->{'data'}{'sketch'}){
+        for my $xp (0 .. $self->{'size'}{'x'}/2){
+            my $x = -2 + (8 * $xp / $self->{'size'}{'x'});
+            for my $yp (0 .. $self->{'size'}{'y'}/2){
+                my $y = -2 + (8 * $yp / $self->{'size'}{'y'});
+                my @p = ($x, $y);
+                for my $i (0 .. 255){
+                    @p = ( ($p[0]*$p[0]) - ($p[1]*$p[1]) +$x, (2 * $p[0]*$p[1])+$y);
+                    last if $p[0] == 0 and $p[1] == 0;
+                    if ((($p[0]*$p[0]) + ($p[1]*$p[1])) > 1000){
+                        $dc->SetPen( Wx::Pen->new( $c[$i], 2, &Wx::wxPENSTYLE_SOLID) );
+                        $dc->DrawPoint( $xp*2, $yp*2 );
+                        last;
+                    }
+                }
+            }
+        }
+    } else {
+        for my $xp (0 .. $self->{'size'}{'x'}){
+            my $x = -2 + (4 * $xp / $self->{'size'}{'x'});
+            for my $yp (0 .. $self->{'size'}{'y'}){
+                my $y = -2 + (4 * $yp / $self->{'size'}{'y'});
+                my @p = ($x, $y);
+                for my $i (0 .. 255){
+                    @p = ( ($p[0]*$p[0]) - ($p[1]*$p[1]) +$x, (2 * $p[0]*$p[1])+$y);
+                    last if $p[0] == 0 and $p[1] == 0;
+                    if ((($p[0]*$p[0]) + ($p[1]*$p[1])) > 1000){
+                        $dc->SetPen( Wx::Pen->new( $c[$i], 1, &Wx::wxPENSTYLE_SOLID) );
+                        $dc->DrawPoint( $xp, $yp );
+                        last;
+                    }
+                }
+            }
+        }
     }
 
     #~ my %var_names = ( x_time => '$tx', y_time => '$ty', z_time => '$tz', r_time => '$tr',
