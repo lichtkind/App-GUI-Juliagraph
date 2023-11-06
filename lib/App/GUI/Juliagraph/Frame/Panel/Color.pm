@@ -130,7 +130,7 @@ sub new {
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     $self->SetSizer( $main_sizer );
-    #$self->init;
+    $self->init;
     $self->set_state_count( $self->{'state_count'} );
     $self->select_state ( $self->{'current_state'} );
     $self;
@@ -211,7 +211,7 @@ sub set_all_colors {
     $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
     $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->values ) for 0 .. $self->{'last_state'};
     $self->select_state;
-    $self->{'call_back'}->( 'color' ); # update whole app
+    # $self->{'call_back'}->( 'color' ); # update whole app
 }
 
 sub get_all_colors { @{$_[0]->{'state_colors'}} }

@@ -57,45 +57,57 @@ sub set_sketch_flag { $_[0]->{'data'}{'sketch'} = 1 }
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
-    my $background_color = Wx::Colour->new( 0, 0, 0 );
+    my $background_color = Wx::Colour->new( 255, 255, 255 );
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
-
-    my $stop = 255;
-    my @c = map {Wx::Colour->new( $stop-$_, $stop-$_, $stop-$_ )} 0 .. $stop;
+    my $stop = 10000;
+    my $colors = 255;
+    my $col_factor = int($colors / log($colors) );
+    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ ? (log($_) * $col_factor) : 0 } 0 .. $colors;
     my $sketch_factor = 4;
+    my $x_min = -2;
+    my $x_delta = 4;
+    my $x_delta_step = $x_delta / $self->{'size'}{'x'};
+    my $y_min = -2;
+    my $y_delta = 4;
+    my $y_delta_step = $y_delta / $self->{'size'}{'y'};
     my $t0 = Benchmark->new();
     if ($self->{'data'}{'sketch'}){
-        for my $xp (0 .. $self->{'size'}{'x'}/$sketch_factor){
-            my $x = -2 + (4 * $sketch_factor * $xp / $self->{'size'}{'x'});
-            for my $yp (0 .. $self->{'size'}{'y'}/$sketch_factor){
-                my $y = -2 + (4*$sketch_factor * $yp / $self->{'size'}{'y'});
+        $x_delta_step *= $sketch_factor;
+        $y_delta_step *= $sketch_factor;
+        my @pen = map {Wx::Pen->new( $color[$_], $sketch_factor+1, &Wx::wxPENSTYLE_SOLID)} 0 .. $colors;
+        # # $pen->SetCap(&Wx::wxCAP_BUTT);
+        for my $xp (0 .. $self->{'size'}{'x'} / $sketch_factor){
+            my $x = $x_min + ($xp * $x_delta_step);
+            for my $yp (0 .. $self->{'size'}{'y'} / $sketch_factor){
+                my $y = $y_min + ($yp * $y_delta_step);
                 my ($xi, $yi) = ($x, $y);
-                for my $i (0 .. 255){
+                for my $i (0 .. $colors){
                     ($xi, $yi) = ( ($xi * $xi) - ($yi * $yi) +$x, (2 * $xi * $yi) +$y);
-                    #last if $xi == 0 and $yi == 0;
-                    if ((($xi*$xi) + ($yi*$yi)) > 1000){
-                        $dc->SetPen( Wx::Pen->new( $c[$i], $sketch_factor, &Wx::wxPENSTYLE_SOLID) );
-                        $dc->DrawPoint( $xp * $sketch_factor, $yp * $sketch_factor );
+                    if ((($xi*$xi) + ($yi*$yi)) > $stop){
+                        $dc->SetPen( $pen[$i] );
+                        $dc->DrawPoint( $xp * $sketch_factor+1, $yp * $sketch_factor +1);
                         last;
                     }
+                    #last if $xi == 0 and $yi == 0;
                 }
             }
         }
     } else {
+        my @pen = map {Wx::Pen->new( $color[$_], 1, &Wx::wxPENSTYLE_SOLID)} 0 .. $colors;
         for my $xp (0 .. $self->{'size'}{'x'}){
-            my $x = -2 + (4 * $xp / $self->{'size'}{'x'});
+            my $x = $x_min + ($xp * $x_delta_step);
             for my $yp (0 .. $self->{'size'}{'y'}){
-                my $y = -2 + (4 * $yp / $self->{'size'}{'y'});
+                my $y = $y_min + ($yp * $y_delta_step);
                 my ($xi, $yi) = ($x, $y);
-                for my $i (0 .. 255){
+                for my $i (0 .. $colors){
                     ($xi, $yi) = ( ($xi * $xi) - ($yi * $yi) +$x, (2 * $xi * $yi) +$y);
-                    #last if $xi == 0 and $yi == 0;
-                    if ((($xi*$xi) + ($yi*$yi)) > 1000){
-                        $dc->SetPen( Wx::Pen->new( $c[$i], 1, &Wx::wxPENSTYLE_SOLID) );
+                    if ((($xi*$xi) + ($yi*$yi)) > $stop){
+                        $dc->SetPen( $pen[$i] );
                         $dc->DrawPoint( $xp, $yp );
                         last;
                     }
+                    #last if $xi == 0 and $yi == 0;
                 }
             }
         }
@@ -140,5 +152,3 @@ sub save_bmp_file {
 }
 
 1;
-
-# https://developer.mozilla.org/en-US/docs/Web/SVG/Element#shape_elements <polyline>
