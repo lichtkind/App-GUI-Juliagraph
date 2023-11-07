@@ -63,7 +63,8 @@ sub paint {
     my $stop = 10000;
     my $colors = 255;
     my $col_factor = int($colors / log($colors) );
-    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ ? (log($_) * $col_factor) : 0 } 0 .. $colors;
+    # my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ ? (log($_) * $col_factor) : 0 } 0 .. $colors;
+    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * 25 } 0 .. $colors;
     my $sketch_factor = 4;
     my $x_min = -2;
     my $x_delta = 4;
