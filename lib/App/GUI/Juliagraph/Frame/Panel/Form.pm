@@ -11,8 +11,10 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1);
     $self->{'callback'} = sub {};
 
-    my $const_lbl  = Wx::StaticText->new($self, -1, 'C o n s t a n t :' );
     my $exp_lbl  = Wx::StaticText->new($self, -1, 'E x p :' );
+    my $const_lbl  = Wx::StaticText->new($self, -1, 'C o n s t a n t :' );
+    my $a_lbl  = Wx::StaticText->new($self, -1, 'A : ' );
+    my $b_lbl  = Wx::StaticText->new($self, -1, 'B : ' );
     my $pos_lbl  = Wx::StaticText->new($self, -1, 'P o s i t i o n : ' );
     my $x_lbl  = Wx::StaticText->new($self, -1, 'X : ' );
     my $y_lbl  = Wx::StaticText->new($self, -1, 'Y : ' );
@@ -26,16 +28,20 @@ sub new {
     $self->{'pos_x'}    = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
     $self->{'pos_y'}    = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
     $self->{'zoom'}     = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [80, -1] );
+    $self->{'button_a'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, '<<', '>>' );
+    $self->{'button_b'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, '<<', '>>' );
     $self->{'button_x'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, '<<', '>>' );
     $self->{'button_y'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, '<<', '>>' );
     $self->{'button_zoom'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, '<<', '>>' );
-    $self->{'exp'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[65, -1], [2,3,4,5,6,7,8,9,10,11,12]);
+    $self->{'exp'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[65, 35], [2]); # .. 12
     $self->{'exp'}->SetToolTip('exponent of iterator variable');
     $self->{'stop'} = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [50,100, 400, 1000, 3000, 10000]);
     $self->{'shades'} = Wx::ComboBox->new( $self, -1, 256, [-1,-1],[95, -1], [2,3,4,5,8,12,15,20,30,45,65, 95, 140, 200, 256]);
 
-    $self->{'button_x'}->SetCallBack(sub { $self->{'pos_x'}->SetValue( $self->{'pos_x'}->GetValue + shift ) });
-    $self->{'button_y'}->SetCallBack(sub { $self->{'pos_y'}->SetValue( $self->{'pos_y'}->GetValue + shift ) });
+    $self->{'button_a'}->SetCallBack(sub { $self->{'const_a'}->SetValue( $self->{'const_a'}->GetValue + shift ) });
+    $self->{'button_b'}->SetCallBack(sub { $self->{'const_b'}->SetValue( $self->{'const_b'}->GetValue + shift ) });
+    $self->{'button_x'}->SetCallBack(sub { my $value = shift;$self->{'pos_x'}->SetValue( $self->{'pos_x'}->GetValue + ($value * $self->zoom_size) ) });
+    $self->{'button_y'}->SetCallBack(sub { my $value = shift;$self->{'pos_y'}->SetValue( $self->{'pos_y'}->GetValue + ($value * $self->zoom_size) ) });
     $self->{'button_zoom'}->SetCallBack(sub { $self->{'zoom'}->SetValue( $self->{'zoom'}->GetValue + shift ) });
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'type'},  sub { $self->{'callback'}->() });
@@ -47,17 +53,32 @@ sub new {
     my $txt_prop = &Wx::wxALIGN_LEFT|&Wx::wxLEFT|&Wx::wxRIGHT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW;
     my $std_margin = 10;
 
-    my $formula_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $formula_sizer->Add( $const_lbl, 1, $item_prop, 0);
-    $formula_sizer->AddSpacer( 10 );
-    $formula_sizer->Add( $self->{'const_a'}, 1, $item_prop, 0);
-    $formula_sizer->AddSpacer( 10 );
-    $formula_sizer->Add( $self->{'const_b'}, 1, $item_prop, 0);
-    $formula_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
-    $formula_sizer->Add( $exp_lbl,           1, $item_prop,  0);
-    $formula_sizer->AddSpacer( 10 );
-    $formula_sizer->Add( $self->{'exp'},     1, $item_prop, 0);
-    $formula_sizer->AddSpacer( $std_margin );
+    my $type_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $type_sizer->AddSpacer( $std_margin );
+    $type_sizer->Add( $self->{'type'}, 0, $vert_prop, 10);
+    $type_sizer->AddStretchSpacer( );
+    $type_sizer->Add( $exp_lbl,          0, $vert_prop, 12);
+    $type_sizer->AddSpacer( $std_margin );
+    $type_sizer->Add( $self->{'exp'},     0, &Wx::wxALIGN_CENTER_VERTICAL, 0);
+    $type_sizer->AddSpacer( 20 );
+
+    my $a_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $a_sizer->AddSpacer( $std_margin );
+    $a_sizer->Add( $a_lbl,          0, $vert_prop, 12);
+    $a_sizer->AddSpacer( 5 );
+    $a_sizer->Add( $self->{'const_a'},  1, $vert_prop, 0);
+    $a_sizer->AddSpacer( 5 );
+    $a_sizer->Add( $self->{'button_a'}, 0, $item_prop, 0);
+    $a_sizer->AddSpacer( $std_margin );
+
+    my $b_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $b_sizer->AddSpacer( $std_margin );
+    $b_sizer->Add( $b_lbl,          0, $vert_prop, 12);
+    $b_sizer->AddSpacer( 5 );
+    $b_sizer->Add( $self->{'const_b'},  1, $vert_prop, 0);
+    $b_sizer->AddSpacer( 5 );
+    $b_sizer->Add( $self->{'button_b'}, 0, $item_prop, 0);
+    $b_sizer->AddSpacer( $std_margin );
 
     my $x_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $x_sizer->AddSpacer( $std_margin );
@@ -95,20 +116,25 @@ sub new {
     $grain_sizer->AddSpacer( $std_margin );
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $sizer->Add( $self->{'type'},  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $type_sizer,  0, $item_prop, 0);
     $sizer->AddSpacer( 10 );
-    $sizer->Add( $formula_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
-    $sizer->Add( $pos_lbl,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $const_lbl,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
+    $sizer->AddSpacer( 5 );
+    $sizer->Add( $a_sizer,  0, $item_prop, 0);
+    $sizer->AddSpacer( 20 );
+    $sizer->Add( $b_sizer,  0, $item_prop, 0);
+    $sizer->AddSpacer( 25 );
+    $sizer->Add( $pos_lbl,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
     $sizer->AddSpacer( 5 );
     $sizer->Add( $x_sizer,  0, $item_prop, 0);
     $sizer->AddSpacer( 20 );
     $sizer->Add( $y_sizer,   0, $item_prop, 0);
     $sizer->AddSpacer( 25 );
-    $sizer->Add( $zoom_lbl,   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $zoom_lbl,   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
     $sizer->AddSpacer( 5 );
     $sizer->Add( $zoom_sizer,  0, $item_prop, 0);
     $sizer->AddSpacer( 20 );
-    $sizer->Add( $grain_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, 10);
+    $sizer->Add( $grain_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
     $self->SetSizer($sizer);
 
     $self->init();
@@ -151,6 +177,8 @@ sub set_data {
     $self->RestoreCallBack();
     1;
 }
+
+sub zoom_size { 10 ** (-$_[0]->{'zoom'}->GetValue) }
 
 sub SetCallBack {
     my ($self, $code) = @_;

@@ -3,6 +3,10 @@ use warnings;
 use utf8;
 use Wx::AUI;
 
+# julia
+# slow, exp more formula, colors, color mapping
+# optional color smoothing
+
 package App::GUI::Juliagraph::Frame;
 use base qw/Wx::Frame/;
 use App::GUI::Juliagraph::Frame::Panel::Form;
@@ -28,9 +32,11 @@ sub new {
     # create GUI parts
     $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'tab'}{'form'}  = App::GUI::Juliagraph::Frame::Panel::Form->new( $self->{'tabs'} );
+    $self->{'tab'}{'mapping'} = Wx::Panel->new( $self->{'tabs'},  );
     $self->{'tab'}{'color'} = App::GUI::Juliagraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'form'},   'Form Settings');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},  'Color Settings');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'form'},     'Form Settings');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},  'Color Mapping');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},    'Color Selection');
 
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/form color/;
 

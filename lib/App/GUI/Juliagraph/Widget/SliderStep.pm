@@ -39,7 +39,7 @@ sub new {
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'-'}, sub { $self->{'callback'}->( -$self->GetValue ) });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'+'}, sub { $self->{'callback'}->( $self->GetValue ) });
-    # Wx::Event::EVT_SLIDER( $self, $self->{'slider'}, sub { my ($self, $cmd) = @_ });
+    Wx::Event::EVT_SLIDER( $self, $self->{'slider'}, sub { $self->{'slider'}->SetToolTip( 'step size: '. $self->GetValue ); });
 
     return $self;
 }
