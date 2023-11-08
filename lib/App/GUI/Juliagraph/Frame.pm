@@ -256,9 +256,7 @@ sub write_settings_dialog {
                ( join '|', 'INI files (*.ini)|*.ini', 'All files (*.*)|*.*' ), &Wx::wxFD_SAVE );
     return if $dialog->ShowModal == &Wx::wxID_CANCEL;
     my $path = $dialog->GetPath;
-    #my $i = rindex $path, '.';
-    #$path = substr($path, 0, $i - 1 ) if $i > -1;
-    #$path .= '.ini' unless lc substr ($path, -4) eq '.ini';
+    $path .= '.ini' unless lc substr ($path, -4) eq '.ini';
     return if -e $path and
               Wx::MessageDialog->new( $self, "\n\nReally overwrite the settings file?", 'Confirmation Question',
                                       &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
@@ -271,9 +269,13 @@ sub save_image_dialog {
     my ($self) = @_;
     my @wildcard = ( 'SVG files (*.svg)|*.svg', 'PNG files (*.png)|*.png', 'JPEG files (*.jpg)|*.jpg');
     my $wildcard = '|All files (*.*)|*.*';
-    $wildcard = ( join '|', @wildcard[2,1,0]) . $wildcard if $self->{'config'}->get_value('file_base_ending') eq 'jpg';
-    $wildcard = ( join '|', @wildcard[1,0,2]) . $wildcard if $self->{'config'}->get_value('file_base_ending') eq 'png';
-    $wildcard = ( join '|', @wildcard[0,1,2]) . $wildcard if $self->{'config'}->get_value('file_base_ending') eq 'svg';
+    my $default_ending = $self->{'config'}->get_value('file_base_ending');
+    $wildcard = ($default_ending eq 'jpg') ? ( join '|', @wildcard[2,1,0]) . $wildcard :
+                ($default_ending eq 'png') ? ( join '|', @wildcard[1,0,2]) . $wildcard :
+                                             ( join '|', @wildcard[0,1,2]) . $wildcard ;
+    my @wildcard_ending = ($default_ending eq 'jpg') ? (qw/jpg png svg/) :
+                          ($default_ending eq 'png') ? (qw/png svg jpg/) :
+                                                       (qw/svg jpg png/) ;
 
     my $dialog = Wx::FileDialog->new ( $self, "select a file name to save image", $self->{'config'}->get_value('save_dir'), '', $wildcard, &Wx::wxFD_SAVE );
     return if $dialog->ShowModal == &Wx::wxID_CANCEL;
@@ -281,6 +283,11 @@ sub save_image_dialog {
     return if -e $path and
               Wx::MessageDialog->new( $self, "\n\nReally overwrite the image file?", 'Confirmation Question',
                                       &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
+    my $file_ending = lc substr ($path, -4);
+    unless ($dialog->GetFilterIndex == 3 and # filter set to all endings
+            ($file_ending eq '.jpg' or $file_ending eq '.png' or $file_ending eq '.svg')){
+            $path .= '.' . $wildcard_ending[$dialog->GetFilterIndex];
+    }
     my $ret = $self->write_image( $path );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
     else     { $self->{'config'}->set_value('save_dir', App::GUI::Juliagraph::Settings::extract_dir( $path )) }

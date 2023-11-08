@@ -7,6 +7,7 @@ use Wx;
 
 package App::GUI::Juliagraph::Widget::SliderStep;
 use base qw/Wx::Panel/;
+my $resolution = 100;
 
 sub new {
     my ( $class, $parent, $slider_size, $slider_pos, $init_value, $minus_label, $plus_label ) = @_;
@@ -22,7 +23,8 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1);
     $self->{'btn'}{'-'} = Wx::Button->new( $self, -1, $minus_label, [-1,-1],[40, 30] );
     $self->{'btn'}{'+'} = Wx::Button->new( $self, -1, $plus_label, [-1,-1],[40, 30] );
-    $self->{'slider'} = Wx::Slider->new( $self, -1, $init_value, 0, 100, [-1,-1], [$slider_size, -1],  &Wx::wxSL_HORIZONTAL | &Wx::wxSL_BOTTOM );
+    $self->{'slider'} = Wx::Slider->new( $self, -1, $init_value * $resolution, 0, $resolution,
+                                         [-1,-1], [$slider_size, -1],  &Wx::wxSL_HORIZONTAL | &Wx::wxSL_BOTTOM );
     $self->{'btn'}{'-'}->SetToolTip( "decrease value by a step" );
     $self->{'btn'}{'+'}->SetToolTip( "increase value by a step");
     $self->{'slider'}->SetToolTip( 'step size' );
@@ -42,11 +44,11 @@ sub new {
     return $self;
 }
 
-sub GetValue { $_[0]->{'slider'}->GetValue / 100 }
+sub GetValue { $_[0]->{'slider'}->GetValue / $resolution }
 
 sub SetValue {
     my ( $self, $value) = @_;
-    $self->{'slider'}->SetValue($value * 100);
+    $self->{'slider'}->SetValue($value * $resolution);
 }
 
 sub SetCallBack {

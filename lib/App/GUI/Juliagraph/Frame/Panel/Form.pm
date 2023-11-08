@@ -34,6 +34,9 @@ sub new {
     $self->{'stop'} = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [50,100, 400, 1000, 3000, 10000]);
     $self->{'shades'} = Wx::ComboBox->new( $self, -1, 256, [-1,-1],[95, -1], [2,3,4,5,8,12,15,20,30,45,65, 95, 140, 200, 256]);
 
+    $self->{'button_x'}->SetCallBack(sub { $self->{'pos_x'}->SetValue( $self->{'pos_x'}->GetValue + shift ) });
+    $self->{'button_y'}->SetCallBack(sub { $self->{'pos_y'}->SetValue( $self->{'pos_y'}->GetValue + shift ) });
+    $self->{'button_zoom'}->SetCallBack(sub { $self->{'zoom'}->SetValue( $self->{'zoom'}->GetValue + shift ) });
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'type'},  sub { $self->{'callback'}->() });
     Wx::Event::EVT_TEXT( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/const_a const_b pos_x pos_y zoom/;
@@ -114,7 +117,7 @@ sub new {
 
 sub init {
     my ( $self ) = @_;
-    $self->set_data ({ type => 'Mandelbrot', const_a => 0, const_b => 0,
+    $self->set_data ({ type => 'Mandelbrot', const_a => 0, const_b => 0, exp => 2,
                        pos_x => 0, pos_y => 0, zoom => 0, shades => 256, stop => 1000} );
 }
 
@@ -136,6 +139,7 @@ sub get_data {
 sub set_data {
     my ( $self, $data ) = @_;
     return 0 unless ref $data eq 'HASH' and exists $data->{'pos_x'};
+    $self->PauseCallBack();
     for my $key (qw/const_a const_b pos_x pos_y zoom/){
         next unless exists $data->{$key} and exists $self->{$key};
         $self->{$key}->SetValue( $data->{$key} );
@@ -144,13 +148,25 @@ sub set_data {
         next unless exists $data->{$key} and exists $self->{$key};
         $self->{$key}->SetSelection( $self->{$key}->FindString($data->{$key}) );
     }
+    $self->RestoreCallBack();
     1;
 }
 
 sub SetCallBack {
-    my ( $self, $code) = @_;
+    my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'callback'} = $code;
+}
+sub PauseCallBack {
+    my ($self) = @_;
+    $self->{'pause'} = $self->{'callback'};
+    $self->{'callback'} = sub {};
+}
+sub RestoreCallBack {
+    my ($self) = @_;
+    return unless exists $self->{'pause'};
+    $self->{'callback'} = $self->{'pause'};
+    delete $self->{'pause'};
 }
 
 

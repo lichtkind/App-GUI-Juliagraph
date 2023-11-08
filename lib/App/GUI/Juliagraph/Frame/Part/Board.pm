@@ -60,18 +60,20 @@ sub paint {
     my $background_color = Wx::Colour->new( 255, 255, 255 );
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
-    my $stop = 10000;
-    my $colors = 255;
+    my $zoom_size = 4 * (10** (-$self->{'data'}{'form'}{'zoom'}));
+    my $stop = $self->{'data'}{'form'}{'stop'};
+    my $colors = $self->{'data'}{'form'}{'shades'};
     my $col_factor = int($colors / log($colors) );
-    # my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ ? (log($_) * $col_factor) : 0 } 0 .. $colors;
-    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * 25 } 0 .. $colors;
+    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * 25 } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
     my $sketch_factor = 4;
-    my $x_min = -2;
-    my $x_delta = 4;
+    my $const_a = 0;
+    my $const_b = 0;
+    my $x_delta = $zoom_size;
     my $x_delta_step = $x_delta / $self->{'size'}{'x'};
-    my $y_min = -2;
-    my $y_delta = 4;
+    my $x_min = $self->{'data'}{'form'}{'pos_x'} - ($x_delta / 2);
+    my $y_delta = $zoom_size;
     my $y_delta_step = $y_delta / $self->{'size'}{'y'};
+    my $y_min = $self->{'data'}{'form'}{'pos_y'} - ($y_delta / 2);
     my $t0 = Benchmark->new();
     if ($self->{'data'}{'sketch'}){
         $x_delta_step *= $sketch_factor;
@@ -90,7 +92,6 @@ sub paint {
                         $dc->DrawPoint( $xp * $sketch_factor+1, $yp * $sketch_factor +1);
                         last;
                     }
-                    #last if $xi == 0 and $yi == 0;
                 }
             }
         }
@@ -108,7 +109,6 @@ sub paint {
                         $dc->DrawPoint( $xp, $yp );
                         last;
                     }
-                    #last if $xi == 0 and $yi == 0;
                 }
             }
         }
