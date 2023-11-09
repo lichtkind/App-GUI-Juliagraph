@@ -10,6 +10,7 @@ use Wx::AUI;
 package App::GUI::Juliagraph::Frame;
 use base qw/Wx::Frame/;
 use App::GUI::Juliagraph::Frame::Panel::Form;
+use App::GUI::Juliagraph::Frame::Panel::Mapping;
 use App::GUI::Juliagraph::Frame::Panel::Color;
 use App::GUI::Juliagraph::Frame::Part::Board;
 use App::GUI::Juliagraph::Dialog::About;
@@ -30,15 +31,15 @@ sub new {
     Wx::InitAllImageHandlers();
 
     # create GUI parts
-    $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
-    $self->{'tab'}{'form'}  = App::GUI::Juliagraph::Frame::Panel::Form->new( $self->{'tabs'} );
-    $self->{'tab'}{'mapping'} = Wx::Panel->new( $self->{'tabs'},  );
-    $self->{'tab'}{'color'} = App::GUI::Juliagraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
+    $self->{'tabs'}           = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
+    $self->{'tab'}{'form'}    = App::GUI::Juliagraph::Frame::Panel::Form->new( $self->{'tabs'} );
+    $self->{'tab'}{'mapping'} = App::GUI::Juliagraph::Frame::Panel::Mapping->new( $self->{'tabs'} );
+    $self->{'tab'}{'color'}   = App::GUI::Juliagraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'form'},     'Form Settings');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},  'Color Mapping');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},    'Color Selection');
 
-    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/form color/;
+    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/form mapping/;
 
     $self->{'progress'}            = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 5, { red => 20, green => 20, blue => 110 });
     $self->{'board'}               = App::GUI::Juliagraph::Frame::Part::Board->new( $self , 600, 600 );
@@ -226,13 +227,15 @@ sub get_data {
     my $self = shift;
     {
         form => $self->{'tab'}{'form'}->get_data,
+        mapping => $self->{'tab'}{'mapping'}->get_data,
         color => $self->{'tab'}{'color'}->get_settings,
     }
 }
 sub set_data {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH';
-    $self->{'tab'}{$_}->set_data( $data->{$_} ) for qw/form color/;
+    $self->{'tab'}{$_}->set_data( $data->{$_} ) for qw/form mapping/;
+    $self->{'tab'}{'color'}->set_settings( $data->{'color'} );
 }
 
 sub set_settings_save {

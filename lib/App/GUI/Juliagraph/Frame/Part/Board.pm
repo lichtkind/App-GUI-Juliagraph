@@ -65,9 +65,9 @@ sub paint {
 
     my $zoom_size = 4 * (10** (-$self->{'data'}{'form'}{'zoom'}));
     my $stop = $self->{'data'}{'form'}{'stop'};
-    my $colors = $self->{'data'}{'form'}{'shades'};
+    my $colors = $self->{'data'}{'mapping'}{'shades'};
     my $col_factor = int($colors / log($colors) );
-    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * $self->{'data'}{'form'}{'scaling'} } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
+    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * $self->{'data'}{'mapping'}{'scaling'} } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
     my $const_a = $self->{'data'}{'form'}{'const_a'};
     my $const_b = $self->{'data'}{'form'}{'const_b'};
     my $x_delta = $zoom_size;
@@ -150,7 +150,7 @@ sub paint {
             my $x_pix = 0;
             for (0 .. $self->{'size'}{'x'}){
                 my $y_num = $y_min;
-                my $y_pix = 0;
+                my $y_pix = $self->{'size'}{'y'};
                 for (0 .. $self->{'size'}{'y'}){
                     my ($x_it, $y_it) = ($x_num, $y_num);
                     for my $i (0 .. $colors){
@@ -161,7 +161,7 @@ sub paint {
                         }
                     }
                     $y_num += $y_delta_step;
-                    $y_pix ++;
+                    $y_pix --;
                 }
                 $x_num += $x_delta_step;
                 $x_pix ++;

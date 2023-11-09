@@ -130,6 +130,7 @@ sub new {
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     $self->SetSizer( $main_sizer );
+    $self->{'call_back'} = sub {};
     $self->init;
     $self->set_state_count( $self->{'state_count'} );
     $self->select_state ( $self->{'current_state'} );
