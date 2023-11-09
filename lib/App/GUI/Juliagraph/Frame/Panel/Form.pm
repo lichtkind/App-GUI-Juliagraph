@@ -21,6 +21,7 @@ sub new {
     my $zoom_lbl  = Wx::StaticText->new($self, -1, 'Z o o m : ' );
     my $stop_lbl  = Wx::StaticText->new($self, -1, 'S t o p : ' );
     my $shade_lbl  = Wx::StaticText->new($self, -1, 'S h a d e s : ' );
+    my $scale_lbl  = Wx::StaticText->new($self, -1, 'S c a l i n g : ' );
 
     $self->{'type'}     = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1],[-1,-1], ['Julia','Mandelbrot'] );
     $self->{'const_a'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
@@ -28,15 +29,16 @@ sub new {
     $self->{'pos_x'}    = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
     $self->{'pos_y'}    = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
     $self->{'zoom'}     = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [80, -1] );
-    $self->{'button_a'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, '<<', '>>' );
-    $self->{'button_b'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, '<<', '>>' );
-    $self->{'button_x'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, '<<', '>>' );
-    $self->{'button_y'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, '<<', '>>' );
-    $self->{'button_zoom'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, '<<', '>>' );
+    $self->{'button_a'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
+    $self->{'button_b'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
+    $self->{'button_x'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
+    $self->{'button_y'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
+    $self->{'button_zoom'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
     $self->{'exp'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[65, 35], [2]); # .. 12
     $self->{'exp'}->SetToolTip('exponent of iterator variable');
-    $self->{'stop'} = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [50,100, 400, 1000, 3000, 10000]);
-    $self->{'shades'} = Wx::ComboBox->new( $self, -1, 256, [-1,-1],[95, -1], [2,3,4,5,8,12,15,20,30,45,65, 95, 140, 200, 256]);
+    $self->{'stop'}   = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [50,100, 400, 1000, 3000, 10000]);
+    $self->{'shades'} = Wx::ComboBox->new( $self, -1, 256, [-1,-1],[95, -1], [5, 8,12,15,20,30,45,65, 95, 130, 170, 210, 256]);
+    $self->{'scaling'} = Wx::ComboBox->new( $self, -1, 25, [-1,-1],[95, -1], [1, 2, 3, 5, 8, 12, 17, 25, 30, 35]);
 
     $self->{'button_a'}->SetCallBack(sub { $self->{'const_a'}->SetValue( $self->{'const_a'}->GetValue + shift ) });
     $self->{'button_b'}->SetCallBack(sub { $self->{'const_b'}->SetValue( $self->{'const_b'}->GetValue + shift ) });
@@ -46,7 +48,7 @@ sub new {
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'type'},  sub { $self->{'callback'}->() });
     Wx::Event::EVT_TEXT( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/const_a const_b pos_x pos_y zoom/;
-    Wx::Event::EVT_COMBOBOX( $self, $self->{$_},      sub { $self->{'callback'}->() }) for qw/exp stop shades/;
+    Wx::Event::EVT_COMBOBOX( $self, $self->{$_},      sub { $self->{'callback'}->() }) for qw/exp stop shades scaling/;
 
     my $vert_prop = &Wx::wxALIGN_LEFT|&Wx::wxTOP|&Wx::wxBOTTOM|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW;
     my $item_prop = &Wx::wxALIGN_LEFT|&Wx::wxLEFT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW;
@@ -115,6 +117,13 @@ sub new {
     $grain_sizer->Add( $self->{'stop'},  0, $vert_prop, 0);
     $grain_sizer->AddSpacer( $std_margin );
 
+    my $scale_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $scale_sizer->Add( $scale_lbl,  0, $item_prop, 0);
+    $scale_sizer->AddSpacer( 10 );
+    $scale_sizer->Add( $self->{'scaling'},  0, $vert_prop, 0);
+    $scale_sizer->AddStretchSpacer( );
+    $scale_sizer->AddSpacer( $std_margin );
+
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->Add( $type_sizer,  0, $item_prop, 0);
     $sizer->AddSpacer( 10 );
@@ -135,6 +144,8 @@ sub new {
     $sizer->Add( $zoom_sizer,  0, $item_prop, 0);
     $sizer->AddSpacer( 20 );
     $sizer->Add( $grain_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
+    $sizer->AddSpacer( 10 );
+    $sizer->Add( $scale_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
     $self->SetSizer($sizer);
 
     $self->init();
@@ -144,7 +155,7 @@ sub new {
 sub init {
     my ( $self ) = @_;
     $self->set_data ({ type => 'Mandelbrot', const_a => 0, const_b => 0, exp => 2,
-                       pos_x => 0, pos_y => 0, zoom => 0, shades => 256, stop => 1000} );
+                       pos_x => 0, pos_y => 0, zoom => 0, shades => 256, stop => 1000, scaling => 25} );
 }
 
 sub get_data {
@@ -159,6 +170,7 @@ sub get_data {
         exp     => $self->{'exp'}->GetStringSelection,
         stop    => $self->{'stop'}->GetStringSelection,
         shades  => $self->{'shades'}->GetStringSelection,
+        scaling => $self->{'scaling'}->GetStringSelection,
     }
 }
 
@@ -170,7 +182,7 @@ sub set_data {
         next unless exists $data->{$key} and exists $self->{$key};
         $self->{$key}->SetValue( $data->{$key} );
     }
-    for my $key (qw/type exp stop shades/){
+    for my $key (qw/type exp stop shades scaling/){
         next unless exists $data->{$key} and exists $self->{$key};
         $self->{$key}->SetSelection( $self->{$key}->FindString($data->{$key}) );
     }

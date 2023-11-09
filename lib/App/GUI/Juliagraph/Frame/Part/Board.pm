@@ -67,7 +67,7 @@ sub paint {
     my $stop = $self->{'data'}{'form'}{'stop'};
     my $colors = $self->{'data'}{'form'}{'shades'};
     my $col_factor = int($colors / log($colors) );
-    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * 25 } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
+    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * $self->{'data'}{'form'}{'scaling'} } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
     my $const_a = $self->{'data'}{'form'}{'const_a'};
     my $const_b = $self->{'data'}{'form'}{'const_b'};
     my $x_delta = $zoom_size;

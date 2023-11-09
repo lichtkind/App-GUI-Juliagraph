@@ -10,7 +10,7 @@ use base qw/Wx::Panel/;
 my $resolution = 100;
 
 sub new {
-    my ( $class, $parent, $slider_size, $slider_pos, $init_value, $minus_label, $plus_label ) = @_;
+    my ( $class, $parent, $slider_size, $slider_pos, $init_value, $exp, $minus_label, $plus_label ) = @_;
     $slider_size //= 50;
     $slider_size = 50 if $slider_size == -1;
     $slider_pos //= 2;
@@ -28,6 +28,7 @@ sub new {
     $self->{'btn'}{'-'}->SetToolTip( "decrease value by a step" );
     $self->{'btn'}{'+'}->SetToolTip( "increase value by a step");
     $self->{'slider'}->SetToolTip( 'step size' );
+    $self->{'exponent'} = $exp // 1;
     $self->{'callback'} = sub {};
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
@@ -44,11 +45,11 @@ sub new {
     return $self;
 }
 
-sub GetValue { $_[0]->{'slider'}->GetValue / $resolution }
+sub GetValue { ($_[0]->{'slider'}->GetValue / $resolution) ** $_[0]->{'exponent'} }
 
 sub SetValue {
     my ( $self, $value) = @_;
-    $self->{'slider'}->SetValue($value * $resolution);
+    $self->{'slider'}->SetValue(($value * $resolution) ** (1/$self->{'exponent'}));
 }
 
 sub SetCallBack {
