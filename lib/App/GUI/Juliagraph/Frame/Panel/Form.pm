@@ -11,39 +11,53 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1);
     $self->{'callback'} = sub {};
 
-    my $exp_lbl  = Wx::StaticText->new($self, -1, 'E x p :' );
-    my $const_lbl  = Wx::StaticText->new($self, -1, 'C o n s t a n t :' );
-    my $a_lbl  = Wx::StaticText->new($self, -1, 'A : ' );
-    my $b_lbl  = Wx::StaticText->new($self, -1, 'B : ' );
-    my $pos_lbl  = Wx::StaticText->new($self, -1, 'P o s i t i o n : ' );
-    my $x_lbl  = Wx::StaticText->new($self, -1, 'X : ' );
-    my $y_lbl  = Wx::StaticText->new($self, -1, 'Y : ' );
+    my $exp_lbl   = Wx::StaticText->new($self, -1, 'E x p o n e n t :' );
+    my $const_lbl = Wx::StaticText->new($self, -1, 'C o n s t a n t :' );
+    my $a_lbl     = Wx::StaticText->new($self, -1, 'A : ' );
+    my $b_lbl     = Wx::StaticText->new($self, -1, 'B : ' );
+    my $var_lbl   = Wx::StaticText->new($self, -1, 'V a r i a b l e :' );
+    my $c_lbl     = Wx::StaticText->new($self, -1, 'C : ' );
+    my $d_lbl     = Wx::StaticText->new($self, -1, 'D : ' );
+    my $pos_lbl   = Wx::StaticText->new($self, -1, 'P o s i t i o n : ' );
+    my $x_lbl     = Wx::StaticText->new($self, -1, 'X : ' );
+    my $y_lbl     = Wx::StaticText->new($self, -1, 'Y : ' );
     my $zoom_lbl  = Wx::StaticText->new($self, -1, 'Z o o m : ' );
     my $stop_lbl  = Wx::StaticText->new($self, -1, 'S t o p : ' );
+    $exp_lbl->SetToolTip('exponent above iterator variable');
+    $const_lbl->SetToolTip('constant value which get added on every iteration');
+    $stop_lbl->SetToolTip('abort iteration when variable is above this boundary');
 
     $self->{'type'}     = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1],[-1,-1], ['Julia','Mandelbrot'] );
+    $self->{'type'}->SetToolTip("choose fractal type: \njulia uses position as init value of iterator var and constant as such, mandelbrot is vice versa");
     $self->{'const_a'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
     $self->{'const_b'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
+    $self->{'var_c'}    = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
+    $self->{'var_d'}    = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
     $self->{'pos_x'}    = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
     $self->{'pos_y'}    = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
     $self->{'zoom'}     = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [80, -1] );
     $self->{'button_a'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
     $self->{'button_b'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
+    $self->{'button_c'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
+    $self->{'button_d'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
     $self->{'button_x'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
     $self->{'button_y'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
     $self->{'button_zoom'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
-    $self->{'exp'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[65, 35], [2]); # .. 12
-    $self->{'exp'}->SetToolTip('exponent of iterator variable');
+    $self->{'exp'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[65, 35], [2, 3, 4]);
+    $self->{'exp'}->SetToolTip('exponent above iterator variable');
     $self->{'stop'}   = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [20, 40, 70,100, 400, 1000, 3000, 10000]);
+    $self->{'stop'}->SetToolTip('abort iteration when variable is above this boundary');
 
     $self->{'button_a'}->SetCallBack(sub { $self->{'const_a'}->SetValue( $self->{'const_a'}->GetValue + shift ) });
     $self->{'button_b'}->SetCallBack(sub { $self->{'const_b'}->SetValue( $self->{'const_b'}->GetValue + shift ) });
+    $self->{'button_c'}->SetCallBack(sub { $self->{'var_c'}->SetValue( $self->{'var_c'}->GetValue + shift ) });
+    $self->{'button_d'}->SetCallBack(sub { $self->{'var_d'}->SetValue( $self->{'var_d'}->GetValue + shift ) });
     $self->{'button_x'}->SetCallBack(sub { my $value = shift;$self->{'pos_x'}->SetValue( $self->{'pos_x'}->GetValue + ($value * $self->zoom_size) ) });
     $self->{'button_y'}->SetCallBack(sub { my $value = shift;$self->{'pos_y'}->SetValue( $self->{'pos_y'}->GetValue + ($value * $self->zoom_size) ) });
     $self->{'button_zoom'}->SetCallBack(sub { $self->{'zoom'}->SetValue( $self->{'zoom'}->GetValue + shift ) });
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'type'},  sub { $self->{'callback'}->() });
-    Wx::Event::EVT_TEXT( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/const_a const_b pos_x pos_y zoom/;
+    Wx::Event::EVT_TEXT( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/const_a const_b var_c var_d pos_x pos_y zoom/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_},      sub { $self->{'callback'}->() }) for qw/exp stop/;
 
     my $vert_prop = &Wx::wxALIGN_LEFT|&Wx::wxTOP|&Wx::wxBOTTOM|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW;
@@ -55,7 +69,7 @@ sub new {
     $type_sizer->AddSpacer( $std_margin );
     $type_sizer->Add( $self->{'type'}, 0, $vert_prop, 10);
     $type_sizer->AddStretchSpacer( );
-    $type_sizer->Add( $exp_lbl,          0, $vert_prop, 12);
+    $type_sizer->Add( $exp_lbl,          0, $vert_prop, 22);
     $type_sizer->AddSpacer( $std_margin );
     $type_sizer->Add( $self->{'exp'},     0, &Wx::wxALIGN_CENTER_VERTICAL, 0);
     $type_sizer->AddSpacer( 20 );
@@ -77,6 +91,24 @@ sub new {
     $b_sizer->AddSpacer( 5 );
     $b_sizer->Add( $self->{'button_b'}, 0, $item_prop, 0);
     $b_sizer->AddSpacer( $std_margin );
+
+    my $c_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $c_sizer->AddSpacer( $std_margin );
+    $c_sizer->Add( $c_lbl,          0, $vert_prop, 12);
+    $c_sizer->AddSpacer( 5 );
+    $c_sizer->Add( $self->{'var_c'},  1, $vert_prop, 0);
+    $c_sizer->AddSpacer( 5 );
+    $c_sizer->Add( $self->{'button_c'}, 0, $item_prop, 0);
+    $c_sizer->AddSpacer( $std_margin );
+
+    my $d_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $d_sizer->AddSpacer( $std_margin );
+    $d_sizer->Add( $d_lbl,          0, $vert_prop, 12);
+    $d_sizer->AddSpacer( 5 );
+    $d_sizer->Add( $self->{'var_d'},  1, $vert_prop, 0);
+    $d_sizer->AddSpacer( 5 );
+    $d_sizer->Add( $self->{'button_d'}, 0, $item_prop, 0);
+    $d_sizer->AddSpacer( $std_margin );
 
     my $x_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $x_sizer->AddSpacer( $std_margin );
@@ -112,23 +144,29 @@ sub new {
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->Add( $type_sizer,  0, $item_prop, 0);
-    $sizer->AddSpacer( 10 );
+    $sizer->AddSpacer( 5 );
     $sizer->Add( $const_lbl,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
     $sizer->AddSpacer( 5 );
     $sizer->Add( $a_sizer,  0, $item_prop, 0);
     $sizer->AddSpacer( 20 );
     $sizer->Add( $b_sizer,  0, $item_prop, 0);
-    $sizer->AddSpacer( 25 );
+    $sizer->AddSpacer( 15 );
+    $sizer->Add( $var_lbl,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
+    $sizer->AddSpacer( 5 );
+    $sizer->Add( $c_sizer,  0, $item_prop, 0);
+    $sizer->AddSpacer( 20 );
+    $sizer->Add( $d_sizer,  0, $item_prop, 0);
+    $sizer->AddSpacer( 15 );
     $sizer->Add( $pos_lbl,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
     $sizer->AddSpacer( 5 );
     $sizer->Add( $x_sizer,  0, $item_prop, 0);
     $sizer->AddSpacer( 20 );
     $sizer->Add( $y_sizer,   0, $item_prop, 0);
-    $sizer->AddSpacer( 25 );
+    $sizer->AddSpacer( 15 );
     $sizer->Add( $zoom_lbl,   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
     $sizer->AddSpacer( 5 );
     $sizer->Add( $zoom_sizer,  0, $item_prop, 0);
-    $sizer->AddSpacer( 30 );
+    $sizer->AddSpacer( 20 );
     $sizer->Add( $grain_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL, $std_margin);
     $self->SetSizer($sizer);
 
@@ -138,7 +176,8 @@ sub new {
 
 sub init {
     my ( $self ) = @_;
-    $self->set_data ({ type => 'Mandelbrot', const_a => 0, const_b => 0, exp => 2,
+    $self->set_data ({ type => 'Mandelbrot', exp => 2,
+                       const_a => 0, const_b => 0, var_c => 0, var_d => 0,
                        pos_x => 0, pos_y => 0, zoom => 0, stop => 1000 } );
 }
 
@@ -148,6 +187,8 @@ sub get_data {
         type    => $self->{'type'}->GetString( $self->{'type'}->GetSelection ),
         const_a => $self->{'const_a'}->GetValue,
         const_b => $self->{'const_b'}->GetValue,
+        var_c   => $self->{'var_c'}->GetValue,
+        var_d   => $self->{'var_d'}->GetValue,
         pos_x   => $self->{'pos_x'}->GetValue,
         pos_y   => $self->{'pos_y'}->GetValue,
         zoom    => $self->{'zoom'}->GetValue,
@@ -160,7 +201,7 @@ sub set_data {
     my ( $self, $data ) = @_;
     return 0 unless ref $data eq 'HASH' and exists $data->{'pos_x'};
     $self->PauseCallBack();
-    for my $key (qw/const_a const_b pos_x pos_y zoom/){
+    for my $key (qw/const_a const_b var_c var_d pos_x pos_y zoom/){
         next unless exists $data->{$key} and exists $self->{$key};
         $self->{$key}->SetValue( $data->{$key} );
     }

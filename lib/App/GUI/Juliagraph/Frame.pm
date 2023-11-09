@@ -198,7 +198,7 @@ sub init {
     $self->{'tab'}{$_}->init() for qw/form color/;
     $self->sketch( );
     $self->SetStatusText( "all settings are set to default", 1);
-    $self->set_settings_save(1);
+    $self->show_settings_save(1);
 }
 
 sub draw {
@@ -219,7 +219,7 @@ sub sketch {
     $self->{'board'}->set_sketch_flag( );
     $self->{'board'}->Refresh;
     $self->SetStatusText( "done sketching a preview", 0 );
-    $self->set_settings_save(0);
+    $self->show_settings_save(0);
 }
 
 
@@ -238,7 +238,7 @@ sub set_data {
     $self->{'tab'}{'color'}->set_settings( $data->{'color'} );
 }
 
-sub set_settings_save {
+sub show_settings_save {
     my ($self, $status)  = @_;
     $self->{'saved'} = $status;
     $self->SetTitle( $self->{'title'} .($self->{'saved'} ? '': ' *'));

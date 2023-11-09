@@ -70,22 +70,15 @@ sub paint {
     my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * $self->{'data'}{'mapping'}{'scaling'} } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
     my $const_a = $self->{'data'}{'form'}{'const_a'};
     my $const_b = $self->{'data'}{'form'}{'const_b'};
+    my $var_c = $self->{'data'}{'form'}{'var_c'};
+    my $var_d = $self->{'data'}{'form'}{'var_d'};
     my $x_delta = $zoom_size;
     my $x_delta_step = $x_delta / $self->{'size'}{'x'};
     my $x_min = $self->{'data'}{'form'}{'pos_x'} - ($x_delta / 2);
     my $y_delta = $zoom_size;
     my $y_delta_step = $y_delta / $self->{'size'}{'y'};
     my $y_min = $self->{'data'}{'form'}{'pos_y'} - ($y_delta / 2);
-    my ($x_var, $y_var, $x_const, $y_const, $type);
-    if ($self->{'data'}{'form'}{'type'} eq 'Julia'){
-        $x_const = $const_a;
-        $y_const = $const_b;
-        $type = 1;
-    } else {
-        $x_var = $const_a;
-        $y_var = $const_b;
-        $type = 0;
-    }
+
     my $t0 = Benchmark->new();
     my @pen = $self->{'data'}{'sketch'}
             ? (map {Wx::Pen->new( $color[$_], $sketch_factor+1, &Wx::wxPENSTYLE_SOLID)} 0 .. $colors)
@@ -94,119 +87,72 @@ sub paint {
         $x_delta_step *= $sketch_factor;
         $y_delta_step *= $sketch_factor;
         delete $self->{'data'}{'pixel'};
-
-        if ($type){ # Julia sketch
-            my $x_num = $x_min;
-            my $x_pix = 0;
-            for (0 .. $self->{'size'}{'x'} / $sketch_factor){
-                my $y_num = $y_min;
-                my $y_pix = $self->{'size'}{'y'};
-                for (0 .. $self->{'size'}{'y'} / $sketch_factor){
-                    my ($x_it, $y_it) = ($x_num, $y_num);
-                    for my $i (0 .. $colors){
-                        ($x_it, $y_it) = ( ($x_it * $x_it) - ($y_it * $y_it) + $x_const, (2 * $x_it * $y_it) + $y_const);
-                        if ((($x_it*$x_it) + ($x_it * $x_it)) > $stop){
-                            $dc->SetPen( $pen[$i] );
-                            $dc->DrawPoint( $x_pix, $y_pix);
-                            last;
-                        }
-                    }
-                    $y_num += $y_delta_step;
-                    $y_pix -= $sketch_factor;
-                }
-                $x_num += $x_delta_step;
-                $x_pix += $sketch_factor;
-            }
-        } else { # Mandelbrot sketch
-            my $x_num = $x_min;
-            my $x_pix = 0;
-            for (0 .. $self->{'size'}{'x'} / $sketch_factor){
-                my $y_num = $y_min;
-                my $y_pix = $self->{'size'}{'y'};
-                for (0 .. $self->{'size'}{'y'} / $sketch_factor){
-                    my ($x_it, $y_it) = ($const_a, $const_b);
-                    ($x_const, $y_const) = ($x_num, $y_num);
-                    for my $i (0 .. $colors){
-                        ($x_it, $y_it) = ( ($x_it * $x_it) - ($y_it * $y_it) + $x_const, (2 * $x_it * $y_it) + $y_const);
-                        if ((($x_it*$x_it) + ($x_it * $x_it)) > $stop){
-                            $dc->SetPen( $pen[$i] );
-                            $dc->DrawPoint( $x_pix, $y_pix);
-                            last;
-                        }
-                    }
-                    $y_num += $y_delta_step;
-                    $y_pix -= $sketch_factor;
-                }
-                $x_num += $x_delta_step;
-                $x_pix += $sketch_factor;
-            }
-        }
-        say "sketch:",timestr(timediff(Benchmark->new, $t0));
-    } else {
-        my $pixel = [];
-
-        if ($type){ # Julia draw
-            my $x_num = $x_min;
-            my $x_pix = 0;
-            for (0 .. $self->{'size'}{'x'}){
-                my $y_num = $y_min;
-                my $y_pix = $self->{'size'}{'y'};
-                for (0 .. $self->{'size'}{'y'}){
-                    my ($x_it, $y_it) = ($x_num, $y_num);
-                    for my $i (0 .. $colors){
-                        ($x_it, $y_it) = ( ($x_it * $x_it) - ($y_it * $y_it) + $x_const, (2 * $x_it * $y_it) + $y_const);
-                        if ((($x_it*$x_it) + ($x_it * $x_it)) > $stop){
-                            $pixel->[$x_pix][$y_pix] = $i;
-                            last;
-                        }
-                    }
-                    $y_num += $y_delta_step;
-                    $y_pix --;
-                }
-                $x_num += $x_delta_step;
-                $x_pix ++;
-            }
-        } else { # Mandelbrot draw
-            my $x_num = $x_min;
-            my $x_pix = 0;
-            for (0 .. $self->{'size'}{'x'}){
-                my $y_num = $y_min;
-                my $y_pix = $self->{'size'}{'y'};
-                for (0 .. $self->{'size'}{'y'}){
-                    my ($x_it, $y_it) = ($const_a, $const_b);
-                    ($x_const, $y_const) = ($x_num, $y_num);
-                    for my $i (0 .. $colors){
-                        ($x_it, $y_it) = ( ($x_it * $x_it) - ($y_it * $y_it) + $x_const, (2 * $x_it * $y_it) + $y_const);
-                        if ((($x_it*$x_it) + ($x_it * $x_it)) > $stop){
-                            $pixel->[$x_pix][$y_pix] = $i;
-                            last;
-                        }
-                    }
-                    $y_num += $y_delta_step;
-                    $y_pix --;
-                }
-                $x_num += $x_delta_step;
-                $x_pix ++;
-            }
-        }
-
-        say "compute:",timestr(timediff(Benchmark->new, $t0));
-        my $pen_index = -1;
-        $t0 = Benchmark->new();
-        for my $x (0 .. $self->{'size'}{'x'}){
-            for (0 .. $self->{'size'}{'y'}){
-                next unless defined $pixel->[$x][$_];
-                unless ($pen_index == $pixel->[$x][$_]){
-                    $pen_index = $pixel->[$x][$_];
-                    $dc->SetPen( $pen[$pen_index] );
-                }
-                $dc->DrawPoint( $x, $_ );
-                #$dc->DrawRectangle( $x, $_, 1, 1 );
-            }
-        }
-        say "draw:",timestr(timediff(Benchmark->new, $t0));
-        $self->{'data'}{'pixel'} = $pixel;
     }
+    my $pixel = [];
+    my ($x_const, $y_const, $xi, $yi, $x_mem, $y_mem);
+
+    my $code = 'my ($x_num, $x_pix) = ($x_min, 0);'."\n";
+    $code .= $self->{'data'}{'sketch'}
+           ? 'for (0 .. $self->{size}{x} / $sketch_factor){'."\n"
+           : 'for (0 .. $self->{size}{x}){'."\n";
+    $code .= '  my ($y_num, $y_pix) = ($y_min, $self->{size}{y});'."\n";
+    $code .= $self->{'data'}{'sketch'}
+           ? '  for (0 .. $self->{size}{y} / $sketch_factor){'."\n"
+           : '  for (0 .. $self->{size}{y}){'."\n";
+    $code .= ($self->{'data'}{'form'}{'type'} eq 'Julia')
+           ? '    ($xi, $yi) = ($x_num, $y_num);'."\n".
+             '    ($x_const, $y_const) = ($const_a, $const_b);'."\n"
+           : '    ($xi, $yi) = ($const_a, $const_b);'."\n".
+             '    ($x_const, $y_const) = ($x_num, $y_num);'."\n";
+    $code .= '    for my $i (0 .. $colors){'."\n";
+    $code .= '      $x_mem = $xi;'."\n" if $var_c;
+    $code .= '      $y_mem = $yi;'."\n" if $var_d;
+    $code .= ($self->{'data'}{'form'}{'exp'} == 2)
+           ? '      ($xi, $yi) = (($xi * $xi) - ($yi * $yi), (2 * $xi * $yi));'."\n"
+           : ($self->{'data'}{'form'}{'exp'} == 3)
+           ? '      ($xi, $yi) = ( ($xi * $xi * $xi) - (3 * $xi * $yi * $yi),'.
+                                     ' (3 * $xi * $xi * $yi) - ($yi * $yi * $yi) );'."\n"
+           : '      ($xi, $yi) = (($xi * $xi) - ($yi * $yi), (2 * $xi * $yi));'."\n".
+             '      ($xi, $yi) = (($xi * $xi) - ($yi * $yi), (2 * $xi * $yi));'."\n";
+    $code .=  '     $xi += $x_mem * $var_c;'."\n" if $var_c;
+    $code .=  '     $yi += $y_mem * $var_d;'."\n" if $var_d;
+    $code .=  '     $xi += $x_const;'."\n";
+    $code .=  '     $yi += $y_const;'."\n";
+    $code .= '      if ((($xi *$xi) + ($yi * $yi)) > $stop){'."\n";
+    $code .= '        $pixel->[$x_pix][$y_pix] = $i;'."\n";
+    $code .= '        last;'."\n".'      }'."\n".'    }'."\n";
+    $code .= '    $y_num += $y_delta_step;'."\n";
+    $code .= $self->{'data'}{'sketch'}
+           ? '    $y_pix -= $sketch_factor;'."\n"
+           : '    $y_pix --;'."\n";
+    $code .= '  }'."\n";
+    $code .= '  $x_num += $x_delta_step;'."\n";
+    $code .= $self->{'data'}{'sketch'}
+           ? '  $x_pix += $sketch_factor;'."\n"
+           : '  $x_pix ++;'."\n";
+    $code .= '}'."\n";
+
+    eval $code; # say $code;
+    die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
+
+
+    say "compute:",timestr(timediff(Benchmark->new, $t0));
+    my $pen_index = -1;
+    $t0 = Benchmark->new();
+    for my $x (0 .. $self->{'size'}{'x'}){
+        for (0 .. $self->{'size'}{'y'}){
+            next unless defined $pixel->[$x][$_];
+            unless ($pen_index == $pixel->[$x][$_]){
+                $pen_index = $pixel->[$x][$_];
+                $dc->SetPen( $pen[$pen_index] );
+            }
+            $dc->DrawPoint( $x, $_ );
+            #$dc->DrawRectangle( $x, $_, 1, 1 );
+        }
+    }
+    say "draw:",timestr(timediff(Benchmark->new, $t0));
+    $self->{'data'}{'pixel'} = $pixel;
+
 
     delete $self->{'data'}{'new'};
     delete $self->{'data'}{'sketch'};
