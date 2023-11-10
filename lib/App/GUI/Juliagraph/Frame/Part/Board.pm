@@ -28,7 +28,7 @@ sub new {
         $self->{'x_pos'} = $self->GetPosition->x;
         $self->{'y_pos'} = $self->GetPosition->y;
 
-        if (exists $self->{'data'}{'new'}) {
+        if (exists $self->{'new'}) {
             $self->{'dc'}->Blit (0, 0, $self->{'size'}{'x'} + $self->{'x_pos'},
                                        $self->{'size'}{'y'} + $self->{'y_pos'} + $self->{'menu_size'},
                                        $self->paint( Wx::PaintDC->new( $self ), $self->{'size'}{'x'}, $self->{'size'}{'y'} ), 0, 0);
@@ -49,10 +49,10 @@ sub set_data {
     my( $self, $data ) = @_;
     return unless ref $data eq 'HASH';
     $self->{'data'} = $data;
-    $self->{'data'}{'new'} = 1;
+    $self->{'new'} = 1;
 }
 
-sub set_sketch_flag { $_[0]->{'data'}{'sketch'} = 1 }
+sub set_sketch_flag { $_[0]->{'sketch'} = 1 }
 
 
 sub paint {
@@ -68,6 +68,7 @@ sub paint {
     my $colors = $self->{'data'}{'mapping'}{'shades'};
     my $col_factor = int($colors / log($colors) );
     my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * $self->{'data'}{'mapping'}{'scaling'} } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
+    my @gray = map { $_ * $self->{'data'}{'mapping'}{'scaling'} } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
     my $const_a = $self->{'data'}{'form'}{'const_a'};
     my $const_b = $self->{'data'}{'form'}{'const_b'};
     my $var_c = $self->{'data'}{'form'}{'var_c'};
@@ -80,23 +81,23 @@ sub paint {
     my $y_min = $self->{'data'}{'form'}{'pos_y'} - ($y_delta / 2);
 
     my $t0 = Benchmark->new();
-    my @pen = $self->{'data'}{'sketch'}
+    my @pen = $self->{'sketch'}
             ? (map {Wx::Pen->new( $color[$_], $sketch_factor+1, &Wx::wxPENSTYLE_SOLID)} 0 .. $colors)
             : (map {Wx::Pen->new( $color[$_], 1, &Wx::wxPENSTYLE_SOLID)} 0 .. $colors);
-    if ($self->{'data'}{'sketch'}){
+    if ($self->{'sketch'}){
         $x_delta_step *= $sketch_factor;
         $y_delta_step *= $sketch_factor;
-        delete $self->{'data'}{'pixel'};
     }
-    my $pixel = [];
+
+    my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
     my ($x_const, $y_const, $xi, $yi, $x_mem, $y_mem);
 
     my $code = 'my ($x_num, $x_pix) = ($x_min, 0);'."\n";
-    $code .= $self->{'data'}{'sketch'}
+    $code .= $self->{'sketch'}
            ? 'for (0 .. $self->{size}{x} / $sketch_factor){'."\n"
            : 'for (0 .. $self->{size}{x}){'."\n";
     $code .= '  my ($y_num, $y_pix) = ($y_min, $self->{size}{y});'."\n";
-    $code .= $self->{'data'}{'sketch'}
+    $code .= $self->{'sketch'}
            ? '  for (0 .. $self->{size}{y} / $sketch_factor){'."\n"
            : '  for (0 .. $self->{size}{y}){'."\n";
     $code .= ($self->{'data'}{'form'}{'type'} eq 'Julia')
@@ -119,15 +120,19 @@ sub paint {
     $code .=  '     $xi += $x_const;'."\n";
     $code .=  '     $yi += $y_const;'."\n";
     $code .= '      if ((($xi *$xi) + ($yi * $yi)) > $stop){'."\n";
-    $code .= '        $pixel->[$x_pix][$y_pix] = $i;'."\n";
+    $code .= '        $img->SetRGB( $x_pix, $y_pix, $gray[$i], $gray[$i], $gray[$i]);'."\n";
+    $code .= '        $img->SetRGB( $x_pix+1, $y_pix, $gray[$i], $gray[$i], $gray[$i]);'."\n".
+             '        $img->SetRGB( $x_pix,   $y_pix+1, $gray[$i], $gray[$i], $gray[$i]);'."\n".
+             '        $img->SetRGB( $x_pix+1, $y_pix+1, $gray[$i], $gray[$i], $gray[$i]);'."\n" if $self->{'sketch'};
+
     $code .= '        last;'."\n".'      }'."\n".'    }'."\n";
     $code .= '    $y_num += $y_delta_step;'."\n";
-    $code .= $self->{'data'}{'sketch'}
+    $code .= $self->{'sketch'}
            ? '    $y_pix -= $sketch_factor;'."\n"
            : '    $y_pix --;'."\n";
     $code .= '  }'."\n";
     $code .= '  $x_num += $x_delta_step;'."\n";
-    $code .= $self->{'data'}{'sketch'}
+    $code .= $self->{'sketch'}
            ? '  $x_pix += $sketch_factor;'."\n"
            : '  $x_pix ++;'."\n";
     $code .= '}'."\n";
@@ -135,27 +140,14 @@ sub paint {
     eval $code; # say $code;
     die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
-
     say "compute:",timestr(timediff(Benchmark->new, $t0));
-    my $pen_index = -1;
     $t0 = Benchmark->new();
-    for my $x (0 .. $self->{'size'}{'x'}){
-        for (0 .. $self->{'size'}{'y'}){
-            next unless defined $pixel->[$x][$_];
-            unless ($pen_index == $pixel->[$x][$_]){
-                $pen_index = $pixel->[$x][$_];
-                $dc->SetPen( $pen[$pen_index] );
-            }
-            $dc->DrawPoint( $x, $_ );
-            #$dc->DrawRectangle( $x, $_, 1, 1 );
-        }
-    }
-    say "draw:",timestr(timediff(Benchmark->new, $t0));
-    $self->{'data'}{'pixel'} = $pixel;
 
+    $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
+    $self->{'image'} = $img unless $self->{'sketch'};
 
-    delete $self->{'data'}{'new'};
-    delete $self->{'data'}{'sketch'};
+    delete $self->{'new'};
+    delete $self->{'sketch'};
     $dc;
 }
 
@@ -183,6 +175,7 @@ sub save_bmp_file {
     $height //= $self->GetParent->{'config'}->get_value('image_size');
     $width  //= $self->{'size'}{'x'};
     $height //= $self->{'size'}{'y'};
+    # reuse $self->{'data'}{'image'}
     my $bmp = Wx::Bitmap->new( $width, $height, 24); # bit depth
     my $dc = Wx::MemoryDC->new( );
     $dc->SelectObject( $bmp );

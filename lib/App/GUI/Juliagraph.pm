@@ -31,7 +31,7 @@ __END__
 
 =head1 NAME
 
-App::GUI::Juliagraph - draw art by systems of dynamic equations
+App::GUI::Juliagraph - drawing Mandelbrot and Julia fractals
 
 =head1 SYNOPSIS
 
@@ -65,8 +65,6 @@ INI file for tweaking them later
 
 =back
 
-Please note that quick preview gets only triggered by the pendulum
-controls (section X, Y Z and R).
 
 After first use of the program, a config file I<~/.config/juliagraph> will be
 created in you home directory. You may move it into "Documents" or your
@@ -80,11 +78,11 @@ creating together spiraling pictures :
 
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/examples/wirbel.jpg"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/examples/hose.png"      alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/examples/wirbel_4.png"  alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/examples/df.png"        alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/examples/wolke.png"     alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/dev/examples/wirbel.jpg"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/dev/examples/hose.png"      alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/dev/examples/wirbel_4.png"  alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/dev/examples/df.png"        alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/dev/examples/wolke.png"     alt=""  width="300" height="300">
 </p>
 
 
@@ -116,7 +114,7 @@ changeable dot density and dot size
 =back
 
 
-=head1 Mechanics
+=head1 Maths
 
 The classic Harmonograph is sturdy metal rack which does not move
 while 3 pendula swing independently.

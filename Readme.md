@@ -1,6 +1,6 @@
 ### NAME
 
-    App-GUI-Juliagraph - drawing by dynamic systems of diff equations
+    App-GUI-Juliagraph - drawing Mandelbrot and Julia fractals
 
 ### VERSION
 
@@ -18,7 +18,7 @@
     If you check out sources here, you have to build the package yourself.
     In order to do that you need perl and the module Dist::Zilla.
 
-    cpan install Dist::Zilla   
+    cpan install Dist::Zilla
         or
     cpanm Dist::Zilla
 

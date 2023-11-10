@@ -23,9 +23,12 @@ sub new {
     my $y_lbl     = Wx::StaticText->new($self, -1, 'Y : ' );
     my $zoom_lbl  = Wx::StaticText->new($self, -1, 'Z o o m : ' );
     my $stop_lbl  = Wx::StaticText->new($self, -1, 'S t o p : ' );
-    $exp_lbl->SetToolTip('exponent above iterator variable');
     $const_lbl->SetToolTip('constant value which get added on every iteration');
-    $stop_lbl->SetToolTip('abort iteration when variable is above this boundary');
+    $var_lbl->SetToolTip('linear factor which gets multiplied with variable and added on every iteration');
+    $pos_lbl->SetToolTip('position of visible area');
+    $zoom_lbl->SetToolTip('zoom factor: the larger the more you zoom in');
+    $exp_lbl->SetToolTip('exponent above iterator variable');
+    $stop_lbl->SetToolTip('abort iteration when variable value is above this boundary');
 
     $self->{'type'}     = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1],[-1,-1], ['Julia','Mandelbrot'] );
     $self->{'type'}->SetToolTip("choose fractal type: \njulia uses position as init value of iterator var and constant as such, mandelbrot is vice versa");
@@ -46,7 +49,7 @@ sub new {
     $self->{'exp'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[65, 35], [2, 3, 4]);
     $self->{'exp'}->SetToolTip('exponent above iterator variable');
     $self->{'stop'}   = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [20, 40, 70,100, 400, 1000, 3000, 10000]);
-    $self->{'stop'}->SetToolTip('abort iteration when variable is above this boundary');
+    $self->{'stop'}->SetToolTip('abort iteration when variable value is above this boundary');
 
     $self->{'button_a'}->SetCallBack(sub { $self->{'const_a'}->SetValue( $self->{'const_a'}->GetValue + shift ) });
     $self->{'button_b'}->SetCallBack(sub { $self->{'const_b'}->SetValue( $self->{'const_b'}->GetValue + shift ) });
@@ -181,6 +184,8 @@ sub init {
                        pos_x => 0, pos_y => 0, zoom => 0, stop => 1000 } );
 }
 
+sub zoom_size { 10 ** (-$_[0]->{'zoom'}->GetValue) }
+
 sub get_data {
     my ( $self ) = @_;
     {
@@ -213,8 +218,6 @@ sub set_data {
     1;
 }
 
-sub zoom_size { 10 ** (-$_[0]->{'zoom'}->GetValue) }
-
 sub SetCallBack {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
@@ -231,6 +234,5 @@ sub RestoreCallBack {
     $self->{'callback'} = $self->{'pause'};
     delete $self->{'pause'};
 }
-
 
 1;
