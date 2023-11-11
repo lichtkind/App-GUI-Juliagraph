@@ -166,7 +166,7 @@ sub new {
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
     $self->{'btn'}{'draw'}->SetFocus;
-    my $size = [1100, 805];
+    my $size = [1100, 810];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);

@@ -18,7 +18,7 @@ my $default = {
     last_settings => [],
     tips => 1,
     color_set => {
-        grey => ['#FFF', '#BBB', '#888', '#444','#000' ],
+        grey => ['#FFF', '#DDD', '#BBB', '#999', '#777','#555', '#333', '#111' ],
         basic => ['#FFF', '#F00', '#0F0', '#00F','#000' ],
     },
     color => {

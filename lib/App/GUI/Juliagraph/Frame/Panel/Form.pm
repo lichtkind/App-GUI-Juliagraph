@@ -47,7 +47,7 @@ sub new {
     $self->{'button_x'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
     $self->{'button_y'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
     $self->{'button_zoom'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
-    $self->{'exp'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[75, 35], [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16]);
+    $self->{'exp'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[75, 35], [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
     $self->{'exp'}->SetToolTip('exponent above iterator variable');
     $self->{'stop_value'}   = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [20, 40, 70, 100, 200, 500, 1000, 2000, 5000, 10000]);
     $self->{'stop_value'}->SetToolTip('abort iteration when variable value is above this boundary');

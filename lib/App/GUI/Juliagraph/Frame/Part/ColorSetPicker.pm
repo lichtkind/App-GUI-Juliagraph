@@ -19,6 +19,7 @@ sub new {
     $self->{'sets'} = { %$color_sets };
     $self->{'set_names'} = [ sort keys %{$self->{'sets'}} ];
     $self->{'set_index'} = 1;
+    $self->{'set_size'} = 8;
 
     my $btnw = 50; my $btnh = 20;# button width and height
     $self->{'select'} = Wx::ComboBox->new( $self, -1, $self->current_set_name, [-1,-1], [170, -1], $self->{'set_names'});
@@ -29,7 +30,7 @@ sub new {
     $self->{'save'} = Wx::Button->new( $self, -1, 'Save',    [-1,-1], [$btnw, $btnh] );
     $self->{'new'}  = Wx::Button->new( $self, -1, 'New',     [-1,-1], [$btnw, $btnh] );
 
-    $self->{'display'}[$_] = App::GUI::Juliagraph::Widget::ColorDisplay->new( $self, 16, 8, $_, $default_color ) for 0 .. 8;
+    $self->{'display'}[$_] = App::GUI::Juliagraph::Widget::ColorDisplay->new( $self, 16, 8, $_, $default_color ) for 0 .. $self->{'set_size'}-1;
 
     $self->{'select'}->SetToolTip("select color set in list directly");
     $self->{'<'}->SetToolTip("go to previous color set name in list");
@@ -85,7 +86,7 @@ sub new {
 
     my $row2 = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $row2->AddSpacer( 10 );
-    $row2->Add( $self->{'display'}[$_], 0, $all_attr, 5 ) for 0 .. 8;
+    $row2->Add( $self->{'display'}[$_], 0, $all_attr, 5 ) for 0 .. $self->{'set_size'}-1;
     $row2->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
@@ -119,7 +120,7 @@ sub update_display {
     my $set_length = @{ $self->{'sets'}{$set_name} };
     $self->{'set_content'} = [ map { color( $self->{'sets'}{$set_name}[ $_ ] ) }  0 .. $set_length - 1 ];
     $self->{'set_content'}[$_] = color( $default_color ) for $set_length .. 8;
-    $self->{'display'}[$_]->set_color( $self->{'set_content'}[ $_ ]->rgb_hash ) for 0 .. 8;
+    $self->{'display'}[$_]->set_color( $self->{'set_content'}[ $_ ]->rgb_hash ) for 0 .. $self->{'set_size'}-1;
 }
 
 

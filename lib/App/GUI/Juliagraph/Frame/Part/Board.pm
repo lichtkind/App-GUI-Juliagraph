@@ -90,7 +90,7 @@ sub paint {
     }
 
     my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
-    my ($x_const, $y_const, $xi, $yi, $x_mem, $y_mem, $r, $g, $b);
+    my ($x_const, $y_const, $x, $y, $x_old, $y_old, $r, $g, $b);
 
     my $code = 'my ($x_num, $x_pix) = ($x_min, 0);'."\n";
     $code .= $self->{'sketch'}
@@ -101,45 +101,26 @@ sub paint {
            ? '  for (0 .. $self->{size}{y} / $sketch_factor){'."\n"
            : '  for (0 .. $self->{size}{y}){'."\n";
     $code .= ($self->{'data'}{'form'}{'type'} eq 'Julia')
-           ? '    ($xi, $yi) = ($x_num, $y_num);'."\n".
+           ? '    ($x, $y) = ($x_num, $y_num);'."\n".
              '    ($x_const, $y_const) = ($const_a, $const_b);'."\n"
-           : '    ($xi, $yi) = ($const_a, $const_b);'."\n".
+           : '    ($x, $y) = ($const_a, $const_b);'."\n".
              '    ($x_const, $y_const) = ($x_num, $y_num);'."\n";
     $code .= '    for my $i (0 .. $colors){'."\n";
-    $code .= '      $x_mem = $xi;'."\n" if $var_c;
-    $code .= '      $y_mem = $yi;'."\n" if $var_d;
-    $code .= '      ($xi, $yi) = (($xi * $xi) - ($yi * $yi), (2 * $xi * $yi));'."\n" unless $self->{'data'}{'form'}{'exp'} %  2;
-    $code .= '      ($xi, $yi) = (($xi * $xi) - ($yi * $yi), (2 * $xi * $yi));'."\n" unless $self->{'data'}{'form'}{'exp'} %  4;
-    $code .= '      ($xi, $yi) = (($xi * $xi) - ($yi * $yi), (2 * $xi * $yi));'."\n" unless $self->{'data'}{'form'}{'exp'} %  8;
-    $code .= '      ($xi, $yi) = (($xi * $xi) - ($yi * $yi), (2 * $xi * $yi));'."\n" unless $self->{'data'}{'form'}{'exp'} % 16;
-    $code .= '      ($xi, $yi) = ( ($xi * $xi * $xi) - (3 * $xi * $yi * $yi),'.
-                             ' (3 * $xi * $xi * $yi) - ($yi * $yi * $yi) );'."\n"    unless $self->{'data'}{'form'}{'exp'} %  3;
-    $code .= '      ($xi, $yi) = ( ($xi * $xi * $xi) - (3 * $xi * $yi * $yi),'.
-                             ' (3 * $xi * $xi * $yi) - ($yi * $yi * $yi) );'."\n"    unless $self->{'data'}{'form'}{'exp'} %  9;
-    $code .= '      ($xi, $yi) = ( ($xi * $xi * $xi * $xi * $xi) - (10 * $xi * $xi * $xi * $yi * $yi) + (  5 * $xi * $yi * $yi * $yi * $yi),'.
-                       '       (5 * $xi * $xi * $xi * $xi * $yi) - (10 * $xi * $xi * $yi * $yi * $yi) +       ($yi * $yi * $yi * $yi * $yi));'."\n"
-                                                                                     unless $self->{'data'}{'form'}{'exp'} %  5;
-    $code .= '      ($xi, $yi) = ( ($xi * $xi * $xi * $xi * $xi * $xi * $xi) '.
-                           '- (21 * $xi * $xi * $xi * $xi * $xi * $yi * $yi) '.
-                           '+ (35 * $xi * $xi * $xi * $yi * $yi * $yi * $yi) '.
-                           '- ( 7 * $xi * $yi * $yi * $yi * $yi * $yi * $yi),'.
-                           '  ( 7 * $xi * $xi * $xi * $xi * $xi * $xi * $yi) '.
-                           '- (35 * $xi * $xi * $xi * $xi * $yi * $yi * $yi) '.
-                           '+ (21 * $xi * $xi * $yi * $yi * $yi * $yi * $yi) '.
-                           '- (     $yi * $yi * $yi * $yi * $yi * $yi * $yi) );'."\n" unless $self->{'data'}{'form'}{'exp'} %  7;
-    $code .= '      $xi += $x_mem * $var_c;'."\n" if $var_c;
-    $code .= '      $yi += $y_mem * $var_d;'."\n" if $var_d;
-    $code .= '      $xi += $x_const;'."\n";
-    $code .= '      $yi += $y_const;'."\n";
-
-    $code .= '      if ((($xi *$xi) + ($yi * $yi)) > $stop){'."\n" if $self->{'data'}{'form'}{'stop_metric'} eq '|var|';
-    $code .= '      if (abs($xi) > $stop){'."\n"                   if $self->{'data'}{'form'}{'stop_metric'} eq '|x|';
-    $code .= '      if (abs($yi) > $stop){'."\n"                   if $self->{'data'}{'form'}{'stop_metric'} eq '|y|';
-    $code .= '      if (abs($xi+$yi) > $stop){'."\n"               if $self->{'data'}{'form'}{'stop_metric'} eq '|x+y|';
-    $code .= '      if (abs($xi)+abs($yi) > $stop){'."\n"          if $self->{'data'}{'form'}{'stop_metric'} eq '|x|+|y|';
-    $code .= '      if ($xi + $yi > $stop){'."\n"                  if $self->{'data'}{'form'}{'stop_metric'} eq 'x+y';
-    $code .= '      if ($xi * $yi > $stop){'."\n"                  if $self->{'data'}{'form'}{'stop_metric'} eq 'x*y';
-    $code .= '      if (abs($xi * $yi) > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq '|x*y|';
+    $code .= '      $x_old = $x;'."\n";
+    $code .= '      $y_old = $y;'."\n";
+    $code .= '      ($x, $y) = (($x * $x_old) - ($y * $y_old), ($x * $y_old) + ($x_old * $y));'."\n" for 2 .. $self->{'data'}{'form'}{'exp'};
+    $code .= '      $x += $x_old * $var_c;'."\n" if $var_c;
+    $code .= '      $y += $y_old * $var_d;'."\n" if $var_d;
+    $code .= '      $x += $x_const;'."\n";
+    $code .= '      $y += $y_const;'."\n";
+    $code .= '      if ((($x*$x) + ($y*$y)) > $stop){'."\n" if $self->{'data'}{'form'}{'stop_metric'} eq '|var|';
+    $code .= '      if (abs($x) > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq '|x|';
+    $code .= '      if (abs($y) > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq '|y|';
+    $code .= '      if (abs($x + $y) > $stop){'."\n"        if $self->{'data'}{'form'}{'stop_metric'} eq '|x+y|';
+    $code .= '      if (abs($x) + abs($y) > $stop){'."\n"   if $self->{'data'}{'form'}{'stop_metric'} eq '|x|+|y|';
+    $code .= '      if ($x + $y > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq 'x+y';
+    $code .= '      if ($x * $y > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq 'x*y';
+    $code .= '      if (abs($x * $y) > $stop){'."\n"        if $self->{'data'}{'form'}{'stop_metric'} eq '|x*y|';
     $code .= '        ($r, $g, $b) = ($gray[$i], $gray[$i], $gray[$i]);'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix,   $r, $g, $b);'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, $r, $g, $b);'."\n".
@@ -147,8 +128,6 @@ sub paint {
              '        $img->SetRGB( $x_pix+1, $y_pix+1, $r, $g, $b);'."\n".
              '        $img->SetRGB( $x_pix+1, $y_pix+2, $r, $g, $b);'."\n".
              '        $img->SetRGB( $x_pix+2, $y_pix+1, $r, $g, $b);'."\n" if $self->{'sketch'};
-
-
     $code .= '        last;'."\n".'      }'."\n".'    }'."\n";
     $code .= '    $y_num += $y_delta_step;'."\n";
     $code .= $self->{'sketch'}
