@@ -51,7 +51,7 @@ sub new {
     $self->{'exp'}->SetToolTip('exponent above iterator variable');
     $self->{'stop_value'}   = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [20, 40, 70, 100, 200, 500, 1000, 2000, 5000, 10000]);
     $self->{'stop_value'}->SetToolTip('abort iteration when variable value is above this boundary');
-    $self->{'stop_metric'}   = Wx::ComboBox->new( $self, -1, '|var|', [-1,-1],[95, -1], ['|var|', '|x|+|y|', '|x|', '|y|', '|x+y|', 'x+y', 'x*y', '|x*y|']);
+    $self->{'stop_metric'}   = Wx::ComboBox->new( $self, -1, '|var|', [-1,-1],[95, -1], ['|var|', '|x|+|y|', '|x|', '|y|', '|x+y|', 'x+y', 'x-y', 'y-x', 'x*y', '|x*y|']);
 
     $self->{'button_a'}->SetCallBack(sub { $self->{'const_a'}->SetValue( $self->{'const_a'}->GetValue + shift ) });
     $self->{'button_b'}->SetCallBack(sub { $self->{'const_b'}->SetValue( $self->{'const_b'}->GetValue + shift ) });
@@ -199,13 +199,13 @@ sub get_data {
     my ( $self ) = @_;
     {
         type    => $self->{'type'}->GetString( $self->{'type'}->GetSelection ),
-        const_a => $self->{'const_a'}->GetValue,
-        const_b => $self->{'const_b'}->GetValue,
-        var_c   => $self->{'var_c'}->GetValue,
-        var_d   => $self->{'var_d'}->GetValue,
-        pos_x   => $self->{'pos_x'}->GetValue,
-        pos_y   => $self->{'pos_y'}->GetValue,
-        zoom    => $self->{'zoom'}->GetValue,
+        const_a => $self->{'const_a'}->GetValue ? $self->{'const_a'}->GetValue : 0,
+        const_b => $self->{'const_b'}->GetValue ? $self->{'const_b'}->GetValue : 0,
+        var_c   => $self->{'var_c'}->GetValue ? $self->{'var_c'}->GetValue : 0,
+        var_d   => $self->{'var_d'}->GetValue ? $self->{'var_d'}->GetValue : 0,
+        pos_x   => $self->{'pos_x'}->GetValue ? $self->{'pos_x'}->GetValue : 0,
+        pos_y   => $self->{'pos_y'}->GetValue ? $self->{'pos_y'}->GetValue : 0,
+        zoom    => $self->{'zoom'}->GetValue ? $self->{'zoom'}->GetValue : 0,
         exp     => $self->{'exp'}->GetStringSelection,
         stop_value  => $self->{'stop_value'}->GetStringSelection,
         stop_metric => $self->{'stop_metric'}->GetStringSelection,

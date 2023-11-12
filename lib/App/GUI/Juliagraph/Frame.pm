@@ -190,7 +190,6 @@ sub update_recent_settings_menu {
         Wx::Event::EVT_MENU( $self, $Recent_ID++, sub { $self->open_setting_file( $path ) });
     }
     $self->{'setting_menu'}->Insert( 2, $set_menu_ID, '&Recent', $self->{'recent_menu'}, 'recently saved settings' );
-
 }
 
 sub init {

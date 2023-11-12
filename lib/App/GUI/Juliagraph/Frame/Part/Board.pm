@@ -6,6 +6,8 @@ package App::GUI::Juliagraph::Frame::Part::Board;
 use base qw/Wx::Panel/;
 my $TAU = 6.283185307;
 
+use constant SKETCH_FACTOR => 4;
+
 use Graphics::Toolkit::Color;
 use Benchmark;
 
@@ -61,8 +63,6 @@ sub paint {
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
 
-    my $sketch_factor = 4;
-
     my $zoom_size = 4 * (10** (-$self->{'data'}{'form'}{'zoom'}));
     my $stop = $self->{'data'}{'form'}{'stop_value'};
     my $colors = $self->{'data'}{'mapping'}{'shades'};
@@ -81,12 +81,10 @@ sub paint {
     my $y_min = $self->{'data'}{'form'}{'pos_y'} - ($y_delta / 2);
 
     my $t0 = Benchmark->new();
-    my @pen = $self->{'sketch'}
-            ? (map {Wx::Pen->new( $color[$_], $sketch_factor+1, &Wx::wxPENSTYLE_SOLID)} 0 .. $colors)
-            : (map {Wx::Pen->new( $color[$_], 1, &Wx::wxPENSTYLE_SOLID)} 0 .. $colors);
+
     if ($self->{'sketch'}){
-        $x_delta_step *= $sketch_factor;
-        $y_delta_step *= $sketch_factor;
+        $x_delta_step *= SKETCH_FACTOR;
+        $y_delta_step *= SKETCH_FACTOR;
     }
 
     my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
@@ -94,11 +92,11 @@ sub paint {
 
     my $code = 'my ($x_num, $x_pix) = ($x_min, 0);'."\n";
     $code .= $self->{'sketch'}
-           ? 'for (0 .. $self->{size}{x} / $sketch_factor){'."\n"
+           ? 'for (0 .. $self->{size}{x} / SKETCH_FACTOR){'."\n"
            : 'for (0 .. $self->{size}{x}){'."\n";
     $code .= '  my ($y_num, $y_pix) = ($y_min, $self->{size}{y});'."\n";
     $code .= $self->{'sketch'}
-           ? '  for (0 .. $self->{size}{y} / $sketch_factor){'."\n"
+           ? '  for (0 .. $self->{size}{y} / SKETCH_FACTOR){'."\n"
            : '  for (0 .. $self->{size}{y}){'."\n";
     $code .= ($self->{'data'}{'form'}{'type'} eq 'Julia')
            ? '    ($x, $y) = ($x_num, $y_num);'."\n".
@@ -121,6 +119,8 @@ sub paint {
     $code .= '      if ($x + $y > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq 'x+y';
     $code .= '      if ($x * $y > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq 'x*y';
     $code .= '      if (abs($x * $y) > $stop){'."\n"        if $self->{'data'}{'form'}{'stop_metric'} eq '|x*y|';
+    $code .= '      if ($x - $y > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq 'x-y';
+    $code .= '      if ($y - $x > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq 'y-x';
     $code .= '        ($r, $g, $b) = ($gray[$i], $gray[$i], $gray[$i]);'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix,   $r, $g, $b);'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, $r, $g, $b);'."\n".
@@ -131,12 +131,12 @@ sub paint {
     $code .= '        last;'."\n".'      }'."\n".'    }'."\n";
     $code .= '    $y_num += $y_delta_step;'."\n";
     $code .= $self->{'sketch'}
-           ? '    $y_pix -= $sketch_factor;'."\n"
+           ? '    $y_pix -= SKETCH_FACTOR;'."\n"
            : '    $y_pix --;'."\n";
     $code .= '  }'."\n";
     $code .= '  $x_num += $x_delta_step;'."\n";
     $code .= $self->{'sketch'}
-           ? '  $x_pix += $sketch_factor;'."\n"
+           ? '  $x_pix += SKETCH_FACTOR;'."\n"
            : '  $x_pix ++;'."\n";
     $code .= '}'."\n";
 
@@ -191,93 +191,3 @@ sub save_bmp_file {
 1;
 
 __END__
-
-  my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * $self->{'data'}{'mapping'}{'scaling'} } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
-    my @gray = map {$_.$_.$_} map { chr($_ * $self->{'data'}{'mapping'}{'scaling'}) } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
-    my $const_a = $self->{'data'}{'form'}{'const_a'};
-    my $const_b = $self->{'data'}{'form'}{'const_b'};
-    my $var_c = $self->{'data'}{'form'}{'var_c'};
-    my $var_d = $self->{'data'}{'form'}{'var_d'};
-    my $x_delta = $zoom_size;
-    my $x_delta_step = $x_delta / $self->{'size'}{'x'};
-    my $x_min = $self->{'data'}{'form'}{'pos_x'} - ($x_delta / 2);
-    my $y_delta = $zoom_size;
-    my $y_delta_step = $y_delta / $self->{'size'}{'y'};
-    my $y_min = $self->{'data'}{'form'}{'pos_y'} - ($y_delta / 2);
-
-    my $t0 = Benchmark->new();
-    my @pen = $self->{'sketch'}
-            ? (map {Wx::Pen->new( $color[$_], $sketch_factor+1, &Wx::wxPENSTYLE_SOLID)} 0 .. $colors)
-            : (map {Wx::Pen->new( $color[$_], 1, &Wx::wxPENSTYLE_SOLID)} 0 .. $colors);
-    if ($self->{'sketch'}){
-        $x_delta_step *= $sketch_factor;
-        $y_delta_step *= $sketch_factor;
-    }
-
-    my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
-    my $img_data = '';
-    my ($x_const, $y_const, $xi, $yi, $x_mem, $y_mem, $r, $g, $b);
-    my $data_row_length = $self->{'size'}{'y'} * 3;
-
-    my $code = 'my ($y_num, $y_pix) = ($y_min, $self->{size}{y});'."\n";
-    $code .= $self->{'sketch'}
-           ? 'for (0 .. int($self->{size}{y} / $sketch_factor)-1){'."\n"
-           : 'for (0 .. $self->{size}{y}-1){'."\n";
-    $code .= '  my ($x_num, $x_pix) = ($x_min, 0);'."\n";
-    $code .= $self->{'sketch'}
-           ? '  for (0 .. int($self->{size}{x} / $sketch_factor)-1){'."\n"
-           : '  for (0 .. $self->{size}{x}-1){'."\n";
-    $code .= ($self->{'data'}{'form'}{'type'} eq 'Julia')
-           ? '    ($xi, $yi) = ($x_num, $y_num);'."\n".
-             '    ($x_const, $y_const) = ($const_a, $const_b);'."\n"
-           : '    ($xi, $yi) = ($const_a, $const_b);'."\n".
-             '    ($x_const, $y_const) = ($x_num, $y_num);'."\n";
-    $code .= '    for my $i (0 .. $colors){'."\n";
-    $code .= '      $x_mem = $xi;'."\n" if $var_c;
-    $code .= '      $y_mem = $yi;'."\n" if $var_d;
-    $code .= '      ($xi, $yi) = (($xi * $xi) - ($yi * $yi), (2 * $xi * $yi));'."\n" unless $self->{'data'}{'form'}{'exp'} % 2;
-    $code .= '      ($xi, $yi) = (($xi * $xi) - ($yi * $yi), (2 * $xi * $yi));'."\n" unless $self->{'data'}{'form'}{'exp'} % 4;
-    $code .= '      ($xi, $yi) = (($xi * $xi) - ($yi * $yi), (2 * $xi * $yi));'."\n" unless $self->{'data'}{'form'}{'exp'} % 8;
-    $code .= '      ($xi, $yi) = ( ($xi * $xi * $xi) - (3 * $xi * $yi * $yi),'.
-                             ' (3 * $xi * $xi * $yi) - ($yi * $yi * $yi) );'."\n"    unless $self->{'data'}{'form'}{'exp'} % 3;
-    $code .= '      ($xi, $yi) = ( ($xi * $xi * $xi) - (3 * $xi * $yi * $yi),'.
-                             ' (3 * $xi * $xi * $yi) - ($yi * $yi * $yi) );'."\n"    unless $self->{'data'}{'form'}{'exp'} % 9;
-    $code .= '      $xi += $x_mem * $var_c;'."\n" if $var_c;
-    $code .= '      $yi += $y_mem * $var_d;'."\n" if $var_d;
-    $code .= '      $xi += $x_const;'."\n";
-    $code .= '      $yi += $y_const;'."\n";
-    $code .= '      if ((($xi *$xi) + ($yi * $yi)) > $stop){'."\n" if $self->{'data'}{'form'}{'stop_metric'} eq '|var|';
-    $code .= '      if (abs($xi) > $stop){'."\n"                   if $self->{'data'}{'form'}{'stop_metric'} eq '|x|';
-    $code .= '      if (abs($yi) > $stop){'."\n"                   if $self->{'data'}{'form'}{'stop_metric'} eq '|y|';
-    $code .= '      if (abs($xi+$yi) > $stop){'."\n"               if $self->{'data'}{'form'}{'stop_metric'} eq '|x+y|';
-    $code .= '      if (abs($xi)+abs($yi) > $stop){'."\n"          if $self->{'data'}{'form'}{'stop_metric'} eq '|x|+|y|';
-    $code .= '      if ($xi + $yi > $stop){'."\n"                  if $self->{'data'}{'form'}{'stop_metric'} eq 'x+y';
-    $code .= '      if ($xi * $yi > $stop){'."\n"                  if $self->{'data'}{'form'}{'stop_metric'} eq 'x*y';
-    $code .= '      if (abs($xi * $yi) > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq '|x*y|';
-    $code .= '        $img_data .= $gray[$i];'."\n";
-    if ($self->{'sketch'}){
-        $code .= '        $img_data .= $gray[$i];'."\n" for 2 .. $sketch_factor;
-    }
-    $code .= '        last;'."\n".'      }'."\n";
-    $code .= '    }'."\n";
-    $code .= '    $x_num += $x_delta_step;'."\n";
-    $code .= $self->{'sketch'}
-           ? '    $x_pix += $sketch_factor;'."\n"
-           : '    $x_pix ++;'."\n";
-    $code .= '  }'."\n";
-    if ($self->{'sketch'}) {
-        $code .= '  my $last_row = substr($img_data, -$data_row_length);'."\n";
-        $code .= '  $img_data .= $last_row;'."\n" for 2 .. $sketch_factor;
-    }
-    $code .= '  $y_num += $y_delta_step;'."\n";
-    $code .= $self->{'sketch'}
-           ? '  $y_pix -= $sketch_factor;'."\n"
-           : '  $y_pix --;'."\n";
-    $code .= '}'."\n";
-
-    eval $code; # say $code;
-    die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
-
-    say "compute:",timestr(timediff(Benchmark->new, $t0));
-    $t0 = Benchmark->new();
-    $img->SetData( $img_data );
