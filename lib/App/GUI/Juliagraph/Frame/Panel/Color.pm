@@ -160,14 +160,14 @@ sub select_state {
     $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash, 'silent' );
 }
 
-sub init { $_[0]->set_settings( { 0 => '#FFFFFF', 1 => '#DDDDDD', 2 => '#BBBBBB', 3 => '#999999',
-                                  4 => '#777777', 5 => '#555555', 6 => '#333333', 7 => '#111111',
-                                  dynamics => 1, delta_S => 0, delta_L => 0 } ) }
+sub init { $_[0]->set_settings( { 0 => '#FFFFFF', 1 => '#F9E595', 2 => '#A1680C', 3 => '#B63A3E',
+                                  4 => '#777777', 5 => '#555555', 6 => '#333333', 7 => '#111111', 8 => '#000000',
+                                  dynamics => 0, delta_S => 0, delta_L => 0 } )
+}
 
 sub get_settings {
     my ($self) = @_;
     my $data = {
-        objects => $self->{'state_colors'},
         dynamics => $self->{'dynamics'}->GetValue,
         delta_S => $self->{'Sdelta'}->GetValue,
         delta_L => $self->{'Ldelta'}->GetValue,

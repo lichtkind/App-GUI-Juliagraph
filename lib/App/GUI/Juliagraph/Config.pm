@@ -19,6 +19,7 @@ my $default = {
     tips => 1,
     color_set => {
         grey => ['#FFF', '#DDD', '#BBB', '#999', '#777','#555', '#333', '#111' ],
+        sunset => ['#FFF', '#F9E595', '#A1680C', '#B63A3E' ],
         basic => ['#FFF', '#F00', '#0F0', '#00F','#000' ],
     },
     color => {

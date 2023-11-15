@@ -4,12 +4,12 @@ use Wx;
 
 package App::GUI::Juliagraph::Frame::Part::Board;
 use base qw/Wx::Panel/;
-my $TAU = 6.283185307;
+
+use Graphics::Toolkit::Color qw/color/;
+use Benchmark;
 
 use constant SKETCH_FACTOR => 4;
 
-use Graphics::Toolkit::Color;
-use Benchmark;
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
@@ -63,10 +63,39 @@ sub paint {
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
 
-    my $colors = $self->{'data'}{'mapping'}{'shades'};
-    # my $col_factor = int($colors / log($colors) );
-    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * $self->{'data'}{'mapping'}{'grouping'} } 0 .. $colors;
-    my @gray = map { $_ * $self->{'data'}{'mapping'}{'grouping'} } 0 .. $colors;
+    my $colors = $self->{'data'}{'mapping'}{'select'} * $self->{'data'}{'mapping'}{'gradient'}
+               * $self->{'data'}{'mapping'}{'repeat'} * $self->{'data'}{'mapping'}{'group'};
+    my @color = ();
+    if ($self->{'data'}{'mapping'}{'color'}){
+        $self->{'data'}{'color'}{ $self->{'data'}{'mapping'}{'select'} } = $self->{'data'}{'color'}{ 8 };
+        for my $i (0 .. $self->{'data'}{'mapping'}{'select'} - 1) {
+            my @gradient = map {[$_->values]}
+                           color($self->{'data'}{'color'}{$i})->gradient( to => $self->{'data'}{'color'}{$i+1},
+                                                                          steps => $self->{'data'}{'mapping'}{'gradient'}+2,
+                                                                          dynamic => $self->{'data'}{'mapping'}{'dynamics'},
+                                                                        );
+            pop @gradient;
+            @color = (@color, @gradient);
+        }
+    } else {
+            @color = map {[$_->values]} color('white')->gradient( to => 'black',
+                                                               steps => $self->{'data'}{'mapping'}{'select'} * $self->{'data'}{'mapping'}{'gradient'},
+                                                             dynamic => $self->{'data'}{'mapping'}{'dynamics'},
+                                                                );
+    }
+    if ($self->{'data'}{'mapping'}{'group'} > 1){
+        my @temp = @color;
+        @color = ();
+        for my $color (@temp){
+            push @color, $color for 1 .. $self->{'data'}{'mapping'}{'group'};
+        }
+    }
+    if ($self->{'data'}{'mapping'}{'repeat'} > 1){
+        my @temp = @color;
+        @color = (@color, @temp) for 2 .. $self->{'data'}{'mapping'}{'repeat'};
+    }
+    $color[$_] = [0,0,0] for $colors .. $self->{'data'}{'form'}{'stop_value'}; # background color
+
 
     my $zoom_size = 4 * (10** (-$self->{'data'}{'form'}{'zoom'}));
     my $stop = $self->{'data'}{'form'}{'stop_value'};
@@ -93,7 +122,7 @@ sub paint {
 
     my $t0 = Benchmark->new();
     my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
-    my ($x_const, $y_const, $x, $y, $x_old, $y_old, $r, $g, $b);
+    my ($x_const, $y_const, $x, $y, $x_old, $y_old);
 
     my $code = 'my ($x_num, $x_pix) = ($x_min, 0);'."\n";
     $code .= $self->{'sketch'}
@@ -117,13 +146,12 @@ sub paint {
     $code .= '      $x += $x_const;'."\n";
     $code .= '      $y += $y_const;'."\n";
     $code .= '      if ('.$metric->{$self->{'data'}{'form'}{'stop_metric'}}.' > $stop){'."\n";
-    $code .= '        ($r, $g, $b) = ($gray[$i], $gray[$i], $gray[$i]);'."\n";
-    $code .= '        $img->SetRGB( $x_pix,   $y_pix,   $r, $g, $b);'."\n";
-    $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, $r, $g, $b);'."\n".
-             '        $img->SetRGB( $x_pix+1, $y_pix,   $r, $g, $b);'."\n".
-             '        $img->SetRGB( $x_pix+1, $y_pix+1, $r, $g, $b);'."\n".
-             '        $img->SetRGB( $x_pix+1, $y_pix+2, $r, $g, $b);'."\n".
-             '        $img->SetRGB( $x_pix+2, $y_pix+1, $r, $g, $b);'."\n" if $self->{'sketch'};
+    $code .= '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i]});'."\n";
+    $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, @{$color[$i]});'."\n".
+             '        $img->SetRGB( $x_pix+1, $y_pix,   @{$color[$i]});'."\n".
+             '        $img->SetRGB( $x_pix+1, $y_pix+1, @{$color[$i]});'."\n".
+             '        $img->SetRGB( $x_pix+1, $y_pix+2, @{$color[$i]});'."\n".
+             '        $img->SetRGB( $x_pix+2, $y_pix+1, @{$color[$i]});'."\n" if $self->{'sketch'};
     $code .= '        last;'."\n".'      }'."\n".'    }'."\n";
     $code .= '    $y_num += $y_delta_step;'."\n";
     $code .= $self->{'sketch'}
