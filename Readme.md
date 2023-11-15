@@ -71,7 +71,7 @@
 
 ### COPYRIGHT
 
-    Copyright(c) 2022 Herbert Breunung,
+    Copyright(c) 2023 Herbert Breunung,
 
     All rights reserved.  This program is free software; you can
     redistribute it and/or modify it under GPL version 3

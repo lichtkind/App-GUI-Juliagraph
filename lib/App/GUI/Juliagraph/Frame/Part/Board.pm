@@ -63,12 +63,13 @@ sub paint {
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
 
+    my $colors = $self->{'data'}{'mapping'}{'shades'};
+    # my $col_factor = int($colors / log($colors) );
+    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * $self->{'data'}{'mapping'}{'grouping'} } 0 .. $colors;
+    my @gray = map { $_ * $self->{'data'}{'mapping'}{'grouping'} } 0 .. $colors;
+
     my $zoom_size = 4 * (10** (-$self->{'data'}{'form'}{'zoom'}));
     my $stop = $self->{'data'}{'form'}{'stop_value'};
-    my $colors = $self->{'data'}{'mapping'}{'shades'};
-    my $col_factor = int($colors / log($colors) );
-    my @color = map {Wx::Colour->new( $_, $_, $_ )} map { $_ * $self->{'data'}{'mapping'}{'scaling'} } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
-    my @gray = map { $_ * $self->{'data'}{'mapping'}{'scaling'} } 0 .. $colors; #map { $_ ? (log($_) * $col_factor) : 0 }
     my $const_a = $self->{'data'}{'form'}{'const_a'};
     my $const_b = $self->{'data'}{'form'}{'const_b'};
     my $var_c = $self->{'data'}{'form'}{'var_c'};
@@ -80,13 +81,17 @@ sub paint {
     my $y_delta_step = $y_delta / $self->{'size'}{'y'};
     my $y_min = $self->{'data'}{'form'}{'pos_y'} - ($y_delta / 2);
 
-    my $t0 = Benchmark->new();
-
+    my $metric = { '|var|' => '($x*$x) + ($y*$y)', '|x|' => 'abs($x)', '|y|' => 'abs($y)',
+                   '|x+y|' => 'abs($x+$y)',    '|x|+|y|' => 'abs($x)+abs($y)', 'x+y' => '$x+$y',
+                    'x*y'  => '$x*$y',           '|x*y|' => 'abs($x*$y)',
+                    'x-y' => '$x-$y', 'y-x' => '$y-$x',
+    };
     if ($self->{'sketch'}){
         $x_delta_step *= SKETCH_FACTOR;
         $y_delta_step *= SKETCH_FACTOR;
     }
 
+    my $t0 = Benchmark->new();
     my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
     my ($x_const, $y_const, $x, $y, $x_old, $y_old, $r, $g, $b);
 
@@ -111,16 +116,7 @@ sub paint {
     $code .= '      $y += $y_old * $var_d;'."\n" if $var_d;
     $code .= '      $x += $x_const;'."\n";
     $code .= '      $y += $y_const;'."\n";
-    $code .= '      if ((($x*$x) + ($y*$y)) > $stop){'."\n" if $self->{'data'}{'form'}{'stop_metric'} eq '|var|';
-    $code .= '      if (abs($x) > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq '|x|';
-    $code .= '      if (abs($y) > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq '|y|';
-    $code .= '      if (abs($x + $y) > $stop){'."\n"        if $self->{'data'}{'form'}{'stop_metric'} eq '|x+y|';
-    $code .= '      if (abs($x) + abs($y) > $stop){'."\n"   if $self->{'data'}{'form'}{'stop_metric'} eq '|x|+|y|';
-    $code .= '      if ($x + $y > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq 'x+y';
-    $code .= '      if ($x * $y > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq 'x*y';
-    $code .= '      if (abs($x * $y) > $stop){'."\n"        if $self->{'data'}{'form'}{'stop_metric'} eq '|x*y|';
-    $code .= '      if ($x - $y > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq 'x-y';
-    $code .= '      if ($y - $x > $stop){'."\n"             if $self->{'data'}{'form'}{'stop_metric'} eq 'y-x';
+    $code .= '      if ('.$metric->{$self->{'data'}{'form'}{'stop_metric'}}.' > $stop){'."\n";
     $code .= '        ($r, $g, $b) = ($gray[$i], $gray[$i], $gray[$i]);'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix,   $r, $g, $b);'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, $r, $g, $b);'."\n".

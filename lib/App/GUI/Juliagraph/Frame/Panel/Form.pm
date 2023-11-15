@@ -24,12 +24,13 @@ sub new {
     my $zoom_lbl  = Wx::StaticText->new($self, -1, 'Z o o m : ' );
     my $stop_lbl  = Wx::StaticText->new($self, -1, 'S t o p : ' );
     my $metric_lbl  = Wx::StaticText->new($self, -1, 'M e t r i c : ' );
+    $exp_lbl->SetToolTip('exponent above iterator variable z_n+1 = z_n**exp + c');
     $const_lbl->SetToolTip('constant value which get added on every iteration');
     $var_lbl->SetToolTip('linear factor which gets multiplied with variable and added on every iteration');
     $pos_lbl->SetToolTip('position of visible area');
     $zoom_lbl->SetToolTip('zoom factor: the larger the more you zoom in');
-    $exp_lbl->SetToolTip('exponent above iterator variable');
     $stop_lbl->SetToolTip('abort iteration when variable value is above this boundary');
+    $metric_lbl->SetToolTip('metric of iteration variable against which stop value is compared (|var| = z.re**2 + z.i**2)');
 
     $self->{'type'}     = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1],[-1,-1], ['Julia','Mandelbrot'] );
     $self->{'type'}->SetToolTip("choose fractal type: \njulia uses position as init value of iterator var and constant as such, mandelbrot is vice versa");
