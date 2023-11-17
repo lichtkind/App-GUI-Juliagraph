@@ -22,15 +22,15 @@ sub new {
     $self->{'set_back'}  = sub {};
     $self->{'config'}     = $config;
     $self->{'rule_square_size'} = 36;
-    $self->{'last_state'} = 8;   # max pos
-    $self->{'state_count'} = 8;  # nr of currently used
+    $self->{'last_state'} = 7;   # max pos
+    $self->{'state_count'} = 7;  # nr of currently used
     $self->{'current_state'} = 1;
 
     $self->{'state_colors'}        = [ color('white')->gradient( to => 'black', steps => $self->{'state_count'}) ];
     $self->{'state_colors'}[$_]    = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
-    $self->{'state_marker'}        = [ map { App::GUI::Juliagraph::Widget::PositionMarker->new($self, $self->{'rule_square_size'}, 20, $_-1, '', $default_color_def) } 1 .. $self->{'last_state'} ];
+    $self->{'state_marker'}        = [ map { App::GUI::Juliagraph::Widget::PositionMarker->new($self, $self->{'rule_square_size'}, 20, $_, '', $default_color_def) } 0 .. $self->{'last_state'} ];
     $self->{'state_pic'}[$_]       = App::GUI::Juliagraph::Widget::ColorDisplay->new($self, $self->{'rule_square_size'}, $self->{'rule_square_size'}, $_, $self->{'state_colors'}[$_]->values(as => 'hash'))
-        for 0 .. $self->{'last_state'}-1;
+        for 0 .. $self->{'last_state'};
     $self->{'color_set_store_lbl'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'color_set_f_lbl'}     = Wx::StaticText->new($self, -1, 'Colors Set Function' );
     $self->{'state_color_lbl'}     = Wx::StaticText->new($self, -1, 'Currently Used State Colors' );
@@ -58,14 +58,14 @@ sub new {
     $self->{'browser'}  = App::GUI::Juliagraph::Frame::Part::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
     $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
 
-    Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'}-1;
-    Wx::Event::EVT_LEFT_DOWN( $self->{'state_marker'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'}-1;
-    $self->{'state_pic'}[$_-1]->SetToolTip("select state color $_ to change (marked by arrow - crosses mark currently passive colors)") for 1 .. $self->{'last_state'};
-    $self->{'state_marker'}[$_-1]->SetToolTip("select state color $_ to change (marked by arrow - crosses mark currently passive colors)") for 1 .. $self->{'last_state'};
+    Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
+    Wx::Event::EVT_LEFT_DOWN( $self->{'state_marker'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
+    $self->{'state_pic'}[$_-1]->SetToolTip("select state color $_ to change (marked by arrow - crosses mark currently passive colors)") for 1 .. $self->{'last_state'}+1;
+    $self->{'state_marker'}[$_-1]->SetToolTip("select state color $_ to change (marked by arrow - crosses mark currently passive colors)") for 1 .. $self->{'last_state'}+1;
 
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {
-        $self->set_all_colors( color('white')->gradient( to => 'black', steps => $self->{'state_count'}, dynamic => $self->{'dynamics'}->GetValue) );
+        $self->set_all_colors( color('white')->gradient( to => 'black', steps => $self->{'state_count'}+1, dynamic => $self->{'dynamics'}->GetValue) );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gradient'}, sub {
         my @c = $self->get_all_colors;
@@ -98,7 +98,7 @@ sub new {
     my $state_sizer = $self->{'state_sizer'} = Wx::BoxSizer->new(&Wx::wxHORIZONTAL); # $self->{'plate_sizer'}->Clear(1);
     $state_sizer->AddSpacer( 7 );
     my @option_sizer;
-    for my $state (0 .. $self->{'last_state'}-1){
+    for my $state (0 .. $self->{'last_state'}){
         $option_sizer[$state] = Wx::BoxSizer->new( &Wx::wxVERTICAL );
         $option_sizer[$state]->AddSpacer( 2 );
         $option_sizer[$state]->Add( $self->{'state_pic'}[$state], 0, $all_attr, 6);
@@ -139,8 +139,8 @@ sub new {
 sub set_state_count {
     my ($self, $count) = @_;
     $self->{'state_count'} = $count;
-    $self->{'state_marker'}[$_]->set_state('passive') for 0 .. $self->{'state_count'} - 1;
-    $self->{'state_marker'}[$_]->set_state('disabled') for $self->{'state_count'} .. $self->{'last_state'}-1;
+    $self->{'state_marker'}[$_]->set_state('passive') for 0 .. $self->{'state_count'};
+    $self->{'state_marker'}[$_]->set_state('disabled') for $self->{'state_count'}+1 .. $self->{'last_state'};
     $self->{'state_marker'}[ $self->{'current_state'} ]->set_state('active');
 }
 
@@ -153,7 +153,7 @@ sub SetCallBack {
 sub select_state {
     my ($self, $state) = @_;
     $state //= $self->{'current_state'};
-    my $old_marker_state = ($self->{'current_state'} < $self->{'state_count'}) ? 'passive' : 'disabled';
+    my $old_marker_state = ($self->{'current_state'} <= $self->{'state_count'}) ? 'passive' : 'disabled';
     $self->{'state_marker'}[$self->{'current_state'}]->set_state( $old_marker_state );
     $self->{'state_marker'}[ $state ]->set_state('active');
     $self->{'current_state'} = $state;
@@ -172,7 +172,7 @@ sub get_settings {
         delta_S => $self->{'Sdelta'}->GetValue,
         delta_L => $self->{'Ldelta'}->GetValue,
     };
-    $data->{$_} = $self->{'state_colors'}[$_]->values(as => 'string') for 0 .. $self->{'last_state'};
+    $data->{$_} = $self->{'state_colors'}[$_]->values(as => 'string') for 0 .. $self->{'last_state'}+1;
     $data;
 }
 
@@ -185,7 +185,7 @@ sub set_settings {
     for (0 .. $self->{'last_state'}){
         $data->{$_} = $default_color_def unless exists $data->{$_};
     }
-    $self->{'state_colors'}[$_] = color( $data->{$_} ) for 0 .. $self->{'last_state'};
+    $self->{'state_colors'}[$_] = color( $data->{$_} ) for 0 .. $self->{'last_state'}+1;
     $self->set_all_colors( @{$self->{'state_colors'}} );
     $self->{'objects'} = $self->{'state_colors'};
 }
@@ -210,8 +210,8 @@ sub set_all_colors {
     map { return if ref $_ ne 'Graphics::Toolkit::Color' } @color;
     $self->{'state_colors'}[$_] = $color[$_] for 0 .. $#color;
     # $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
-    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'}-1;
-    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->values ) for 0 .. $self->{'last_state'}-1;
+    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
+    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->values ) for 0 .. $self->{'last_state'};
     $self->select_state;
     # $self->{'call_back'}->( 'color' ); # update whole app
 }
@@ -223,6 +223,8 @@ sub update_config {
     my ($self) = @_;
     $self->{'config'}->set_value('color',     $self->{'picker'}->get_config);
     $self->{'config'}->set_value('color_set', $self->{'setpicker'}->get_config);
+    #~ $self->{'config'}->set_value('color_current',
+        #~ [ map {$self->{'state_colors'}[$_]->values(as => 'string')} 0 .. $self->{'last_state'} ]);
 }
 
 

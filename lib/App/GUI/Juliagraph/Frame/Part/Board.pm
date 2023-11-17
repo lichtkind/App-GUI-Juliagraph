@@ -63,7 +63,7 @@ sub paint {
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
 
-    my $colors = $self->{'data'}{'mapping'}{'select'} * $self->{'data'}{'mapping'}{'gradient'}
+    my $colors = $self->{'data'}{'mapping'}{'select'} * ($self->{'data'}{'mapping'}{'gradient'}+1)
                * $self->{'data'}{'mapping'}{'repeat'} * $self->{'data'}{'mapping'}{'group'};
     my @color = ();
     if ($self->{'data'}{'mapping'}{'color'}){

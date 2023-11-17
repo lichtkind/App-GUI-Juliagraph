@@ -75,182 +75,169 @@ You may also change it manually or deleted it to reset defaults.
 
 Mandelbrot and Julia fractals are just mathematical diagrams,
 showing you how iterating the equation C<z_n+1 = z_n ** 2 + C> behaves
-in the complex plane.
-
+in the complex plane. The pixel coordinates are taken as input and the
+count of iterations it took to exceed the stop/breakout value decide which
+color this point will painted in. In Mandelbrot fraktals the coordinates
+will be put into the variable C and in Julia fraktals into the variable
+z_0 (initial values of the iterator variable).
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/first.png"         alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/first_detail.jpg"  alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/neat.png"          alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/julia.png"         alt=""  width="300" height="300">
 </p>
 
 
-This is a cybernetic recreation of an Prof. Blackburns invention with
-several enhancements:
+This program has additional capabilities/options:
 
 =over 4
 
 =item *
 
-third pendulum can rotate
+choosable exponent above z_n
 
 =item *
 
-pendula can oscillate at none integer frequencies
+a linear part of the term making the formula into: C<z_n+1 = z_n ** EXP + L * z_n + C>
 
 =item *
 
-changeable amplitude and damping
+choosable stop value and stop metrik
 
 =item *
 
-changeable dot density and dot size
+free selection of colors
 
 =item *
 
-3 types of color changes with changeable speed and polynomial dynamics
+many option to map th colors onto iteration result values
 
 =back
 
-
-=head1 Maths
-
-The classic Harmonograph is sturdy metal rack which does not move
-while 3 pendula swing independently.
-Let us call the first pendulum X, because it only moves along the x-axis
-(left to right and back).
-In the same fashion the second (Y) only moves up and down.
-When both are connected to a pen, we get a combination of both movements.
-As long as X and Y swing at the same speed, the result is a diagonal line.
-Because when X goes right Y goes up and vice versa.
-But if we start one pendulum at the center and the other
-at the upmost position we get a circle.
-In other words: we added an offset of 90 degrees to Y (or X).
-Our third pendulum Z moves the paper and does exactly
-the already described circular movement without rotating around its center.
-If both circular movements (of X, Y and Z) are concurrent -
-the pen just stays at one point, If both are countercurrent -
-we get a circle. Interesting things start to happen, if we alter
-the speed of of X, Y and Z. Than famous harmonic pattern appear.
-And for even more complex drawings I added R, which is not really
-a pendulum, but an additional rotary movement of Z around its center.
-The pendula out of metal do of course fizzle out with time,
-which you can see in the drawing, in a spiraling movement toward the center.
-We emulate this with a damping factor.
 
 
 =head1 GUI
 
-=for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI.png"    alt=""  width="630" height="410">
-</p>
 
-The general layout of the program has three parts,
-which flow from the position of the drawing board.
-
-=over 4
-
-=item 1
-
-In the left upper corner is the drawing board - showing the result of the Harmonograph.
-
-=item 2
-
-The whole right half of the window contains the settings, which guide the drawing operation.
-These are divided into two tabs - roughly devided in form and decoration.
-
-=item 3
-
-The lower left side contains buttons which are a few commands,
-but most are in the main menu.
-
-=back
+The general layout is very simple: the settings are on the right and
+the drawing board is left. The settings are devided into several tabs.
 
 Please mind the tool tips - short help texts which appear if the mouse
-stands still over a button or slider. Also helpful are messages in the
-status bar at the bottom: on left regarding images and right about settings.
-When holting the Alt key you can see which Alt + letter combinations
-trigger which button.
+stands still over a button. Also helpful are messages in the status bar
+at the bottom that appear while browsing the menu.
 
 
-=head2 Pendulum
-
-The content of the first tab are the settings that define the properties
-of the 4 pendula (X, Y, Z and R), which determine the shape of the drawing.
-X moves the pen left - right (on the x axis), Y moves up - down,
-Z does a circling movement, R is a rotation ( around Z's axis).
-Each pendulum has the same three rows of controls.
-
-The first row contains from left to ritght an on/off switch.
-After that follows the pendulum's amplitude and damping.
-Amplitudes define the size of the drawing and damping just means:
-the drawings will spiral toward the center with time (line length).
-
-The second row lets you dial in the speed (frequency).
-For instance 2 means that the pendulum swings back and fourt twice
-as fast. The second combo control adds decimals for more complex drawings.
-
-The third row has switches to invert (1/x) frequency or direction
-and can also change the starting position.
-2 = 180 degree offset, 4 = 90 degree (both can be combined).
-The last slider adds an additional fine tuned offset between 0 and 90 degree.
-
-
-=head2 Line
+=head2 Form
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI2.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/img/POD/Form.png"    alt=""  width="630" height="410">
 </p>
 
-The second tab on the right side has knobs that set the properties of the pen.
-First how many rotations will be drawn. Secondly the distance between dots.
-Greater distances, together with color changes, help to clearify
-muddled up drawings. The third selector sets the dot size in pixel.
+The content of the first tab are the settings that define the shape of the fractal.
+It also allows you to scroll and zoom into your region of interest.
+
+This page contains 7 complex widgets, which need a little more explanation.
+They stretch over a row and have three parts. The leftmost part is a text
+field which you could change directly. In cases when pasting or typing
+special values into it they may be used, but in most other cases it is
+more convenient to use the other parts, since every value change will triger
+a new sketch drawing, which is not always fast. On the rightmost is a slider,
+which allows you to dial in a value. This value will be added or subtracted
+from the value in the textbox if you push the buttons in the middle part.
+
+The first row on this page has two widgets. The first is a radiobox that lets
+you choose between Julia and Mandelbrot fraktals. The other is a combobox
+that lets you set the exponent in the iteration formula (see L</DESCRIPTION>).
+These are the settings that change the shape most fundamentally.
+
+Next are the inputs for the values A and B these are the real and imaginary
+parts of a complex constant. In a Julia fraktal this constant is added
+after each iteration. In the Mandelbrot fractal it will provide the starting
+value of Z.
+
+Below that are the values C and D, which are real and imaginary parts of
+a factor. During each iteration the product of this factor with the iterator
+variable z will be added like the constant.
+
+Below further are the X and Y coordinates of the center of the image.
+Changing these will move the visible part of the fractal left/right
+or down/up. Please note that these values are relative and if you zoom
+in, they will be become smaller.
+
+The second lowest input is the zoom factor.
+It is greater the more you zoom in.
+
+The lowest row contains two choices. First the stop value. If the iteration
+variable has a greater value than it - the iteration stops. Because we
+compare an complex iteration value with a real number, we compute the
+absolute value of the iteration variable (displayed by C<|var|>). But
+other metrics are possible. Just keep in mind x is the real part of the
+iteration variable Z and y is the imaginary part.
+
+=head2 Color Mapping
+
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/img/POD/Mapping.png"    alt=""  width="630" height="410">
+</p>
+
+On the second tab we have three rows of settings which determine how the
+selected colors will be applied.
+
+The first checkbox selects if we use the colors at all or just the
+default grey gradient. The combobox in the first row let you pick how many
+of the selected colors will be used. If you choose for instance 6, the
+first six (1..6) are used to display the fraktal, plus of course black
+as the background color for the area where the iteration variable never
+reaches the stop value. Never in this context mean the maximum available
+amunt of iterations as computed by the product of the numbers shown on
+this page except I<Dynamics>.
+
+The second row defines how we proceed from one color to the next.
+If for instance I<Gradient> set to 5, there will be 5 additional colors
+between each of the selected colors, to make the transition smoother.
+If I<Dynamics> is set to 0, this transition will be linear. Otherwise
+it will tilt into one or the other side.
+
+The third row has two more settings which will influence the shape
+of these gradients. By setting the I<Grouping> value higher than 1
+you stretch the gradient by a factor. If for instance I<Grouping> is set
+to three, three neighbouring areas which normally would have three different
+colors will have the same color and just the next, forth area will contain
+the next color. The I<Repeat> value also multiplies the number of used
+colors. As soon the painter runs out of colors it will take the first again
+and repeat this process the ordered amount of times.
 
 =head2 Colors
 
-Below that on the second tab are the options for colorization and this
-has in itself three parts.
-Topmost are the settings for the color change, which is set on default to "no".
-In that case only the start (upper) color (below the color change section)
-will be used, and not the end (target) color (which is even below that).
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/img/POD/Color.png"    alt=""  width="630" height="410">
+</p>
 
-Both colors can be changed via controls for the red, green and blue value
-(see labels "R", "G" and "B" ) or hue, saturation and lightness (HSL).
-The result can be seen in the color monitor at the center of a color browser.
+This page helps you to select the color that will be used to paint the fractal.
+Only the background color is currently fixed to black. You can see these
+colors in the middle section named "Currently Used State Colors".
+If you click on one - it will be selected which you can see from_rgbthe
+arrow below the selected color.
 
-An one time or alternating gradient between both colors with different
-dynamics (first in second row) can be employed. Circular gradients travel
-around the rainbow through a complement color with saturation and lightness
-of the target settings.
-Steps size refers always to how maby circles are draw before the color changes.
+In the section below named "Selected State Color" you see the values
+in RGB space and HSL space of the selected color. Yan change any of them
+directly by slider, typing them in or pressing the plus and minus buttons.
 
-The third part on the second tab grants you access to the color store of
-config file .harmonograph. There you can store your favorite colors under
-a name and reload or delet them later. The upper row is for interactions
-with the sart color and the lower with the end color.
+The "Color Store" in the last row allows you store the selected color for
+later reuse (just press save and type in its name). With the combo box or
+the arrow buttons you can also select there a color and press load to
+chhose it as the new currently selected color. Press there Del(ete) to
+delete the visible color from the store.
 
-=head2 Commands
+Analogues to that there is a color set store in the first row of this
+page which enables you to store and load all currently used colors at once.
+Please use there the I<New> button to create a new color set to avoid
+overwriting the currently seleced color set, when pressing I<Save>.
 
-In the lower left corner are two rows of command buttons. All other
-commands are in the menu.
-
-The upper row has only one button for making a full drawing. This
-might take some time if line length and dot density are high.
-For that reason - changes on the pendulum settings (first tab)
-(and only these) produce an immediate drawing to better understand the
-nature of your changes. In the interest of time, these are only sketches.
-For a full drawing that takes all settings into account you need to push
-the "Draw" button or Press Ctrl + D.
-
-The second row has commands to quickly save many files.
-First push "Dir" to select the directory and then type directly into the
-secand text fiel the file base name - the index is found automatically.
-Every time you now press "Save" a file with the current image is saved
-under the path: dir + base name + index + ending (set in config).
-The index automatically autoincrements when changing the settings.
-Push "INI" next to it to also save the settings of the current state
-under same file name, but with the ending .ini.
+The second row contains some color set functions to create gradients between
+the leftmost and selected color or to compute colors that are complementary
+to the selected.
 
 
 =head2 Menu
@@ -271,7 +258,7 @@ The submenu above onle set the preferred format, which is the format
 of serial images and the first wild card in dialog. Above that is another
 submenu for setting the image size.
 
-The third menu has some dialogs with documentation and additional information.
+The third menu has only a dialog with some additional information of version numbers and our homepage.
 
 
 =head1 AUTHOR
