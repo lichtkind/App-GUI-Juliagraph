@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Juliagraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.01';
+our $VERSION = '0.4';
 
 use base qw/Wx::App/;
 use App::GUI::Juliagraph::Frame;
@@ -39,20 +39,20 @@ App::GUI::Juliagraph - drawing Mandelbrot and Julia fractals
 
 =item 1.
 
-start the program (Juliagraph)
+read this POD
 
 =item 2.
 
-read this POD or check dialogs from help menu
+start the program (juliagraph)
 
 =item 3.
 
 move knobs and observe how preview sketch reacts til you got
-an interesting configuration
+an interesting image
 
 =item 4.
 
-push "Draw" (below drawing board or Ctrl+D) to produce full image
+push "Draw" (below drawing board or Ctrl+D) to produce full resolution image
 
 =item 5.
 
@@ -65,24 +65,23 @@ INI file for tweaking them later
 
 =back
 
-
 After first use of the program, a config file I<~/.config/juliagraph> will be
-created in you home directory. You may move it into "Documents" or your
-local directory you start the app from.
+created in you home directory. It contains mainly
+stored colors, color sets and dirs where to load and store setting files.
+You may also change it manually or deleted it to reset defaults.
 
 
 =head1 DESCRIPTION
 
-An Harmonograph is an apparatus with several connected pendula,
-creating together spiraling pictures :
+Mandelbrot and Julia fractals are just mathematical diagrams,
+showing you how iterating the equation C<z_n+1 = z_n ** 2 + C> behaves
+in the complex plane.
 
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/dev/examples/wirbel.jpg"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/dev/examples/hose.png"      alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/dev/examples/wirbel_4.png"  alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/dev/examples/df.png"        alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/dev/examples/wolke.png"     alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/first.png"         alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/first_detail.jpg"  alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/julia.png"         alt=""  width="300" height="300">
 </p>
 
 

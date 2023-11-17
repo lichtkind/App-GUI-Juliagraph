@@ -49,34 +49,15 @@ sub new {
     $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'draw'}->SetToolTip('redraw the harmonographic image');
 
-
     Wx::Event::EVT_BUTTON(     $self, $self->{'btn'}{'draw'},  sub { draw( $self ) });
     Wx::Event::EVT_CLOSE(      $self, sub {
-        #~ my $all_color = $self->{'config'}->get_value('color');
-        #~ my $startc = $self->{'color'}{'startio'}->get_data;
-        #~ my $endc = $self->{'color'}{'endio'}->get_data;
-        #~ for my $name (keys %$endc){
-            #~ $all_color->{$name} = $endc->{$name} unless exists $all_color->{$name};
-        #~ }
-        #~ for my $name (keys %$startc){
-            #~ $all_color->{$name} = $startc->{$name} unless exists $all_color->{$name};
-        #~ }
-        #~ for my $name (keys %$all_color){
-            #~ if (exists $startc->{$name} and exists $endc->{$name}){
-                #~ $endc->{$name} = $startc->{$name} if $startc->{$name}[0] != $all_color->{$name}[0]
-                                                  #~ or $startc->{$name}[1] != $all_color->{$name}[1]
-                                                  #~ or $startc->{$name}[2] != $all_color->{$name}[2];
-                #~ $all_color->{$name} = $endc->{$name};
-            #~ } else { delete $all_color->{$name} }
-        #~ }
+        $self->{'tab'}{'color'}->update_config();
         $self->{'config'}->save();
         $self->{'dialog'}{about}->Destroy();
         $_[1]->Skip(1)
     });
 
-
     # GUI layout assembly
-
     my $settings_menu = $self->{'setting_menu'} = Wx::Menu->new();
     $settings_menu->Append( 11100, "&Init\tCtrl+I", "put all settings to default" );
     $settings_menu->Append( 11200, "&Open\tCtrl+O", "load settings from an INI file" );
@@ -292,7 +273,7 @@ sub save_image_dialog {
               Wx::MessageDialog->new( $self, "\n\nReally overwrite the image file?", 'Confirmation Question',
                                       &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
     my $file_ending = lc substr ($path, -4);
-    unless ($dialog->GetFilterIndex == 3 and # filter set to all endings
+    unless ($dialog->GetFilterIndex == 3 or # filter set to all endings
             ($file_ending eq '.jpg' or $file_ending eq '.png' or $file_ending eq '.svg')){
             $path .= '.' . $wildcard_ending[$dialog->GetFilterIndex];
     }

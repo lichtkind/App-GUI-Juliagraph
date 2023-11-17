@@ -26,18 +26,18 @@ sub new {
     $self->{'state_count'} = 8;  # nr of currently used
     $self->{'current_state'} = 1;
 
-    $self->{'state_colors'}       = [ color('white')->gradient( to => 'black', steps => $self->{'state_count'}) ];
-    $self->{'state_colors'}[$_]   = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
-    $self->{'state_marker'}       = [ map { App::GUI::Juliagraph::Widget::PositionMarker->new($self, $self->{'rule_square_size'}, 20, $_-1, '', $default_color_def) } 1 .. $self->{'last_state'} ];
-    $self->{'state_pic'}[$_]      = App::GUI::Juliagraph::Widget::ColorDisplay->new($self, $self->{'rule_square_size'}, $self->{'rule_square_size'}, $_, $self->{'state_colors'}[$_]->values(as => 'hash'))
+    $self->{'state_colors'}        = [ color('white')->gradient( to => 'black', steps => $self->{'state_count'}) ];
+    $self->{'state_colors'}[$_]    = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
+    $self->{'state_marker'}        = [ map { App::GUI::Juliagraph::Widget::PositionMarker->new($self, $self->{'rule_square_size'}, 20, $_-1, '', $default_color_def) } 1 .. $self->{'last_state'} ];
+    $self->{'state_pic'}[$_]       = App::GUI::Juliagraph::Widget::ColorDisplay->new($self, $self->{'rule_square_size'}, $self->{'rule_square_size'}, $_, $self->{'state_colors'}[$_]->values(as => 'hash'))
         for 0 .. $self->{'last_state'}-1;
     $self->{'color_set_store_lbl'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
-    $self->{'color_set_f_lbl'}   = Wx::StaticText->new($self, -1, 'Colors Set Function' );
-    $self->{'state_color_lbl'}   = Wx::StaticText->new($self, -1, 'Currently Used State Colors' );
-    $self->{'curr_color_lbl'}    = Wx::StaticText->new($self, -1, 'Selected State Color' );
-    $self->{'color_store_lbl'}   = Wx::StaticText->new($self, -1, 'Color Store' );
+    $self->{'color_set_f_lbl'}     = Wx::StaticText->new($self, -1, 'Colors Set Function' );
+    $self->{'state_color_lbl'}     = Wx::StaticText->new($self, -1, 'Currently Used State Colors' );
+    $self->{'curr_color_lbl'}      = Wx::StaticText->new($self, -1, 'Selected State Color' );
+    $self->{'color_store_lbl'}     = Wx::StaticText->new($self, -1, 'Color Store' );
 
-    $self->{'dynamics'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[75, -1], [ 0.33, 0.5, 0.66, 0.83, 1, 1.2, 1.5, 2, 3 ]);
+    $self->{'dynamics'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[75, -1], [ -10 ..10 ]);
     $self->{'Sdelta'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
     $self->{'Ldelta'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
 
