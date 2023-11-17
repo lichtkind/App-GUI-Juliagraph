@@ -15,7 +15,7 @@ sub new {
     my $license = Wx::StaticText->new( $self, -1, ' licensed under the GPL 3 ', @lblb_pro);
     my $libs    = Wx::StaticText->new( $self, -1, 'using Perl '.$^V.'    and    WxPerl '. $Wx::VERSION . '  ( '. &Wx::wxVERSION_STRING. ' )', @lblb_pro);
     my $url_lbl = Wx::StaticText->new( $self, -1, 'latest version on CPAN:   ', @lblb_pro);
-    my $url     = Wx::HyperlinkCtrl->new( $self, -1, 'metacpan.org/dist/App::GUI::Juliagraph', 'https://metacpan.org/dist/App::GUI::Juliagraph' );
+    my $url     = Wx::HyperlinkCtrl->new( $self, -1, 'metacpan.org/dist/App::GUI::Juliagraph', 'https://metacpan.org/dist/App-GUI-Juliagraph' );
 
     $self->{'close'} = Wx::Button->new( $self, -1, '&Close', [10,10], [-1, -1] );
     Wx::Event::EVT_BUTTON( $self, $self->{'close'},  sub { $self->EndModal(1) });

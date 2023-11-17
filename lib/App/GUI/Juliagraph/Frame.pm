@@ -41,7 +41,7 @@ sub new {
 
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/form mapping/;
 
-    $self->{'progress'}            = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 5, { red => 20, green => 20, blue => 110 });
+    $self->{'progress'}            = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 5, [20, 20, 110]);
     $self->{'board'}               = App::GUI::Juliagraph::Frame::Part::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}     = App::GUI::Juliagraph::Dialog::About->new();
 
@@ -184,9 +184,9 @@ sub init {
 sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
-    $self->{'progress'}->set_percentage( 0 );
-#    $self->{'progress'}->set_color( $self->{'color'}{'start'}->get_data );
+    $self->{'progress'}->reset;
     $self->{'board'}->set_data( $self->get_data );
+    $self->{'board'}->set_draw_flag( );
     $self->{'board'}->Refresh;
     $self->SetStatusText( "done complete drawing", 0 );
 }
@@ -194,7 +194,7 @@ sub draw {
 sub sketch {
     my ($self) = @_;
     $self->SetStatusText( "sketching a preview .....", 0 );
-    $self->{'progress'}->set_percentage( 0 );
+    $self->{'progress'}->reset;
     $self->{'board'}->set_data( $self->get_data );
     $self->{'board'}->set_sketch_flag( );
     $self->{'board'}->Refresh;
@@ -236,6 +236,7 @@ sub open_settings_dialog {
         my $dir = App::GUI::Juliagraph::Settings::extract_dir( $path );
         $self->{'config'}->set_value('save_dir', $dir);
         $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 1);
+        $self->show_settings_save( 1 );
     }
 }
 
@@ -293,6 +294,7 @@ sub open_setting_file {
         $self->SetStatusText( "loaded settings from ".$file, 1) ;
         $self->{'config'}->add_setting_file( $file );
         $self->update_recent_settings_menu();
+        $self->show_settings_save(1);
         $data;
     } else {
          $self->SetStatusText( $data, 0);
@@ -307,6 +309,7 @@ sub write_settings_file {
         $self->{'config'}->add_setting_file( $file );
         $self->update_recent_settings_menu();
         $self->SetStatusText( "saved settings into file $file", 1 );
+        $self->show_settings_save(1);
     }
 }
 
@@ -315,6 +318,7 @@ sub write_image {
     $self->{'board'}->save_file( $file );
     $file = App::GUI::Juliagraph::Settings::shrink_path( $file );
     $self->SetStatusText( "saved image under: $file", 0 );
+    $self->show_settings_save(1);
 }
 
 1;

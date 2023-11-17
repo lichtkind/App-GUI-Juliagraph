@@ -2,7 +2,6 @@ use v5.12;
 use warnings;
 use Wx;
 use utf8;
-use FindBin;
 
 package App::GUI::Juliagraph;
 our $NAME = __PACKAGE__;

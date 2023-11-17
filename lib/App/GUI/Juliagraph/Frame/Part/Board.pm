@@ -30,7 +30,7 @@ sub new {
         $self->{'x_pos'} = $self->GetPosition->x;
         $self->{'y_pos'} = $self->GetPosition->y;
 
-        if (exists $self->{'new'}) {
+        if (exists $self->{'flag'}{'new'}) {
             $self->{'dc'}->Blit (0, 0, $self->{'size'}{'x'} + $self->{'x_pos'},
                                        $self->{'size'}{'y'} + $self->{'y_pos'} + $self->{'menu_size'},
                                        $self->paint( Wx::PaintDC->new( $self ), $self->{'size'}{'x'}, $self->{'size'}{'y'} ), 0, 0);
@@ -51,10 +51,12 @@ sub set_data {
     my( $self, $data ) = @_;
     return unless ref $data eq 'HASH';
     $self->{'data'} = $data;
-    $self->{'new'} = 1;
+    $self->{'flag'}{'new'} = 1;
 }
 
-sub set_sketch_flag { $_[0]->{'sketch'} = 1 }
+sub set_sketch_flag { $_[0]->{'flag'}{'sketch'} = 1 }
+sub set_draw_flag   { $_[0]->{'flag'}{'draw'} = 1 }
+
 
 
 sub paint {
@@ -63,6 +65,7 @@ sub paint {
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
 
+    my $progress = $self->GetParent->{'progress'};
     my $colors = $self->{'data'}{'mapping'}{'select'} * ($self->{'data'}{'mapping'}{'gradient'}+1)
                * $self->{'data'}{'mapping'}{'repeat'} * $self->{'data'}{'mapping'}{'group'};
     my @color = ();
@@ -94,6 +97,12 @@ sub paint {
         my @temp = @color;
         @color = (@color, @temp) for 2 .. $self->{'data'}{'mapping'}{'repeat'};
     }
+    if ($self->{'flag'}{'draw'}){
+        $progress->add_percentage( $_ / $#color * 100, $color[$_] ) for 0 .. $#color;
+        $progress->full;
+    }
+
+
     $color[$_] = [0,0,0] for $colors .. $self->{'data'}{'form'}{'stop_value'}; # background color
 
 
@@ -115,7 +124,7 @@ sub paint {
                     'x*y'  => '$x*$y',           '|x*y|' => 'abs($x*$y)',
                     'x-y' => '$x-$y', 'y-x' => '$y-$x',
     };
-    if ($self->{'sketch'}){
+    if ($self->{'flag'}{'sketch'}){
         $x_delta_step *= SKETCH_FACTOR;
         $y_delta_step *= SKETCH_FACTOR;
     }
@@ -125,11 +134,11 @@ sub paint {
     my ($x_const, $y_const, $x, $y, $x_old, $y_old);
 
     my $code = 'my ($x_num, $x_pix) = ($x_min, 0);'."\n";
-    $code .= $self->{'sketch'}
+    $code .= $self->{'flag'}{'sketch'}
            ? 'for (0 .. $self->{size}{x} / SKETCH_FACTOR){'."\n"
            : 'for (0 .. $self->{size}{x}){'."\n";
     $code .= '  my ($y_num, $y_pix) = ($y_min, $self->{size}{y});'."\n";
-    $code .= $self->{'sketch'}
+    $code .= $self->{'flag'}{'sketch'}
            ? '  for (0 .. $self->{size}{y} / SKETCH_FACTOR){'."\n"
            : '  for (0 .. $self->{size}{y}){'."\n";
     $code .= ($self->{'data'}{'form'}{'type'} eq 'Julia')
@@ -151,15 +160,15 @@ sub paint {
              '        $img->SetRGB( $x_pix+1, $y_pix,   @{$color[$i]});'."\n".
              '        $img->SetRGB( $x_pix+1, $y_pix+1, @{$color[$i]});'."\n".
              '        $img->SetRGB( $x_pix+1, $y_pix+2, @{$color[$i]});'."\n".
-             '        $img->SetRGB( $x_pix+2, $y_pix+1, @{$color[$i]});'."\n" if $self->{'sketch'};
+             '        $img->SetRGB( $x_pix+2, $y_pix+1, @{$color[$i]});'."\n" if $self->{'flag'}{'sketch'};
     $code .= '        last;'."\n".'      }'."\n".'    }'."\n";
     $code .= '    $y_num += $y_delta_step;'."\n";
-    $code .= $self->{'sketch'}
+    $code .= $self->{'flag'}{'sketch'}
            ? '    $y_pix -= SKETCH_FACTOR;'."\n"
            : '    $y_pix --;'."\n";
     $code .= '  }'."\n";
     $code .= '  $x_num += $x_delta_step;'."\n";
-    $code .= $self->{'sketch'}
+    $code .= $self->{'flag'}{'sketch'}
            ? '  $x_pix += SKETCH_FACTOR;'."\n"
            : '  $x_pix ++;'."\n";
     $code .= '}'."\n";
@@ -167,14 +176,13 @@ sub paint {
     eval $code; # say $code;
     die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
-    say "compute:",timestr(timediff(Benchmark->new, $t0));
+    #say "compute:",timestr(timediff(Benchmark->new, $t0));
     $t0 = Benchmark->new();
 
     $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
-    $self->{'image'} = $img unless $self->{'sketch'};
+    $self->{'image'} = $img unless $self->{'flag'}{'sketch'};
 
-    delete $self->{'new'};
-    delete $self->{'sketch'};
+    delete $self->{'flag'};
     $dc;
 }
 

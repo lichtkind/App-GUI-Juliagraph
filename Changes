@@ -1,9 +1,8 @@
-0.4   2023-11-15  lichtkind
+0.4   2023-11-17  lichtkind
 -------
     * = initial release
     * * compute and display julia and mandelbrot sets
         with many exponents and a linear component
     * * zoom and move inside the image arbitrarily
-    * + display color flow in progress bar
-    * ? push color code into module Graphics::Toolkit::Color
+
 
