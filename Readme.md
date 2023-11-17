@@ -4,7 +4,7 @@
 
 ### VERSION
 
-    0.4
+    0.42
 
 [Home on CPAN](https://metacpan.org/pod/App-Juliagraph)
 
@@ -57,11 +57,12 @@
 
 ### PREREQUISITES
 
-    Perl 5.12 including some core Modules.
-    WxPerl 0.9 or higher
+    Perl 5.12 including some core modules
     FindBin 1
     File::Spec 3
     File::HomeDir 1
+    Graphics::Toolkit::Color 1.71
+    WxPerl (Wx) 0.9
 
 
 

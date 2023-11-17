@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Juliagraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.4';
+our $VERSION = '0.42';
 
 use base qw/Wx::App/;
 use App::GUI::Juliagraph::Frame;
@@ -72,19 +72,22 @@ You may also change it manually or deleted it to reset defaults.
 
 =head1 DESCRIPTION
 
-Mandelbrot and Julia fractals are just mathematical diagrams,
-showing you how iterating the equation C<z_n+1 = z_n ** 2 + C> behaves
-in the complex plane. The pixel coordinates are taken as input and the
-count of iterations it took to exceed the stop/breakout value decide which
-color this point will painted in. In Mandelbrot fraktals the coordinates
-will be put into the variable C and in Julia fraktals into the variable
-z_0 (initial values of the iterator variable).
+Mandelbrot (first thee) and Julia fractals (second three following) are
+just mathematical diagrams, showing you how iterating the equation
+C<z_n+1 = z_n ** 2 + C> behaves in the complex plane.
+The pixel coordinates are taken as input and the count of iterations it
+took to exceed the stop/breakout value decide which color this point will
+painted in. In Mandelbrot fraktals the coordinates will be put into the
+variable C and in Julia fraktals into the variable z_0
+(initial values of the iterator variable).
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/first.png"         alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/first_detail.jpg"  alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/neat.png"          alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/main/img/examples/julia.png"         alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/first.png"         alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/first_detail.png"  alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/abeba.png"         alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/julia.png"         alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/set.png"           alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/sonne.png"         alt=""  width="300" height="300">
 </p>
 
 
@@ -119,8 +122,9 @@ many option to map th colors onto iteration result values
 =head1 GUI
 
 
-The general layout is very simple: the settings are on the right and
-the drawing board is left. The settings are devided into several tabs.
+The general layout is very simple: the settings (which define the fractal)
+are on the right and the drawing board is left.
+The settings are devided into several thematic tabs.
 
 Please mind the tool tips - short help texts which appear if the mouse
 stands still over a button. Also helpful are messages in the status bar
@@ -130,7 +134,7 @@ at the bottom that appear while browsing the menu.
 =head2 Form
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/img/POD/Form.png"    alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/POD/Form.png"    alt=""  width="630" height="410">
 </p>
 
 The content of the first tab are the settings that define the shape of the fractal.
@@ -177,7 +181,7 @@ iteration variable Z and y is the imaginary part.
 =head2 Color Mapping
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/img/POD/Mapping.png"    alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/POD/Mapping.png"    alt=""  width="630" height="410">
 </p>
 
 On the second tab we have three rows of settings which determine how the
@@ -210,7 +214,7 @@ and repeat this process the ordered amount of times.
 =head2 Colors
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/img/POD/Color.png"    alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/POD/Color.png"    alt=""  width="630" height="410">
 </p>
 
 This page helps you to select the color that will be used to paint the fractal.
@@ -258,6 +262,14 @@ of serial images and the first wild card in dialog. Above that is another
 submenu for setting the image size.
 
 The third menu has only a dialog with some additional information of version numbers and our homepage.
+
+=head1 SEE ALSO
+
+L<App::GUI::Cellgraph>
+
+L<App::GUI::Harmonograph>
+
+L<App::GUI::Sierpingraph>
 
 
 =head1 AUTHOR

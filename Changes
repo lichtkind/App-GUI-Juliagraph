@@ -1,3 +1,16 @@
+0.42   2023-11-17  lichtkind
+-------
+    * = more fixes
+    * / faster sketch drawing and thus app start
+    * / more color sets
+    * ' more examples
+    * ! link url for images
+
+0.41   2023-11-17  lichtkind
+-------
+    * = POD fix
+    * ! link url for images
+
 0.4   2023-11-17  lichtkind
 -------
     * = initial release

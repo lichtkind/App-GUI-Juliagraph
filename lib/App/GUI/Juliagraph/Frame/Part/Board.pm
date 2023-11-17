@@ -47,16 +47,27 @@ sub new {
     return $self;
 }
 
-sub set_data {
+sub draw {
+    my( $self, $settings ) = @_;
+    return unless $self->set_settings( $settings );
+    $self->{'flag'}{'draw'} = 1;
+    $self->Refresh;
+}
+
+sub sketch {
+    my( $self, $settings ) = @_;
+    return unless $self->set_settings( $settings );
+    $self->{'flag'}{'sketch'} = 1;
+    $self->Refresh;
+}
+
+sub set_settings {
     my( $self, $data ) = @_;
     return unless ref $data eq 'HASH';
+    $self->GetParent->{'progress'}->reset;
     $self->{'data'} = $data;
     $self->{'flag'}{'new'} = 1;
 }
-
-sub set_sketch_flag { $_[0]->{'flag'}{'sketch'} = 1 }
-sub set_draw_flag   { $_[0]->{'flag'}{'draw'} = 1 }
-
 
 
 sub paint {
@@ -127,6 +138,8 @@ sub paint {
     if ($self->{'flag'}{'sketch'}){
         $x_delta_step *= SKETCH_FACTOR;
         $y_delta_step *= SKETCH_FACTOR;
+        $colors = 20 if $colors > 20;
+        $stop = 100 if $stop > 100;
     }
 
     my $t0 = Benchmark->new();
@@ -176,8 +189,7 @@ sub paint {
     eval $code; # say $code;
     die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
-    #say "compute:",timestr(timediff(Benchmark->new, $t0));
-    $t0 = Benchmark->new();
+    say "compute:",timestr(timediff(Benchmark->new, $t0));
 
     $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
     $self->{'image'} = $img unless $self->{'flag'}{'sketch'};

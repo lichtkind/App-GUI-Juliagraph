@@ -45,8 +45,8 @@ sub new {
     #$self->{'substeps'}->SetToolTip('');
 
     Wx::Event::EVT_CHECKBOX( $self, $self->{$_},  sub { $self->{'callback'}->() }) for qw/color/; # smooth
-    Wx::Event::EVT_COMBOBOX( $self, $self->{$_},  sub { $self->{'callback'}->() }) for qw/select repeat group gradient dynamics/; # substeps
-    # Wx::Event::EVT_TEXT(     $self, $self->{$_},  sub { $self->{'callback'}->() }) for qw//;
+    Wx::Event::EVT_COMBOBOX( $self, $self->{$_},  sub { $self->{'callback'}->() }) for qw/repeat group gradient dynamics/; # substeps
+    Wx::Event::EVT_COMBOBOX( $self, $self->{'select'},  sub { $self->{'callback'}->(); $self->GetParent->GetParent->{'tab'}{'color'}->set_state_count( $self->{'select'}->GetStringSelection - 1 ) });
 
     my $item_prop = &Wx::wxALIGN_LEFT|&Wx::wxTOP|&Wx::wxBOTTOM|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW;
     my $std_margin = 10;

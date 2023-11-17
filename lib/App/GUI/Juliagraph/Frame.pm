@@ -184,20 +184,14 @@ sub init {
 sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
-    $self->{'progress'}->reset;
-    $self->{'board'}->set_data( $self->get_data );
-    $self->{'board'}->set_draw_flag( );
-    $self->{'board'}->Refresh;
+    $self->{'board'}->draw( $self->get_data );
     $self->SetStatusText( "done complete drawing", 0 );
 }
 
 sub sketch {
     my ($self) = @_;
     $self->SetStatusText( "sketching a preview .....", 0 );
-    $self->{'progress'}->reset;
-    $self->{'board'}->set_data( $self->get_data );
-    $self->{'board'}->set_sketch_flag( );
-    $self->{'board'}->Refresh;
+    $self->{'board'}->sketch( $self->get_data );
     $self->SetStatusText( "done sketching a preview", 0 );
     $self->show_settings_save(0);
 }
@@ -236,7 +230,6 @@ sub open_settings_dialog {
         my $dir = App::GUI::Juliagraph::Settings::extract_dir( $path );
         $self->{'config'}->set_value('save_dir', $dir);
         $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 1);
-        $self->show_settings_save( 1 );
     }
 }
 
@@ -285,19 +278,19 @@ sub save_image_dialog {
 
 sub open_setting_file {
     my ($self, $file ) = @_;
-    my $data = App::GUI::Juliagraph::Settings::load( $file );
-    if (ref $data) {
-        $self->set_data( $data );
+    my $settings = App::GUI::Juliagraph::Settings::load( $file );
+    if (ref $settings) {
+        $self->set_data( $settings );
         $self->draw;
         my $dir = App::GUI::Juliagraph::Settings::extract_dir( $file );
         $self->{'config'}->set_value('open_dir', $dir);
-        $self->SetStatusText( "loaded settings from ".$file, 1) ;
         $self->{'config'}->add_setting_file( $file );
+        $self->{'tab'}{'color'}->set_state_count( $settings->{'mapping'}{'select'}-1 );
         $self->update_recent_settings_menu();
         $self->show_settings_save(1);
-        $data;
+        $settings;
     } else {
-         $self->SetStatusText( $data, 0);
+         $self->SetStatusText( $settings, 0);
     }
 }
 
