@@ -1,7 +1,8 @@
-0.43   2023-11-17  lichtkind
+0.43   2023-11-20  lichtkind
 -------
     * = fixes yet
     * / more color constants
+    * ' improved example picture in POD
     * ! fixed smoke tests
 
 0.42   2023-11-17  lichtkind
