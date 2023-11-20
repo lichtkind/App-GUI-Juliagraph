@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Juliagraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.42';
+our $VERSION = '0.43';
 
 use base qw/Wx::App/;
 use App::GUI::Juliagraph::Frame;
@@ -84,7 +84,7 @@ variable C and in Julia fraktals into the variable z_0
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/first.png"         alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/first_detail.png"  alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/abeba.png"         alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/dreieck.png"         alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/julia.png"         alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/set.png"           alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/sonne.png"         alt=""  width="300" height="300">
@@ -105,7 +105,7 @@ a linear part of the term making the formula into: C<z_n+1 = z_n ** EXP + L * z_
 
 =item *
 
-choosable stop value and stop metrik
+choosable stop value and stop metric
 
 =item *
 
