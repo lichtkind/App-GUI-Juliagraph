@@ -3,13 +3,10 @@ use warnings;
 use utf8;
 use Wx::AUI;
 
-# julia
-# slow, exp more formula, colors, color mapping
-# optional color smoothing
-
 package App::GUI::Juliagraph::Frame;
 use base qw/Wx::Frame/;
-use App::GUI::Juliagraph::Frame::Panel::Form;
+use App::GUI::Juliagraph::Frame::Panel::Constraints;
+use App::GUI::Juliagraph::Frame::Panel::Equation;
 use App::GUI::Juliagraph::Frame::Panel::Mapping;
 use App::GUI::Juliagraph::Frame::Panel::Color;
 use App::GUI::Juliagraph::Frame::Part::Board;
@@ -23,7 +20,7 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1, $title );
     $self->SetIcon( Wx::GetWxPerlIcon() );
     $self->CreateStatusBar( 2 );
-    $self->SetStatusWidths(2, 800, 100);
+    $self->SetStatusWidths( 2, 600, 500 );
     $self->SetStatusText( "no file loaded", 1 );
     $self->{'config'} = App::GUI::Juliagraph::Config->new();
     $self->{'title'} = $title;
@@ -31,15 +28,17 @@ sub new {
     Wx::InitAllImageHandlers();
 
     # create GUI parts
-    $self->{'tabs'}           = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
-    $self->{'tab'}{'form'}    = App::GUI::Juliagraph::Frame::Panel::Form->new( $self->{'tabs'} );
-    $self->{'tab'}{'mapping'} = App::GUI::Juliagraph::Frame::Panel::Mapping->new( $self->{'tabs'} );
-    $self->{'tab'}{'color'}   = App::GUI::Juliagraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'form'},     'Form Settings');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},  'Color Mapping');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},    'Color Selection');
+    $self->{'tabs'}            = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
+    $self->{'tab'}{'constraints'}  = App::GUI::Juliagraph::Frame::Panel::Constraints->new( $self->{'tabs'} );
+    $self->{'tab'}{'equation'}     = App::GUI::Juliagraph::Frame::Panel::Equation->new( $self->{'tabs'} );
+    $self->{'tab'}{'mapping'}      = App::GUI::Juliagraph::Frame::Panel::Mapping->new( $self->{'tabs'} );
+    $self->{'tab'}{'color'}        = App::GUI::Juliagraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'constraints'},  'Constraints');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'equation'},     'Equation');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},      'Color Mapping');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},        'Color Selection');
 
-    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/form mapping/;
+    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/constraints equation mapping/;
 
     $self->{'progress'}            = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 5, [20, 20, 110]);
     $self->{'board'}               = App::GUI::Juliagraph::Frame::Part::Board->new( $self , 600, 600 );
@@ -147,7 +146,7 @@ sub new {
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
     $self->{'btn'}{'draw'}->SetFocus;
-    my $size = [1100, 810];
+    my $size = [1110, 815];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);
@@ -175,7 +174,7 @@ sub update_recent_settings_menu {
 
 sub init {
     my ($self) = @_;
-    $self->{'tab'}{$_}->init() for qw/form color/;
+    $self->{'tab'}{$_}->init() for qw/constraints equation mapping color/;
     $self->sketch( );
     $self->SetStatusText( "all settings are set to default", 1);
     $self->show_settings_save(1);
@@ -184,32 +183,35 @@ sub init {
 sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
-    $self->{'board'}->draw( $self->get_data );
+    $self->{'board'}->draw( $self->get_settings );
     $self->SetStatusText( "done complete drawing", 0 );
 }
 
 sub sketch {
     my ($self) = @_;
     $self->SetStatusText( "sketching a preview .....", 0 );
-    $self->{'board'}->sketch( $self->get_data );
+    $self->{'board'}->sketch( $self->get_settings );
     $self->SetStatusText( "done sketching a preview", 0 );
     $self->show_settings_save(0);
 }
 
 
-sub get_data {
+sub get_settings {
     my $self = shift;
     {
-        form => $self->{'tab'}{'form'}->get_data,
-        mapping => $self->{'tab'}{'mapping'}->get_data,
-        color => $self->{'tab'}{'color'}->get_settings,
+        constraints => $self->{'tab'}{'constraints'}->get_settings,
+        equation    => $self->{'tab'}{'equation'}->get_settings,
+        mapping     => $self->{'tab'}{'mapping'}->get_settings,
+        color       => $self->{'tab'}{'color'}->get_settings,
     }
+    #~ return {
+        #~ map { $_ => $self->{'tab'}{$_}->get_settings } qw/color/; #constraints equation mapping
+    #~ };
 }
-sub set_data {
+sub set_settings {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH';
-    $self->{'tab'}{$_}->set_data( $data->{$_} ) for qw/form mapping/;
-    $self->{'tab'}{'color'}->set_settings( $data->{'color'} );
+    $self->{'tab'}{$_}->set_settings( $data->{$_} ) for qw/constraints equation mapping color/;
 }
 
 sub show_settings_save {
@@ -280,7 +282,7 @@ sub open_setting_file {
     my ($self, $file ) = @_;
     my $settings = App::GUI::Juliagraph::Settings::load( $file );
     if (ref $settings) {
-        $self->set_data( $settings );
+        $self->set_settings( $settings );
         $self->draw;
         my $dir = App::GUI::Juliagraph::Settings::extract_dir( $file );
         $self->{'config'}->set_value('open_dir', $dir);
@@ -296,7 +298,7 @@ sub open_setting_file {
 
 sub write_settings_file {
     my ($self, $file)  = @_;
-    my $ret = App::GUI::Juliagraph::Settings::write( $file, $self->get_data );
+    my $ret = App::GUI::Juliagraph::Settings::write( $file, $self->get_settings );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
     else     {
         $self->{'config'}->add_setting_file( $file );

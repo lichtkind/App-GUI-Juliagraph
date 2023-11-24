@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Juliagraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.43';
+our $VERSION = '0.44';
 
 use base qw/Wx::App/;
 use App::GUI::Juliagraph::Frame;
@@ -51,7 +51,8 @@ an interesting image
 
 =item 4.
 
-push "Draw" (below drawing board or Ctrl+D) to produce full resolution image
+push "Draw" (below drawing board or Ctrl+D or I<Draw> in I<Image> menu)
+to produce full resolution image
 
 =item 5.
 
@@ -67,7 +68,7 @@ INI file for tweaking them later
 After first use of the program, a config file I<~/.config/juliagraph> will be
 created in you home directory. It contains mainly
 stored colors, color sets and dirs where to load and store setting files.
-You may also change it manually or deleted it to reset defaults.
+You may also change it by editor or delet it to reset configs to default.
 
 
 =head1 DESCRIPTION
@@ -84,7 +85,7 @@ variable C and in Julia fraktals into the variable z_0
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/first.png"         alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/first_detail.png"  alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/dreieck.png"         alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/dreieck.png"       alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/julia.png"         alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/set.png"           alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/sonne.png"         alt=""  width="300" height="300">

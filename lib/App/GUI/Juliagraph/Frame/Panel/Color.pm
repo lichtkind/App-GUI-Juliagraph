@@ -103,7 +103,7 @@ sub new {
         $option_sizer[$state]->AddSpacer( 2 );
         $option_sizer[$state]->Add( $self->{'state_pic'}[$state], 0, $all_attr, 6);
         $option_sizer[$state]->Add( $self->{'state_marker'}[$state], 0, $all_attr, 6);
-        $state_sizer->Add( $option_sizer[$state], 0, $all_attr, 5);
+        $state_sizer->Add( $option_sizer[$state], 0, $all_attr, 4);
     }
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 

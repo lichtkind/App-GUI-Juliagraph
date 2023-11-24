@@ -1,3 +1,10 @@
+0.44   2023-11-20  lichtkind
+-------
+    * ' minor corrections in POD
+    * / use regular noteboook, not AUI
+    * ! linkfix in readme
+    * ! crash when render black and white (no color) image
+
 0.43   2023-11-20  lichtkind
 -------
     * = fixes yet
@@ -26,3 +33,4 @@
     * * zoom and move inside the image arbitrarily
 
 
+# ! slow, optional color smoothing

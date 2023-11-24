@@ -4,9 +4,9 @@
 
 ### VERSION
 
-    0.43
+    0.44
 
-[Home on CPAN](https://metacpan.org/pod/App-Juliagraph)
+[Home on CPAN](https://metacpan.org/pod/App-GUI-Juliagraph)
 
     This is the landing page for the user documentation.
     There is also a download link on the left side under "Tools".

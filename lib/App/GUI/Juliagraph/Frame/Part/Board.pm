@@ -6,7 +6,7 @@ package App::GUI::Juliagraph::Frame::Part::Board;
 use base qw/Wx::Panel/;
 
 use Graphics::Toolkit::Color qw/color/;
-use Benchmark;
+#use Benchmark;
 
 use constant SKETCH_FACTOR => 4;
 
@@ -93,7 +93,7 @@ sub paint {
         }
     } else {
             @color = map {[$_->values]} color('white')->gradient( to => 'black',
-                                                               steps => $self->{'data'}{'mapping'}{'select'} * $self->{'data'}{'mapping'}{'gradient'},
+                                                               steps => $self->{'data'}{'mapping'}{'select'} * ($self->{'data'}{'mapping'}{'gradient'}+2),
                                                              dynamic => $self->{'data'}{'mapping'}{'dynamics'},
                                                                 );
     }
@@ -114,21 +114,21 @@ sub paint {
     }
 
 
-    $color[$_] = [0,0,0] for $colors .. $self->{'data'}{'form'}{'stop_value'}; # background color
+    $color[$_] = [0,0,0] for $colors .. $self->{'data'}{'constraints'}{'stop_value'}; # background color
 
 
-    my $zoom_size = 4 * (10** (-$self->{'data'}{'form'}{'zoom'}));
-    my $stop = $self->{'data'}{'form'}{'stop_value'};
-    my $const_a = $self->{'data'}{'form'}{'const_a'};
-    my $const_b = $self->{'data'}{'form'}{'const_b'};
-    my $var_c = $self->{'data'}{'form'}{'var_c'};
-    my $var_d = $self->{'data'}{'form'}{'var_d'};
+    my $zoom_size = 4 * (10** (-$self->{'data'}{'constraints'}{'zoom'}));
+    my $stop = $self->{'data'}{'constraints'}{'stop_value'};
+    my $const_a = $self->{'data'}{'constraints'}{'const_a'};
+    my $const_b = $self->{'data'}{'constraints'}{'const_b'};
+    my $var_c = $self->{'data'}{'constraints'}{'var_c'};
+    my $var_d = $self->{'data'}{'constraints'}{'var_d'};
     my $x_delta = $zoom_size;
     my $x_delta_step = $x_delta / $self->{'size'}{'x'};
-    my $x_min = $self->{'data'}{'form'}{'pos_x'} - ($x_delta / 2);
+    my $x_min = $self->{'data'}{'constraints'}{'pos_x'} - ($x_delta / 2);
     my $y_delta = $zoom_size;
     my $y_delta_step = $y_delta / $self->{'size'}{'y'};
-    my $y_min = $self->{'data'}{'form'}{'pos_y'} - ($y_delta / 2);
+    my $y_min = $self->{'data'}{'constraints'}{'pos_y'} - ($y_delta / 2);
 
     my $metric = { '|var|' => '($x*$x) + ($y*$y)', '|x|' => 'abs($x)', '|y|' => 'abs($y)',
                    '|x+y|' => 'abs($x+$y)',    '|x|+|y|' => 'abs($x)+abs($y)', 'x+y' => '$x+$y',
@@ -142,7 +142,7 @@ sub paint {
         $stop = 100 if $stop > 100;
     }
 
-    my $t0 = Benchmark->new();
+    #my $t0 = Benchmark->new();
     my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
     my ($x_const, $y_const, $x, $y, $x_old, $y_old);
 
@@ -154,7 +154,7 @@ sub paint {
     $code .= $self->{'flag'}{'sketch'}
            ? '  for (0 .. $self->{size}{y} / SKETCH_FACTOR){'."\n"
            : '  for (0 .. $self->{size}{y}){'."\n";
-    $code .= ($self->{'data'}{'form'}{'type'} eq 'Julia')
+    $code .= ($self->{'data'}{'constraints'}{'type'} eq 'Julia')
            ? '    ($x, $y) = ($x_num, $y_num);'."\n".
              '    ($x_const, $y_const) = ($const_a, $const_b);'."\n"
            : '    ($x, $y) = ($const_a, $const_b);'."\n".
@@ -162,12 +162,12 @@ sub paint {
     $code .= '    for my $i (0 .. $colors){'."\n";
     $code .= '      $x_old = $x;'."\n";
     $code .= '      $y_old = $y;'."\n";
-    $code .= '      ($x, $y) = (($x * $x_old) - ($y * $y_old), ($x * $y_old) + ($x_old * $y));'."\n" for 2 .. $self->{'data'}{'form'}{'exp'};
+    $code .= '      ($x, $y) = (($x * $x_old) - ($y * $y_old), ($x * $y_old) + ($x_old * $y));'."\n" for 2 .. $self->{'data'}{'constraints'}{'exp'};
     $code .= '      $x += $x_old * $var_c;'."\n" if $var_c;
     $code .= '      $y += $y_old * $var_d;'."\n" if $var_d;
     $code .= '      $x += $x_const;'."\n";
     $code .= '      $y += $y_const;'."\n";
-    $code .= '      if ('.$metric->{$self->{'data'}{'form'}{'stop_metric'}}.' > $stop){'."\n";
+    $code .= '      if ('.$metric->{$self->{'data'}{'constraints'}{'stop_metric'}}.' > $stop){'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i]});'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, @{$color[$i]});'."\n".
              '        $img->SetRGB( $x_pix+1, $y_pix,   @{$color[$i]});'."\n".
@@ -189,7 +189,7 @@ sub paint {
     eval $code; # say $code;
     die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
-    say "compute:",timestr(timediff(Benchmark->new, $t0));
+    #say "compute:",timestr(timediff(Benchmark->new, $t0));
 
     $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
     $self->{'image'} = $img unless $self->{'flag'}{'sketch'};

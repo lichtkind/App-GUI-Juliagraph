@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Juliagraph::Frame::Panel::Form;
+package App::GUI::Juliagraph::Frame::Panel::Constraints;
 use base qw/Wx::Panel/;
 use App::GUI::Juliagraph::Widget::SliderStep;
 
@@ -32,7 +32,7 @@ sub new {
     $stop_lbl->SetToolTip('abort iteration when variable value is above this boundary');
     $metric_lbl->SetToolTip('metric of iteration variable against which stop value is compared (|var| = z.re**2 + z.i**2)');
 
-    $self->{'type'}     = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1],[-1,-1], ['Julia','Mandelbrot'] );
+    $self->{'type'}     = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1],[-1,-1], ['Julia','Mandelbrot','Any'] );
     $self->{'type'}->SetToolTip("choose fractal type: \njulia uses position as init value of iterator var and constant as such, mandelbrot is vice versa");
     $self->{'const_a'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
     $self->{'const_b'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
@@ -147,7 +147,7 @@ sub new {
     $stop_sizer->Add( $stop_lbl,  0, $vert_prop, 22);
     $stop_sizer->AddSpacer( 10 );
     $stop_sizer->Add( $self->{'stop_value'},  0, $vert_prop, 0);
-    $stop_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    $stop_sizer->Add( 0, 0, $lbl_prop );
     $stop_sizer->Add( $metric_lbl,  0, $vert_prop, 22);
     $stop_sizer->AddSpacer( 10 );
     $stop_sizer->Add( $self->{'stop_metric'},  0, $vert_prop, 0);
@@ -178,7 +178,8 @@ sub new {
     $sizer->Add( $zoom_lbl,   0, $lbl_prop, $std_margin);
     $sizer->AddSpacer( 5 );
     $sizer->Add( $zoom_sizer,  0, $item_prop, 0);
-    $sizer->AddSpacer( 20 );
+    $sizer->AddSpacer( 10 );
+    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $lbl_prop, 10 );
     $sizer->Add( $stop_sizer,  0, $item_prop, 0);
     $sizer->AddSpacer( $std_margin );
     $self->SetSizer($sizer);
@@ -189,14 +190,12 @@ sub new {
 
 sub init {
     my ( $self ) = @_;
-    $self->set_data ({ type => 'Mandelbrot', exp => 2,
+    $self->set_settings ({ type => 'Mandelbrot', exp => 2,
                        const_a => 0, const_b => 0, var_c => 0, var_d => 0,
                        pos_x => 0, pos_y => 0, zoom => 0, stop_value => 1000, stop_metric => '|var|' } );
 }
 
-sub zoom_size { 10 ** (-$_[0]->{'zoom'}->GetValue) }
-
-sub get_data {
+sub get_settings {
     my ( $self ) = @_;
     {
         type    => $self->{'type'}->GetString( $self->{'type'}->GetSelection ),
@@ -213,7 +212,7 @@ sub get_data {
     }
 }
 
-sub set_data {
+sub set_settings {
     my ( $self, $data ) = @_;
     return 0 unless ref $data eq 'HASH' and exists $data->{'pos_x'};
     $self->PauseCallBack();
@@ -228,6 +227,8 @@ sub set_data {
     $self->RestoreCallBack();
     1;
 }
+
+sub zoom_size { 10 ** (-$_[0]->{'zoom'}->GetValue) }
 
 sub SetCallBack {
     my ($self, $code) = @_;
