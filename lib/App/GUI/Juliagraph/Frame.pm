@@ -198,20 +198,18 @@ sub sketch {
 
 sub get_settings {
     my $self = shift;
-    {
+    return {
+        $self->{'tab'}{'equation'}->get_settings,
         constraints => $self->{'tab'}{'constraints'}->get_settings,
-        equation    => $self->{'tab'}{'equation'}->get_settings,
         mapping     => $self->{'tab'}{'mapping'}->get_settings,
         color       => $self->{'tab'}{'color'}->get_settings,
-    }
-    #~ return {
-        #~ map { $_ => $self->{'tab'}{$_}->get_settings } qw/color/; #constraints equation mapping
-    #~ };
+    };
 }
 sub set_settings {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH';
-    $self->{'tab'}{$_}->set_settings( $data->{$_} ) for qw/constraints equation mapping color/;
+    $self->{'tab'}{$_}->set_settings( $data->{$_} ) for qw/constraints mapping color/;
+    $self->{'tab'}{'equation'}->set_settings( $data );
 }
 
 sub show_settings_save {

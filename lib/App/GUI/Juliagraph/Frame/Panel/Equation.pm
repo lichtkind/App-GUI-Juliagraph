@@ -10,12 +10,8 @@ use App::GUI::Juliagraph::Frame::Part::Monome;
 sub new {
     my ( $class, $parent) = @_;
     my $self = $class->SUPER::new( $parent, -1);
-    $self->{'callback'} = sub {};
 
-    $self->{'1'} = App::GUI::Juliagraph::Frame::Part::Monome->new( $self);
-    $self->{'2'} = App::GUI::Juliagraph::Frame::Part::Monome->new( $self);
-    $self->{'3'} = App::GUI::Juliagraph::Frame::Part::Monome->new( $self);
-    $self->{'4'} = App::GUI::Juliagraph::Frame::Part::Monome->new( $self);
+    $self->{$_} = App::GUI::Juliagraph::Frame::Part::Monome->new( $self, $_-1) for 1 .. 4;
 
     my $base_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $vert_attr = $base_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
@@ -23,13 +19,13 @@ sub new {
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->AddSpacer( 5 );
-    $sizer->Add( $self->{'1'},                    1, $all_attr, 5);
+    $sizer->Add( $self->{'1'},                    0, $all_attr, 5);
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $all_attr, 5);
-    $sizer->Add( $self->{'2'},                    1, $all_attr, 5);
+    $sizer->Add( $self->{'2'},                    0, $all_attr, 5);
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $all_attr, 5);
-    $sizer->Add( $self->{'3'},                    1, $all_attr, 5);
+    $sizer->Add( $self->{'3'},                    0, $all_attr, 5);
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $all_attr, 5);
-    $sizer->Add( $self->{'4'},                    1, $all_attr, 5);
+    $sizer->Add( $self->{'4'},                    0, $all_attr, 5);
     $sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer($sizer);
 
@@ -39,29 +35,23 @@ sub new {
 
 sub init {
     my ( $self ) = @_;
-    $self->set_settings ({
-                          } );
+    $self->{$_}->init() for 1 .. 4
 }
 
 sub get_settings {
     my ( $self ) = @_;
-    {
-        #zoom    => $self->{'zoom'}->GetValue ? $self->{'zoom'}->GetValue : 0,
-        #exp     => $self->{'exp'}->GetStringSelection,
-    }
+    (
+        monome_1 => $self->{'1'}->get_settings(),
+        monome_2 => $self->{'2'}->get_settings(),
+        monome_3 => $self->{'3'}->get_settings(),
+        monome_4 => $self->{'4'}->get_settings(),
+    )
 }
 
 sub set_settings {
     my ( $self, $data ) = @_;
-    return 0 unless ref $data eq 'HASH' and exists $data->{'monome_1_active'};
-    for my $key (qw//){
-        next unless exists $data->{$key} and exists $self->{$key};
-        $self->{$key}->SetValue( $data->{$key} );
-    }
-    for my $key (qw//){
-        next unless exists $data->{$key} and exists $self->{$key};
-        $self->{$key}->SetSelection( $self->{$key}->FindString($data->{$key}) );
-    }
+    return 0 unless ref $data eq 'HASH' and exists $data->{'monome_1'};
+    $self->{$_}->set_settings($data->{'monome_'.$_}) for 1..4;
     1;
 }
 

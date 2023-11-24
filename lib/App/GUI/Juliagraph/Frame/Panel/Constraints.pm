@@ -66,24 +66,24 @@ sub new {
     Wx::Event::EVT_TEXT( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/const_a const_b var_c var_d pos_x pos_y zoom/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_},      sub { $self->{'callback'}->() }) for qw/exp stop_value stop_metric/;
 
-    my $vert_prop = &Wx::wxALIGN_LEFT|&Wx::wxTOP|&Wx::wxBOTTOM|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxALIGN_CENTER_HORIZONTAL;
-    my $item_prop = &Wx::wxALIGN_LEFT|&Wx::wxLEFT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW;
+    my $vert_prop = &Wx::wxALIGN_LEFT|&Wx::wxTOP|&Wx::wxBOTTOM|&Wx::wxALIGN_CENTER_VERTICAL;
+    my $item_prop = &Wx::wxALIGN_LEFT|&Wx::wxLEFT|&Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW;
     my $lbl_prop = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALL;
     my $txt_prop = &Wx::wxALIGN_LEFT|&Wx::wxLEFT|&Wx::wxRIGHT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW;
     my $std_margin = 10;
 
     my $type_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $type_sizer->AddSpacer( $std_margin );
-    $type_sizer->Add( $self->{'type'}, 0, $vert_prop, 10);
+    $type_sizer->Add( $self->{'type'},    0, $vert_prop, 10);
     $type_sizer->AddStretchSpacer( );
-    $type_sizer->Add( $exp_lbl,          0, $vert_prop, 20);
+    $type_sizer->Add( $exp_lbl,           0, $vert_prop, 20);
     $type_sizer->AddSpacer( $std_margin );
     $type_sizer->Add( $self->{'exp'},     0, &Wx::wxALIGN_CENTER_VERTICAL, 0);
     $type_sizer->AddSpacer( 20 );
 
     my $a_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $a_sizer->AddSpacer( $std_margin );
-    $a_sizer->Add( $a_lbl,          0, $vert_prop, 12);
+    $a_sizer->Add( $a_lbl,              0, $vert_prop, 12);
     $a_sizer->AddSpacer( 5 );
     $a_sizer->Add( $self->{'const_a'},  1, $vert_prop, 0);
     $a_sizer->AddSpacer( 5 );
@@ -92,7 +92,7 @@ sub new {
 
     my $b_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $b_sizer->AddSpacer( $std_margin );
-    $b_sizer->Add( $b_lbl,          0, $vert_prop, 12);
+    $b_sizer->Add( $b_lbl,              0, $vert_prop, 12);
     $b_sizer->AddSpacer( 5 );
     $b_sizer->Add( $self->{'const_b'},  1, $vert_prop, 0);
     $b_sizer->AddSpacer( 5 );
@@ -155,29 +155,29 @@ sub new {
     $stop_sizer->AddSpacer( $std_margin );
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $sizer->Add( $type_sizer,  0, $item_prop, 0);
+    $sizer->Add( $type_sizer, 0, $item_prop, 0);
     $sizer->AddSpacer( 5 );
     $sizer->Add( $const_lbl,  0, $lbl_prop, $std_margin);
     $sizer->AddSpacer( 5 );
-    $sizer->Add( $a_sizer,  0, $item_prop, 0);
+    $sizer->Add( $a_sizer,    0, $item_prop, 0);
     $sizer->AddSpacer( 20 );
-    $sizer->Add( $b_sizer,  0, $item_prop, 0);
+    $sizer->Add( $b_sizer,    0, $item_prop, 0);
     $sizer->AddSpacer( 15 );
-    $sizer->Add( $var_lbl,  0, $lbl_prop, $std_margin);
+    $sizer->Add( $var_lbl,    0, $lbl_prop, $std_margin);
     $sizer->AddSpacer( 5 );
-    $sizer->Add( $c_sizer,  0, $item_prop, 0);
+    $sizer->Add( $c_sizer,    0, $item_prop, 0);
     $sizer->AddSpacer( 20 );
-    $sizer->Add( $d_sizer,  0, $item_prop, 0);
+    $sizer->Add( $d_sizer,    0, $item_prop, 0);
     $sizer->AddSpacer( 15 );
-    $sizer->Add( $pos_lbl,  0, $lbl_prop, $std_margin);
+    $sizer->Add( $pos_lbl,    0, $lbl_prop, $std_margin);
     $sizer->AddSpacer( 5 );
-    $sizer->Add( $x_sizer,  0, $item_prop, 0);
+    $sizer->Add( $x_sizer,    0, $item_prop, 0);
     $sizer->AddSpacer( 20 );
-    $sizer->Add( $y_sizer,   0, $item_prop, 0);
+    $sizer->Add( $y_sizer,    0, $item_prop, 0);
     $sizer->AddSpacer( 15 );
     $sizer->Add( $zoom_lbl,   0, $lbl_prop, $std_margin);
     $sizer->AddSpacer( 5 );
-    $sizer->Add( $zoom_sizer,  0, $item_prop, 0);
+    $sizer->Add( $zoom_sizer, 0, $item_prop, 0);
     $sizer->AddSpacer( 10 );
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $lbl_prop, 10 );
     $sizer->Add( $stop_sizer,  0, $item_prop, 0);

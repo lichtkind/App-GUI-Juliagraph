@@ -10,7 +10,7 @@ sub new {
     my ( $class, $parent, $initial_exp ) = @_;
 
     my $self = $class->SUPER::new( $parent, -1 );
-
+    $self->{'init_exp'} = $initial_exp // 0;
 
     $self->{'active'} = Wx::CheckBox->new( $self, -1, ' On', [-1,-1], [ 70, -1]);
     $self->{'active'}->SetToolTip("switch thit polynome on or off");
@@ -23,7 +23,6 @@ sub new {
     $exp_lbl->SetToolTip($exp_txt);
     $self->{'exponent'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[75, 35], [0 .. 16]);
     $self->{'exponent'}->SetToolTip($exp_txt);
-    $self->{'exponent'}->SetSelection( $initial_exp // 0 );
 
     my $r_lbl     = Wx::StaticText->new($self, -1, 'Re : ' );
     my $i_lbl     = Wx::StaticText->new($self, -1, 'Im : ' );
@@ -62,26 +61,24 @@ sub new {
     $r_sizer->AddSpacer( $std_margin );
     $r_sizer->Add( $r_lbl,              0, $vert_attr, 12);
     $r_sizer->AddSpacer( 5 );
-    $r_sizer->Add( $self->{'factor_r'}, 1, $vert_attr, 0);
+    $r_sizer->Add( $self->{'factor_r'}, 1, $all_attr, 0);
     $r_sizer->AddSpacer( 5 );
     $r_sizer->Add( $self->{'button_r'}, 0, $vert_attr, 0);
-    $r_sizer->AddSpacer( $std_margin );
 
     my $i_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $i_sizer->AddSpacer( $std_margin );
     $i_sizer->Add( $i_lbl,              0, $vert_attr, 12);
     $i_sizer->AddSpacer( 5 );
-    $i_sizer->Add( $self->{'factor_i'}, 1, $vert_attr, 0);
+    $i_sizer->Add( $self->{'factor_i'}, 1, $all_attr, 0);
     $i_sizer->AddSpacer( 5 );
     $i_sizer->Add( $self->{'button_i'}, 0, $vert_attr, 0);
-    $i_sizer->AddSpacer( $std_margin );
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->AddSpacer( 5 );
-    $sizer->Add( $first_sizer, 1, $base_attr, 0 );
+    $sizer->Add( $first_sizer, 0, $vert_attr, 0 );
     $sizer->AddSpacer( 5 );
-    $sizer->Add( $r_sizer,     1, $base_attr, 0 );
-    $sizer->Add( $i_sizer,     1, $base_attr, 0 );
+    $sizer->Add( $r_sizer,     0, $vert_attr, 0 );
+    $sizer->Add( $i_sizer,     0, $vert_attr, 0 );
     $sizer->AddSpacer( 10 );
     $self->SetSizer($sizer);
 
@@ -89,6 +86,11 @@ sub new {
     $self;
 }
 
+sub init {
+    my ( $self ) = @_;
+    $self->set_settings ({ exponent => $self->{'init_exp'},
+                           factor_r => 0, factor_i => 0, active => 0, use_factor => 1 } );
+}
 
 sub get_settings {
     my ( $self ) = @_;
