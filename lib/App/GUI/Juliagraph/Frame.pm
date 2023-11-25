@@ -6,7 +6,7 @@ use Wx::AUI;
 package App::GUI::Juliagraph::Frame;
 use base qw/Wx::Frame/;
 use App::GUI::Juliagraph::Frame::Panel::Constraints;
-use App::GUI::Juliagraph::Frame::Panel::Equation;
+use App::GUI::Juliagraph::Frame::Panel::Polynomial;
 use App::GUI::Juliagraph::Frame::Panel::Mapping;
 use App::GUI::Juliagraph::Frame::Panel::Color;
 use App::GUI::Juliagraph::Frame::Part::Board;
@@ -14,6 +14,10 @@ use App::GUI::Juliagraph::Dialog::About;
 use App::GUI::Juliagraph::Widget::ProgressBar;
 use App::GUI::Juliagraph::Settings;
 use App::GUI::Juliagraph::Config;
+
+my @interactive_tabs = qw/constraints polynomial mapping/;
+my @silent_tabs = qw/color/;
+my @settings_tabs = (@interactive_tabs, @silent_tabs);
 
 sub new {
     my ( $class, $parent, $title ) = @_;
@@ -30,15 +34,15 @@ sub new {
     # create GUI parts
     $self->{'tabs'}            = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'tab'}{'constraints'}  = App::GUI::Juliagraph::Frame::Panel::Constraints->new( $self->{'tabs'} );
-    $self->{'tab'}{'equation'}     = App::GUI::Juliagraph::Frame::Panel::Equation->new( $self->{'tabs'} );
+    $self->{'tab'}{'polynomial'}   = App::GUI::Juliagraph::Frame::Panel::Polynomial->new( $self->{'tabs'} );
     $self->{'tab'}{'mapping'}      = App::GUI::Juliagraph::Frame::Panel::Mapping->new( $self->{'tabs'} );
     $self->{'tab'}{'color'}        = App::GUI::Juliagraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'constraints'},  'Constraints');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'equation'},     'Equation');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'polynomial'},   'Polynomial');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},      'Color Mapping');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},        'Color Selection');
 
-    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/constraints equation mapping/;
+    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @interactive_tabs;
 
     $self->{'progress'}            = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 5, [20, 20, 110]);
     $self->{'board'}               = App::GUI::Juliagraph::Frame::Part::Board->new( $self , 600, 600 );
@@ -174,7 +178,7 @@ sub update_recent_settings_menu {
 
 sub init {
     my ($self) = @_;
-    $self->{'tab'}{$_}->init() for qw/constraints equation mapping color/;
+    $self->{'tab'}{$_}->init() for qw/constraints polynomial mapping color/;
     $self->sketch( );
     $self->SetStatusText( "all settings are set to default", 1);
     $self->show_settings_save(1);
@@ -199,7 +203,7 @@ sub sketch {
 sub get_settings {
     my $self = shift;
     return {
-        $self->{'tab'}{'equation'}->get_settings,
+        $self->{'tab'}{'polynomial'}->get_settings,
         constraints => $self->{'tab'}{'constraints'}->get_settings,
         mapping     => $self->{'tab'}{'mapping'}->get_settings,
         color       => $self->{'tab'}{'color'}->get_settings,
@@ -209,7 +213,7 @@ sub set_settings {
     my ($self, $data) = @_;
     return unless ref $data eq 'HASH';
     $self->{'tab'}{$_}->set_settings( $data->{$_} ) for qw/constraints mapping color/;
-    $self->{'tab'}{'equation'}->set_settings( $data );
+    $self->{'tab'}{'polynomial'}->set_settings( $data );
 }
 
 sub show_settings_save {

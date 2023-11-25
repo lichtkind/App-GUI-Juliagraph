@@ -72,6 +72,41 @@ sub set_settings {
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
+
+    my %factor = ();
+    my $max_exp;
+    for my $mnr (1 .. 4){
+        my $settings = $self->{'data'}{'monomial_'.$mnr};
+        next unless $settings->{'active'};
+        my $f = $settings->{'use_factor'} ? [$settings->{'factor_r'}, $settings->{'factor_i'}] : [1,1];
+        if (exists $factor{$settings->{'exponent'}}) {
+            $factor{ $settings->{'exponent'} }[0] *= $f->[0];
+            $factor{ $settings->{'exponent'} }[1] *= $f->[1];
+        } else { $factor{ $settings->{'exponent'} } = $f }
+        $max_exp = $settings->{'exponent'} unless defined $max_exp;
+        $max_exp = $settings->{'exponent'} if $max_exp < $settings->{'exponent'};
+    }
+    $max_exp = 0 unless defined $max_exp;
+
+    my $zoom_size = 4 * (10** (-$self->{'data'}{'constraints'}{'zoom'}));
+    my $stop = $self->{'data'}{'constraints'}{'stop_value'};
+    my $x_delta = $zoom_size;
+    my $x_delta_step = $x_delta / $self->{'size'}{'x'};
+    my $x_min = $self->{'data'}{'constraints'}{'pos_x'} - ($x_delta / 2);
+    my $y_delta = $zoom_size;
+    my $y_delta_step = $y_delta / $self->{'size'}{'y'};
+    my $y_min = $self->{'data'}{'constraints'}{'pos_y'} - ($y_delta / 2);
+    my $const_a = $self->{'data'}{'constraints'}{'const_a'};
+    my $const_b = $self->{'data'}{'constraints'}{'const_b'};
+    $const_a *= $factor{0}[0] if exists $factor{0} and $factor{0}[0];
+    $const_b *= $factor{0}[1] if exists $factor{0} and $factor{0}[1];
+
+    my $metric = { '|var|' => '($x*$x) + ($y*$y)', '|x|' => 'abs($x)',         '|y|' => 'abs($y)',
+                   '|x+y|' => 'abs($x+$y)',    '|x|+|y|' => 'abs($x)+abs($y)', 'x+y' => '$x+$y',
+                    'x*y'  => '$x*$y',           '|x*y|' => 'abs($x*$y)',
+                     'x-y' => '$x-$y',             'y-x' => '$y-$x',
+    };
+
     my $background_color = Wx::Colour->new( 255, 255, 255 );
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
@@ -112,29 +147,9 @@ sub paint {
         $progress->add_percentage( $_ / $#color * 100, $color[$_] ) for 0 .. $#color;
         $progress->full;
     }
-
-
     $color[$_] = [0,0,0] for $colors .. $self->{'data'}{'constraints'}{'stop_value'}; # background color
 
 
-    my $zoom_size = 4 * (10** (-$self->{'data'}{'constraints'}{'zoom'}));
-    my $stop = $self->{'data'}{'constraints'}{'stop_value'};
-    my $const_a = $self->{'data'}{'constraints'}{'const_a'};
-    my $const_b = $self->{'data'}{'constraints'}{'const_b'};
-    my $var_c = $self->{'data'}{'constraints'}{'var_c'};
-    my $var_d = $self->{'data'}{'constraints'}{'var_d'};
-    my $x_delta = $zoom_size;
-    my $x_delta_step = $x_delta / $self->{'size'}{'x'};
-    my $x_min = $self->{'data'}{'constraints'}{'pos_x'} - ($x_delta / 2);
-    my $y_delta = $zoom_size;
-    my $y_delta_step = $y_delta / $self->{'size'}{'y'};
-    my $y_min = $self->{'data'}{'constraints'}{'pos_y'} - ($y_delta / 2);
-
-    my $metric = { '|var|' => '($x*$x) + ($y*$y)', '|x|' => 'abs($x)', '|y|' => 'abs($y)',
-                   '|x+y|' => 'abs($x+$y)',    '|x|+|y|' => 'abs($x)+abs($y)', 'x+y' => '$x+$y',
-                    'x*y'  => '$x*$y',           '|x*y|' => 'abs($x*$y)',
-                    'x-y' => '$x-$y', 'y-x' => '$y-$x',
-    };
     if ($self->{'flag'}{'sketch'}){
         $x_delta_step *= SKETCH_FACTOR;
         $y_delta_step *= SKETCH_FACTOR;
@@ -144,7 +159,7 @@ sub paint {
 
     #my $t0 = Benchmark->new();
     my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
-    my ($x_const, $y_const, $x, $y, $x_old, $y_old);
+    my ($x_const, $y_const, $x, $y, $x_old, $y_old, $x_pot, $y_pot);
 
     my $code = 'my ($x_num, $x_pix) = ($x_min, 0);'."\n";
     $code .= $self->{'flag'}{'sketch'}
@@ -160,13 +175,19 @@ sub paint {
            : '    ($x, $y) = ($const_a, $const_b);'."\n".
              '    ($x_const, $y_const) = ($x_num, $y_num);'."\n";
     $code .= '    for my $i (0 .. $colors){'."\n";
-    $code .= '      $x_old = $x;'."\n";
-    $code .= '      $y_old = $y;'."\n";
-    $code .= '      ($x, $y) = (($x * $x_old) - ($y * $y_old), ($x * $y_old) + ($x_old * $y));'."\n" for 2 .. $self->{'data'}{'constraints'}{'exp'};
-    $code .= '      $x += $x_old * $var_c;'."\n" if $var_c;
-    $code .= '      $y += $y_old * $var_d;'."\n" if $var_d;
-    $code .= '      $x += $x_const;'."\n";
-    $code .= '      $y += $y_const;'."\n";
+    $code .= '      $x_pot = $x_old = $x;'."\n";
+    $code .= '      $y_pot = $y_old = $y;'."\n";
+    $code .= '      $x = $x_const;'."\n";
+    $code .= '      $y = $y_const;'."\n";
+
+    for my $exponent (2 .. $max_exp){
+        $code .= '      ($x_pot, $y_pot) = (($x_pot * $x_old) - ($y_pot * $y_old), ($x_pot * $y_old) + ($x_old * $y_pot));'."\n";
+        $code .= '      $x += $x_pot * '.$factor{$exponent}[0].';'."\n" if exists $factor{$exponent};
+        $code .= '      $y += $y_pot * '.$factor{$exponent}[1].';'."\n" if exists $factor{$exponent};
+    }
+    $code .= '      $x += $x_old * '.($factor{0}[0]+0).';'."\n" if exists $factor{1};
+    $code .= '      $y += $y_old * '.($factor{0}[1]+0).';'."\n" if exists $factor{1};
+
     $code .= '      if ('.$metric->{$self->{'data'}{'constraints'}{'stop_metric'}}.' > $stop){'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i]});'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, @{$color[$i]});'."\n".

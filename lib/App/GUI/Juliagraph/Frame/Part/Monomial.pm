@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Juliagraph::Frame::Part::Monome;
+package App::GUI::Juliagraph::Frame::Part::Monomial;
 use base qw/Wx::Panel/;
 use App::GUI::Juliagraph::Widget::SliderStep;
 
@@ -11,6 +11,7 @@ sub new {
 
     my $self = $class->SUPER::new( $parent, -1 );
     $self->{'init_exp'} = $initial_exp // 0;
+    $self->{'callback'} = sub {};
 
     $self->{'active'} = Wx::CheckBox->new( $self, -1, ' On', [-1,-1], [ 70, -1]);
     $self->{'active'}->SetToolTip("switch thit polynome on or off");
@@ -26,8 +27,12 @@ sub new {
 
     my $r_lbl     = Wx::StaticText->new($self, -1, 'Re : ' );
     my $i_lbl     = Wx::StaticText->new($self, -1, 'Im : ' );
+    $r_lbl->SetToolTip('real value part of factor');
+    $i_lbl->SetToolTip('imaginary value part of factor');
     $self->{'factor_r'}  = Wx::TextCtrl->new( $self, -1, 0, [-1, -1],  [-1, 30] );
     $self->{'factor_i'}  = Wx::TextCtrl->new( $self, -1, 0, [-1, -1],  [-1, 30] );
+    $self->{'factor_r'}->SetToolTip('real value part of factor');
+    $self->{'factor_i'}->SetToolTip('imaginary value part of factor');
     $self->{'button_r'}  = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 100, 3, 0.3, 2, '<<', '>>' );
     $self->{'button_i'}  = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 100, 3, 0.3, 2, '<<', '>>' );
 
@@ -81,17 +86,14 @@ sub new {
     $sizer->Add( $i_sizer,     0, $vert_attr, 0 );
     $sizer->AddSpacer( 10 );
     $self->SetSizer($sizer);
-
-    $self->{'callback'} = sub {};
     $self;
 }
 
 sub init {
     my ( $self ) = @_;
     $self->set_settings ({ exponent => $self->{'init_exp'},
-                           factor_r => 0, factor_i => 0, active => 0, use_factor => 1 } );
+                           factor_r => 1, factor_i => 1, active => 0, use_factor => 1 } );
 }
-
 sub get_settings {
     my ( $self ) = @_;
     {
@@ -102,10 +104,9 @@ sub get_settings {
         exponent   => $self->{'exponent'}->GetStringSelection,
     }
 }
-
 sub set_settings {
     my ( $self, $data ) = @_;
-    return 0 unless ref $data eq 'HASH' and exists $data->{'active'};
+    return 0 unless ref $data eq 'HASH';
     $self->PauseCallBack();
     for my $key (qw/active use_factor factor_r factor_i/){
         next unless exists $data->{$key} and exists $self->{$key};

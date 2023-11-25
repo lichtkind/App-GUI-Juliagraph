@@ -85,7 +85,7 @@ variable C and in Julia fraktals into the variable z_0
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/first.png"         alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/first_detail.png"  alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/dreieck.png"       alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/feingoldkreutz.png"alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/julia.png"         alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/set.png"           alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/sonne.png"         alt=""  width="300" height="300">
@@ -132,10 +132,10 @@ stands still over a button. Also helpful are messages in the status bar
 at the bottom that appear while browsing the menu.
 
 
-=head2 Form
+=head2 Constraints
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/POD/Form.png"    alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/POD/Constraints.png"    alt=""  width="630" height="410">
 </p>
 
 The content of the first tab are the settings that define the shape of the fractal.
@@ -178,6 +178,13 @@ compare an complex iteration value with a real number, we compute the
 absolute value of the iteration variable (displayed by C<|var|>). But
 other metrics are possible. Just keep in mind x is the real part of the
 iteration variable Z and y is the imaginary part.
+
+=head2 Polynomial
+
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/POD/Polynomial.png"    alt=""  width="630" height="410">
+</p>
+
 
 =head2 Color Mapping
 
