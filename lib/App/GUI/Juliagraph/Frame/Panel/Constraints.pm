@@ -43,7 +43,7 @@ sub new {
     $self->{'button_y'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
     $self->{'button_a'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
     $self->{'button_b'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
-    $self->{'constant'}    = Wx::ComboBox->new( $self, -1,   '', [-1,-1],[95, -1], ['dismiss', 'start value', 'monomial',]);
+    $self->{'constant'}    = Wx::ComboBox->new( $self, -1,   '', [-1,-1],[95, -1], ['dismiss', 'start value', 'constant',]);
     $self->{'constant'}->SetToolTip("how complex constant below is part of computation:\n - not at all\n - as start value of the iteration \n - added as constant at any iteration");
     $self->{'position'}    = Wx::ComboBox->new( $self, -1,   '', [-1,-1],[95, -1], ['dismiss', 'start value', 'constant', 'degree 1', 'degree 2', 'degree 3', 'degree 4', 'degree 5', 'degree 6', 'degree 7']);
     $self->{'position'}->SetToolTip("how numeric coordinates are part of computation:\n - not at all\n - as start value of the iteration \n - added as constant at any iteration \n - as factor of monomial of nth degree");
@@ -59,7 +59,7 @@ sub new {
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'type'},  sub {
         my $sel = $self->{'type'}->GetStringSelection;
-        if    ($sel eq 'Julia')     { $self->set_settings( {position => 'start value', constant => 'monomial'} ) }
+        if    ($sel eq 'Julia')     { $self->set_settings( {position => 'start value', constant => 'constant'} ) }
         elsif ($sel eq 'Mandelbrot'){ $self->set_settings( {position => 'constant', constant => 'start value'} ) }
         if    ($sel eq 'Any')       { $self->{'constant'}->Enable(1); $self->{'position'}->Enable(1); }
         else                        { $self->{'constant'}->Enable(0); $self->{'position'}->Enable(0); }

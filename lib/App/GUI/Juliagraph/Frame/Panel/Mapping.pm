@@ -111,8 +111,8 @@ sub new {
 
 sub init {
     my ( $self ) = @_;
-    $self->set_settings ({ color => 1,      select => 8,  repeat => 4, group => 1,
-                       gradient => 8, dynamics => 0,  smooth => 0, substeps => 0 } );
+    $self->set_settings ({ color => 1,      select => 8,  repeat => 1, group => 1,
+                       gradient => 10, dynamics => 0,  smooth => 0, substeps => 0 } );
 }
 
 sub get_settings {

@@ -289,7 +289,8 @@ sub open_setting_file {
         my $dir = App::GUI::Juliagraph::Settings::extract_dir( $file );
         $self->{'config'}->set_value('open_dir', $dir);
         $self->{'config'}->add_setting_file( $file );
-        $self->{'tab'}{'color'}->set_state_count( $settings->{'mapping'}{'select'}-1 );
+        $self->{'tab'}{'color'}->set_state_count( exists $settings->{'mapping'}{'select'}
+                                                ? $settings->{'mapping'}{'select'} - 1 : 8);
         $self->update_recent_settings_menu();
         $self->show_settings_save(1);
         $settings;

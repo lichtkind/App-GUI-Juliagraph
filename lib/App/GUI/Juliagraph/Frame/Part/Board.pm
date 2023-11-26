@@ -72,7 +72,7 @@ sub set_settings {
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
-
+    #my $t0 = Benchmark->new();
     my %factor = ();
     my $max_exp;
     for my $mnr (1 .. 4){
@@ -96,10 +96,15 @@ sub paint {
     my $y_delta = $zoom_size;
     my $y_delta_step = $y_delta / $self->{'size'}{'y'};
     my $y_min = $self->{'data'}{'constraints'}{'pos_y'} - ($y_delta / 2);
-    my $const_a = $self->{'data'}{'constraints'}{'const_a'};
-    my $const_b = $self->{'data'}{'constraints'}{'const_b'};
+    my $const_a = ($self->{'data'}{'constraints'}{'constant'} eq 'constant') ? $self->{'data'}{'constraints'}{'const_a'} : 0;
+    my $const_b = ($self->{'data'}{'constraints'}{'constant'} eq 'constant') ? $self->{'data'}{'constraints'}{'const_b'} : 0;
     $const_a *= $factor{0}[0] if exists $factor{0} and $factor{0}[0];
     $const_b *= $factor{0}[1] if exists $factor{0} and $factor{0}[1];
+    my $position = $self->{'data'}{'constraints'}{'position'};
+    $position = substr($position, 7) if substr($position, 0, 7) eq 'degree ';
+    if ($position =~ /\d/){
+        $max_exp = $position if $max_exp < $position;
+    }
 
     my $metric = { '|var|' => '($x*$x) + ($y*$y)', '|x|' => 'abs($x)',         '|y|' => 'abs($y)',
                    '|x+y|' => 'abs($x+$y)',    '|x|+|y|' => 'abs($x)+abs($y)', 'x+y' => '$x+$y',
@@ -157,7 +162,6 @@ sub paint {
         $stop = 100 if $stop > 100;
     }
 
-    #my $t0 = Benchmark->new();
     my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
     my ($x_const, $y_const, $x, $y, $x_old, $y_old, $x_pot, $y_pot);
 
@@ -169,25 +173,42 @@ sub paint {
     $code .= $self->{'flag'}{'sketch'}
            ? '  for (0 .. $self->{size}{y} / SKETCH_FACTOR){'."\n"
            : '  for (0 .. $self->{size}{y}){'."\n";
-    $code .= ($self->{'data'}{'constraints'}{'type'} eq 'Julia')
-           ? '    ($x, $y) = ($x_num, $y_num);'."\n".
-             '    ($x_const, $y_const) = ($const_a, $const_b);'."\n"
-           : '    ($x, $y) = ($const_a, $const_b);'."\n".
-             '    ($x_const, $y_const) = ($x_num, $y_num);'."\n";
+
+    my $x_start_value = ($self->{'data'}{'constraints'}{'constant'} eq 'start value') ? $self->{'data'}{'constraints'}{'const_a'} : 0;
+    my $y_start_value = ($self->{'data'}{'constraints'}{'constant'} eq 'start value') ? $self->{'data'}{'constraints'}{'const_b'} : 0;
+
+    if ($position eq 'start value'){
+        $x_start_value = $x_start_value ? $x_start_value . ' + $x_num' : '$x_num';
+        $y_start_value = $y_start_value ? $y_start_value . ' + $y_num' : '$y_num';
+    }
+
+    $code .= '    $x = '.$x_start_value.';'."\n";
+    $code .= '    $y = '.$y_start_value.';'."\n";
     $code .= '    for my $i (0 .. $colors){'."\n";
     $code .= '      $x_pot = $x_old = $x;'."\n";
     $code .= '      $y_pot = $y_old = $y;'."\n";
-    $code .= '      $x = $x_const;'."\n";
-    $code .= '      $y = $y_const;'."\n";
+    $code .= '      $x = '.(($position eq 'constant') ? $const_a.'+ $x_num' : $const_a).';'."\n";
+    $code .= '      $y = '.(($position eq 'constant') ? $const_b.'+ $y_num' : $const_b).';'."\n";
 
     for my $exponent (2 .. $max_exp){
         $code .= '      ($x_pot, $y_pot) = (($x_pot * $x_old) - ($y_pot * $y_old), ($x_pot * $y_old) + ($x_old * $y_pot));'."\n";
-        $code .= '      $x += $x_pot * '.$factor{$exponent}[0].';'."\n" if exists $factor{$exponent};
-        $code .= '      $y += $y_pot * '.$factor{$exponent}[1].';'."\n" if exists $factor{$exponent};
+        my $x_factor = (exists $factor{$exponent} and $factor{$exponent}[0]) ? ' * '.$factor{$exponent}[0] : '';
+        my $y_factor = (exists $factor{$exponent} and $factor{$exponent}[1]) ? ' * '.$factor{$exponent}[1] : '';
+        if ($position eq $exponent){
+            $x_factor .= ' * $x_num';
+            $y_factor .= ' * $y_num';
+        }
+        $code .= '      $x += $x_pot '.$x_factor.';'."\n" if $x_factor;
+        $code .= '      $y += $y_pot '.$y_factor.';'."\n" if $y_factor;
     }
-    $code .= '      $x += $x_old * '.($factor{0}[0]+0).';'."\n" if exists $factor{1};
-    $code .= '      $y += $y_old * '.($factor{0}[1]+0).';'."\n" if exists $factor{1};
-
+    my $x_linear = (exists $factor{1} and $factor{1}[0]) ? ' * '.$factor{1}[0] : '';
+    my $y_linear = (exists $factor{1} and $factor{1}[1]) ? ' * '.$factor{1}[1] : '';
+    if ($position eq 1){
+        $x_linear .= ' * $x_num';
+        $y_linear .= ' * $y_num';
+    }
+    $code .= '      $x += $x_old '.$x_linear.';'."\n" if $x_linear;
+    $code .= '      $y += $y_old '.$y_linear.';'."\n" if $y_linear;
     $code .= '      if ('.$metric->{$self->{'data'}{'constraints'}{'stop_metric'}}.' > $stop){'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i]});'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, @{$color[$i]});'."\n".
@@ -207,10 +228,12 @@ sub paint {
            : '  $x_pix ++;'."\n";
     $code .= '}'."\n";
 
+    #say "compile:",timestr(timediff(Benchmark->new, $t0));
+    #$t0 = Benchmark->new();
     eval $code; # say $code;
     die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
-    #say "compute:",timestr(timediff(Benchmark->new, $t0));
+    #say "run:",timestr(timediff(Benchmark->new, $t0));
 
     $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
     $self->{'image'} = $img unless $self->{'flag'}{'sketch'};

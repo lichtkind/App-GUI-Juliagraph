@@ -1,7 +1,8 @@
-0.44   2023-11-20  lichtkind
+0.5    2023-11-27  lichtkind
 -------
+    * * reworked constrians tab with mor options
+    * * polynomial tab for more complex equations with more monomials
     * ' minor corrections in POD
-    * / use regular noteboook, not AUI
     * ! linkfix in readme
     * ! crash when render black and white (no color) image
 
