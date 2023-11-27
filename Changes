@@ -1,6 +1,7 @@
 0.5    2023-11-27  lichtkind
 -------
-    * * reworked constrians tab with mor options
+    * * reworked constriants tab
+        added options to use constant or coordinate values
     * * polynomial tab for more complex equations with more monomials
     * ' minor corrections in POD
     * ! linkfix in readme
@@ -34,4 +35,7 @@
     * * zoom and move inside the image arbitrarily
 
 
-# ! slow, optional color smoothing
+TODO:
+
+# ! slow
+# optional color smoothing

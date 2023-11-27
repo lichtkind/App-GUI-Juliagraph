@@ -76,11 +76,11 @@ You may also change it by editor or delet it to reset configs to default.
 Mandelbrot (first thee) and Julia fractals (second three following) are
 just mathematical diagrams, showing you how iterating the equation
 C<z_n+1 = z_n ** 2 + C> behaves in the complex plane.
-The pixel coordinates are taken as input and the count of iterations it
-took to exceed the stop/breakout value decide which color this point will
-painted in. In Mandelbrot fraktals the coordinates will be put into the
-variable C and in Julia fraktals into the variable z_0
-(initial values of the iterator variable).
+The values at the pixel coordinates or some chosen constant is taken as
+input (z_0) and the count of iterations it took to exceed the stop/breakout
+value decide which color this point will painted in. In Mandelbrot
+fraktals the coordinates will be put into the variable C and in Julia
+fraktals into the variable z_0 (initial values of the iterator variable).
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/examples/first.png"         alt=""  width="300" height="300">
@@ -98,11 +98,11 @@ This program has additional capabilities/options:
 
 =item *
 
-choosable exponent above z_n
+iteration formula with up to four monomials
 
 =item *
 
-a linear part of the term making the formula into: C<z_n+1 = z_n ** EXP + L * z_n + C>
+choosable exponent and factor for each of them
 
 =item *
 
@@ -138,52 +138,62 @@ at the bottom that appear while browsing the menu.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/POD/Constraints.png"    alt=""  width="630" height="410">
 </p>
 
-The content of the first tab are the settings that define the shape of the fractal.
-It also allows you to scroll and zoom into your region of interest.
+The controls of the first tab are the settings that define most of the math,
+but not the higher polynomials. The page is divided from top to bottom in
+4 sections for fractal type, scrolling and zooming, iteration constant,
+and stop condition.
 
-This page contains 7 complex widgets, which need a little more explanation.
-They stretch over a row and have three parts. The leftmost part is a text
-field which you could change directly. In cases when pasting or typing
-special values into it they may be used, but in most other cases it is
-more convenient to use the other parts, since every value change will triger
-a new sketch drawing, which is not always fast. On the rightmost is a slider,
-which allows you to dial in a value. This value will be added or subtracted
-from the value in the textbox if you push the buttons in the middle part.
+The first section allows you to set the fractal type: I<Mandelbrot>,
+I<Julia>, of something in between (option I<Any>). If you choose I<Mandelbrot>
+the complex value of the current dot in the coordinate system becomes C
+in the above mentioned formula and the complex constant of section 3
+is the starting value Z_0. With I<Julia> both these values switch their
+usage and with I<Any> you are free to choose their usage. You could discard
+them of even use them as factor of the higher monomials.
 
-The first row on this page has two widgets. The first is a radiobox that lets
-you choose between Julia and Mandelbrot fraktals. The other is a combobox
-that lets you set the exponent in the iteration formula (see L</DESCRIPTION>).
-These are the settings that change the shape most fundamentally.
+The second section allows you to zoom in and out and to select the
+central coordinates of the visible cutout. For this it has a three partial_hash_deformat
+widget, which need a little more explanation. The leftmost part is a text
+field, in which you could change the numbers directly by pasting or typing.
+The ladder is not recommended, since every change will trigger a redraw
+of the fractal preview. Instead of it use the slider on the right and dial
+in the amount you want to see the value on the left changed. If you hover
+the mouse over the slider, it will show you the amount.
+Then push the buttons in the middle to add or subtract the dialed in value.
+In the same way you can choose X and Y position to move the visible window.
 
-Next are the inputs for the values A and B these are the real and imaginary
-parts of a complex constant. In a Julia fraktal this constant is added
-after each iteration. In the Mandelbrot fractal it will provide the starting
-value of Z.
+The third section works the same, but helps you to set the a complex value,
+that will be used in the manner you have set in section 1. Just note
+I<A> is the real part of the constant and I<B> is the imaginary part.
 
-Below that are the values C and D, which are real and imaginary parts of
-a factor. During each iteration the product of this factor with the iterator
-variable z will be added like the constant.
-
-Below further are the X and Y coordinates of the center of the image.
-Changing these will move the visible part of the fractal left/right
-or down/up. Please note that these values are relative and if you zoom
-in, they will be become smaller.
-
-The second lowest input is the zoom factor.
-It is greater the more you zoom in.
-
-The lowest row contains two choices. First the stop value. If the iteration
-variable has a greater value than it - the iteration stops. Because we
-compare an complex iteration value with a real number, we compute the
-absolute value of the iteration variable (displayed by C<|var|>). But
-other metrics are possible. Just keep in mind x is the real part of the
-iteration variable Z and y is the imaginary part.
+The fourth section contains two choices. First the stop value. If the
+iteration variable I<Z> has a greater value than it, the iteration stops.
+Because we compare an complex iteration variable with a real number,
+we compute the absolute value of the iteration variable (displayed by C<|var|>).
+But other metrics are possible. Just keep in mind x is the real part of the
+iteration variable I<Z> and y is the imaginary part.
 
 =head2 Polynomial
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/POD/Polynomial.png"    alt=""  width="630" height="410">
 </p>
+
+The second tab contains 4 identical sections which also work the same.
+Each of them stand for a monomial of the iteration equation, but only
+if the checkbox I<On> is marked. A second checkbox allows you discard the
+complex factor below which will be set in the same way as the constant on
+the first tab/page. (Read there how to use the slider button widget.)
+The maybe most important control of an monomial is the exponent, which
+you select on the right side of the first row. A I<Mandelbrot>
+or I<Julia> fractal is usually computed just with C<Z_n+1 = Z_n ** 2 + C>,
+but higher exponents are gateways into other worlds with more symmetry.
+You could select via this page a term like C<Z_n+1 = F_1 * Z_n ** 5 + F_2 * Z_n ** 2 + C>
+An exponent of one will just add a linear component which usually smears
+the fractal in sometimes interesting ways. An exponent of zero will
+make the factor of this monomial into a constant, same as one on the first
+tab. If you you have several monomials with the same exponent, the factors
+will be multiplied.
 
 
 =head2 Color Mapping

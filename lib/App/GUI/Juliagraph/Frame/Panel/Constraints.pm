@@ -45,7 +45,7 @@ sub new {
     $self->{'button_b'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, '<<', '>>' );
     $self->{'constant'}    = Wx::ComboBox->new( $self, -1,   '', [-1,-1],[95, -1], ['dismiss', 'start value', 'constant',]);
     $self->{'constant'}->SetToolTip("how complex constant below is part of computation:\n - not at all\n - as start value of the iteration \n - added as constant at any iteration");
-    $self->{'position'}    = Wx::ComboBox->new( $self, -1,   '', [-1,-1],[95, -1], ['dismiss', 'start value', 'constant', 'degree 1', 'degree 2', 'degree 3', 'degree 4', 'degree 5', 'degree 6', 'degree 7']);
+    $self->{'position'}    = Wx::ComboBox->new( $self, -1,   '', [-1,-1],[95, -1], [ 'start value', 'constant', 'degree 1', 'degree 2', 'degree 3', 'degree 4', 'degree 5', 'degree 6', 'degree 7']);
     $self->{'position'}->SetToolTip("how numeric coordinates are part of computation:\n - not at all\n - as start value of the iteration \n - added as constant at any iteration \n - as factor of monomial of nth degree");
     $self->{'stop_value'}  = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [20, 40, 70, 100, 200, 500, 1000, 2000, 5000, 10000]);
     $self->{'stop_value'}->SetToolTip('abort iteration when variable value is above this boundary');

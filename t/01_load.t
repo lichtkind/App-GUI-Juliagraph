@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use v5.12;
 use lib 'lib';
-use Test::More tests => 16;
+use Test::More tests => 18;
 
 use_ok( 'App::GUI::Juliagraph::Settings' );
 use_ok( 'App::GUI::Juliagraph::Config' );
