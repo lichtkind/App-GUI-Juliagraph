@@ -5,7 +5,7 @@ use utf8;
 
 package App::GUI::Juliagraph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.5';
+our $VERSION = '0.6';
 
 use base qw/Wx::App/;
 use App::GUI::Juliagraph::Frame;

@@ -35,7 +35,7 @@ sub new {
     $self->{'tabs'}            = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'tab'}{'constraints'}  = App::GUI::Juliagraph::Frame::Panel::Constraints->new( $self->{'tabs'} );
     $self->{'tab'}{'polynomial'}   = App::GUI::Juliagraph::Frame::Panel::Polynomial->new( $self->{'tabs'} );
-    $self->{'tab'}{'mapping'}      = App::GUI::Juliagraph::Frame::Panel::Mapping->new( $self->{'tabs'} );
+    $self->{'tab'}{'mapping'}      = App::GUI::Juliagraph::Frame::Panel::Mapping->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tab'}{'color'}        = App::GUI::Juliagraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'constraints'},  'Constraints');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'polynomial'},   'Polynomial');

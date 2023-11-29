@@ -7,7 +7,7 @@ use base qw/Wx::Panel/;
 
 sub new {
     my ( $class, $parent, $x, $y, $nr, $init  ) = @_;
-    return unless ref $init eq 'HASH' and exists $init->{'red'} and exists $init->{'green'}and exists $init->{'blue'};
+    return unless ref $init eq 'HASH' and exists $init->{'red'} and exists $init->{'green'} and exists $init->{'blue'};
 
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y]);
 

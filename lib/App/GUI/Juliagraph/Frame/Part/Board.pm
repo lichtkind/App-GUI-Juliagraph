@@ -118,7 +118,7 @@ sub paint {
 
     my $progress = $self->GetParent->{'progress'};
     my $colors = $self->{'data'}{'mapping'}{'select'} * ($self->{'data'}{'mapping'}{'gradient'}+1)
-               * $self->{'data'}{'mapping'}{'repeat'} * $self->{'data'}{'mapping'}{'group'};
+               * $self->{'data'}{'mapping'}{'repeat'} * $self->{'data'}{'mapping'}{'grading'};
     my @color = ();
     if ($self->{'data'}{'mapping'}{'color'}){
         $self->{'data'}{'color'}{ $self->{'data'}{'mapping'}{'select'} } = $self->{'data'}{'color'}{ 8 };
@@ -137,11 +137,11 @@ sub paint {
                                                              dynamic => $self->{'data'}{'mapping'}{'dynamics'},
                                                                 );
     }
-    if ($self->{'data'}{'mapping'}{'group'} > 1){
+    if ($self->{'data'}{'mapping'}{'grading'} > 1){
         my @temp = @color;
         @color = ();
         for my $color (@temp){
-            push @color, $color for 1 .. $self->{'data'}{'mapping'}{'group'};
+            push @color, $color for 1 .. $self->{'data'}{'mapping'}{'grading'};
         }
     }
     if ($self->{'data'}{'mapping'}{'repeat'} > 1){

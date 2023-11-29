@@ -1,5 +1,11 @@
+0.6    2023-11-30  lichtkind
+-------
+    * = minor feature release
+
+
 0.5    2023-11-27  lichtkind
 -------
+    * = major feature release
     * * reworked constriants tab
         added options to use constant or coordinate values
     * * polynomial tab for more complex equations with more monomials
