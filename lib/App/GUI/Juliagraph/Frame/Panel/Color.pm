@@ -160,7 +160,7 @@ sub select_state {
 }
 
 sub init { $_[0]->set_settings( { 0 => '#FFFFFF', 1 => '#F9E595', 2 => '#A1680C', 3 => '#B63A3E',
-                                  4 => '#777777', 5 => '#555555', 6 => '#333333', 7 => '#111111', 8 => '#000000',
+                                  4 => '#777777', 5 => '#555555', 6 => '#333333', 7 => '#111111',
                                   dynamics => 0, delta_S => 0, delta_L => 0 } )
 }
 
@@ -171,7 +171,7 @@ sub get_settings {
         delta_S => $self->{'Sdelta'}->GetValue,
         delta_L => $self->{'Ldelta'}->GetValue,
     };
-    $data->{$_} = $self->{'state_colors'}[$_]->values(as => 'string') for 0 .. $self->{'last_state'}+1;
+    $data->{$_} = $self->{'state_colors'}[$_]->values(as => 'string') for 0 .. $self->{'last_state'};
     $data;
 }
 
@@ -184,7 +184,7 @@ sub set_settings {
     for (0 .. $self->{'last_state'}){
         $data->{$_} = $default_color_def unless exists $data->{$_};
     }
-    $self->{'state_colors'}[$_] = color( $data->{$_} ) for 0 .. $self->{'last_state'}+1;
+    $self->{'state_colors'}[$_] = color( $data->{$_} ) for 0 .. $self->{'last_state'};
     $self->set_all_colors( @{$self->{'state_colors'}} );
     $self->{'objects'} = $self->{'state_colors'};
 }

@@ -6,10 +6,7 @@ package App::GUI::Juliagraph::Frame::Part::Board;
 use base qw/Wx::Panel/;
 
 use Graphics::Toolkit::Color qw/color/;
-#use Benchmark;
-
 use constant SKETCH_FACTOR => 4;
-
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
@@ -72,7 +69,8 @@ sub set_settings {
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
-    #my $t0 = Benchmark->new();
+     use Benchmark;
+     my $t0 = Benchmark->new();
     my %factor = ();
     my $max_exp;
     for my $mnr (1 .. 4){
@@ -106,23 +104,28 @@ sub paint {
         $max_exp = $position if $max_exp < $position;
     }
 
-    my $metric = { '|var|' => '($x*$x) + ($y*$y)', '|x|' => 'abs($x)',         '|y|' => 'abs($y)',
-                   '|x+y|' => 'abs($x+$y)',    '|x|+|y|' => 'abs($x)+abs($y)', 'x+y' => '$x+$y',
-                    'x*y'  => '$x*$y',           '|x*y|' => 'abs($x*$y)',
-                     'x-y' => '$x-$y',             'y-x' => '$y-$x',
-    };
+    my $metric = { '|var|' => '($x*$x) + ($y*$y)', '|x*y|' => 'abs($x*$y)',
+                     '|x|' => 'abs($x)',             '|y|' => 'abs($y)',
+                   '|x+y|' => 'abs($x+$y)',      '|x|+|y|' => 'abs($x)+abs($y)',
+                    'x+y'  => '$x+$y',              'x*y'  => '$x*$y',
+                    'x-y'  =>     '$x-$y',          'y-x'  => '$y-$x'}->{ $self->{'data'}{'constraints'}{'stop_metric'} };
 
-    my $background_color = Wx::Colour->new( 255, 255, 255 );
+    my @bg_color = $self->{'data'}{'mapping'}{'use_bg_color'}
+                 ? color( $self->{'data'}{'mapping'}{'background_color'} )->values( in => 'RGB', as=>'list' )
+                 : (0,0,0);
+    my $background_color = Wx::Colour->new( @bg_color );
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
+    #return $dc;
 
+    # compute color gradient
     my $progress = $self->GetParent->{'progress'};
-    my $colors = $self->{'data'}{'mapping'}{'select'} * ($self->{'data'}{'mapping'}{'gradient'}+1)
-               * $self->{'data'}{'mapping'}{'repeat'} * $self->{'data'}{'mapping'}{'grading'};
+    my $colors = ($self->{'data'}{'mapping'}{'select'}-1) * ($self->{'data'}{'mapping'}{'gradient'}+1)
+                * $self->{'data'}{'mapping'}{'repeat'}    * $self->{'data'}{'mapping'}{'grading'};
     my @color = ();
     if ($self->{'data'}{'mapping'}{'color'}){
         $self->{'data'}{'color'}{ $self->{'data'}{'mapping'}{'select'} } = $self->{'data'}{'color'}{ 8 };
-        for my $i (0 .. $self->{'data'}{'mapping'}{'select'} - 1) {
+        for my $i (0 .. $self->{'data'}{'mapping'}{'select'} - 2) {
             my @gradient = map {[$_->values]}
                            color($self->{'data'}{'color'}{$i})->gradient( to => $self->{'data'}{'color'}{$i+1},
                                                                           steps => $self->{'data'}{'mapping'}{'gradient'}+2,
@@ -137,7 +140,8 @@ sub paint {
                                                              dynamic => $self->{'data'}{'mapping'}{'dynamics'},
                                                                 );
     }
-    if ($self->{'data'}{'mapping'}{'grading'} > 1){
+    my $subgradient = int($self->{'data'}{'mapping'}{'grading'} > 1 and $self->{'data'}{'mapping'}{'grading_type'} eq 'Group');
+    if ($subgradient){
         my @temp = @color;
         @color = ();
         for my $color (@temp){
@@ -152,18 +156,28 @@ sub paint {
         $progress->add_percentage( $_ / $#color * 100, $color[$_] ) for 0 .. $#color;
         $progress->full;
     }
-    $color[$_] = [0,0,0] for $colors .. $self->{'data'}{'constraints'}{'stop_value'}; # background color
-
+    if ($self->{'data'}{'mapping'}{'grading'} > 1 and $self->{'data'}{'mapping'}{'grading_type'} eq 'Sub' and not $self->{'flag'}{'sketch'}){
+        for my $i (0 .. $#color){
+            my $next = ($i == $#color) ? color( @bg_color ) : color( $color[$i+1] ) ;
+            my @c = color( $color[$i] )->gradient( to => $next,
+                                                   steps => $self->{'data'}{'mapping'}{'grading'}+2,
+                                                   dynamic => $self->{'data'}{'mapping'}{'dynamics'},
+                                                 );
+            pop @c;
+            $color[$i] = [@c];
+        }
+    }
 
     if ($self->{'flag'}{'sketch'}){
         $x_delta_step *= SKETCH_FACTOR;
         $y_delta_step *= SKETCH_FACTOR;
-        $colors = 20 if $colors > 20;
-        $stop = 100 if $stop > 100;
+        $colors = 25 if $colors > 25;
+        $stop = 50 if $stop > 50;
     }
 
     my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
     my ($x_const, $y_const, $x, $y, $x_old, $y_old, $x_pot, $y_pot);
+    my $last_color = $colors - 1;
 
     my $code = 'my ($x_num, $x_pix) = ($x_min, 0);'."\n";
     $code .= $self->{'flag'}{'sketch'}
@@ -182,9 +196,10 @@ sub paint {
         $y_start_value = $y_start_value ? $y_start_value . ' + $y_num' : '$y_num';
     }
 
+my %vals;
     $code .= '    $x = '.$x_start_value.';'."\n";
     $code .= '    $y = '.$y_start_value.';'."\n";
-    $code .= '    for my $i (0 .. $colors){'."\n";
+    $code .= '    for my $i (0 .. '.$last_color.'){'."\n";
     $code .= '      $x_pot = $x_old = $x;'."\n";
     $code .= '      $y_pot = $y_old = $y;'."\n";
     $code .= '      $x = '.(($position eq 'constant') ? $const_a.'+ $x_num' : $const_a).';'."\n";
@@ -209,14 +224,23 @@ sub paint {
     }
     $code .= '      $x += $x_old '.$x_linear.';'."\n" if $x_linear;
     $code .= '      $y += $y_old '.$y_linear.';'."\n" if $y_linear;
-    $code .= '      if ('.$metric->{$self->{'data'}{'constraints'}{'stop_metric'}}.' > $stop){'."\n";
-    $code .= '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i]});'."\n";
+    $code .= '      if ('.$metric.' > $stop){'."\n";
+    $code .= $subgradient
+           ? '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i][0]});'."\n"
+           : '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i]});'."\n";
     $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, @{$color[$i]});'."\n".
              '        $img->SetRGB( $x_pix+1, $y_pix,   @{$color[$i]});'."\n".
              '        $img->SetRGB( $x_pix+1, $y_pix+1, @{$color[$i]});'."\n".
              '        $img->SetRGB( $x_pix+1, $y_pix+2, @{$color[$i]});'."\n".
-             '        $img->SetRGB( $x_pix+2, $y_pix+1, @{$color[$i]});'."\n" if $self->{'flag'}{'sketch'};
-    $code .= '        last;'."\n".'      }'."\n".'    }'."\n";
+             '        $img->SetRGB( $x_pix+2, $y_pix+1, @{$color[$i]});'."\n" if $self->{'flag'}{'sketch'}; # fat pixel
+    $code .= '        my $v = int (log( 1 * sqrt('.$metric.' ) / sqrt($stop) +1));'."\n";
+    $code .= '        $vals{$v}++;'."\n";
+ #   $code .= '        print " ",$v;'."\n";
+    $code .= '        last;'."\n";
+    $code .= '      }'."\n";
+    $code .= '      $img->SetRGB( $x_pix,   $y_pix,   @bg_color) if $i == $last_color;'."\n"
+            if $self->{'data'}{'mapping'}{'use_bg_color'} and not $self->{'flag'}{'sketch'};
+    $code .= '    }'."\n";
     $code .= '    $y_num += $y_delta_step;'."\n";
     $code .= $self->{'flag'}{'sketch'}
            ? '    $y_pix -= SKETCH_FACTOR;'."\n"
@@ -228,12 +252,16 @@ sub paint {
            : '  $x_pix ++;'."\n";
     $code .= '}'."\n";
 
-    #say "compile:",timestr(timediff(Benchmark->new, $t0));
-    #$t0 = Benchmark->new();
+    say "compile:",timestr(timediff(Benchmark->new, $t0));
+    $t0 = Benchmark->new();
+
+
     eval $code; # say $code;
     die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
-    #say "run:",timestr(timediff(Benchmark->new, $t0));
+    say "run:",timestr(timediff(Benchmark->new, $t0));
+say  "$_: ".$vals{$_} for keys %vals;
+
 
     $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
     $self->{'image'} = $img unless $self->{'flag'}{'sketch'};

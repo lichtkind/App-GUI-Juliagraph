@@ -31,17 +31,17 @@ sub new {
     $dyn_lbl->SetToolTip('how many big is the slant of a color gradient in one or another direction');
 
     $self->{'color'}     = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[45, -1]);
-    $self->{'use_bg'}    = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[45, -1]);
-    $self->{'select'}    = Wx::ComboBox->new( $self, -1,   8, [-1,-1],[65, -1], [1..8]);
-    $self->{'repeat'}    = Wx::ComboBox->new( $self, -1, 256, [-1,-1],[65, -1], [1..20]);
+    $self->{'use_bg_color'}    = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[45, -1]);
+    $self->{'select'}    = Wx::ComboBox->new( $self, -1,   8, [-1,-1],[65, -1], [2 .. 8]);
+    $self->{'repeat'}    = Wx::ComboBox->new( $self, -1, 256, [-1,-1],[65, -1], [1 .. 20]);
     $self->{'grading'}   = Wx::ComboBox->new( $self, -1,  1,  [-1,-1],[75, -1], [1 .. 16]);
-    $self->{'gradient'}  = Wx::ComboBox->new( $self, -1, 25,  [-1,-1],[80, -1], [0, 1,  2,  3,  4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30, 35, 40, 50]);
+    $self->{'gradient'}  = Wx::ComboBox->new( $self, -1, 25,  [-1,-1],[80, -1], [0, 1,  2,  3,  4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30, 35, 40, 50, 65, 80, 100]);
     $self->{'dynamics'}  = Wx::ComboBox->new( $self, -1,  0,  [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
     $self->{'grading_type'} = Wx::RadioBox->new( $self, -1, ' G r a d i n g ', [-1,-1],[-1,-1], ['Group','Sub'] );
     $self->{'grading_type'}->SetToolTip("choose a rough gradient by grouping several color areas into one or a more smooth by introducing an amount of subgradient colors");
 
     $self->{'color'}->SetToolTip('use chosen color selection or just simple gray scale');
-    $self->{'use_bg'}->SetToolTip('use chosen background color or just black');
+    $self->{'use_bg_color'}->SetToolTip('use chosen background color or just black');
     $self->{'repeat'}->SetToolTip('take first color again when ran out of colors');
     $self->{'select'}->SetToolTip('the first n stop values are translated into colors');
     $self->{'grading'}->SetToolTip('how many neighbouring stop values are being translated into one color or how many additional colors are introduced by subgradient');
@@ -53,7 +53,7 @@ sub new {
     $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'grading_type'},  sub { $self->{'callback'}->() } );
-    Wx::Event::EVT_CHECKBOX( $self, $self->{$_},            sub { $self->{'callback'}->() }) for qw/color use_bg/;
+    Wx::Event::EVT_CHECKBOX( $self, $self->{$_},            sub { $self->{'callback'}->() }) for qw/color use_bg_color/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/select repeat grading gradient dynamics/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{'select'},  sub { $self->{'callback'}->(); $self->GetParent->GetParent->{'tab'}{'color'}->set_state_count( $self->{'select'}->GetStringSelection - 1 ) });
 
@@ -101,7 +101,7 @@ sub new {
     $bg_sizer->AddSpacer( $std_margin );
     $bg_sizer->Add( $bg_lbl,                     0, $item_prop,  12);
     $bg_sizer->AddSpacer( 10 );
-    $bg_sizer->Add( $self->{'use_bg'},           0, $item_prop,   0);
+    $bg_sizer->Add( $self->{'use_bg_color'},     0, $item_prop,   0);
     $bg_sizer->AddSpacer( 10 );
     $bg_sizer->Add( $self->{'background_color'}, 0, $item_prop,  12);
     $bg_sizer->AddSpacer( $std_margin );
@@ -132,7 +132,7 @@ sub new {
 sub init {
     my ( $self ) = @_;
     $self->set_settings ({ color => 1, select => 8,  repeat => 1, gradient => 10, dynamics => 0,
-                           use_bg => 1, grading_type => 'Sub', grading => 1,
+                           use_bg_color => 1, background_color => 'rgb: 0,0,0', grading_type => 'Sub', grading => 1,
                             } );
 }
 
@@ -140,14 +140,14 @@ sub get_settings {
     my ( $self ) = @_;
     {
         color   => int $self->{'color'}->GetValue,
-        use_bg  => int $self->{'use_bg'}->GetValue,
+        use_bg_color  => int $self->{'use_bg_color'}->GetValue,
         repeat  => $self->{'repeat'}->GetStringSelection,
         select  => $self->{'select'}->GetStringSelection,
         grading => $self->{'grading'}->GetStringSelection,
         gradient => $self->{'gradient'}->GetStringSelection,
         dynamics => $self->{'dynamics'}->GetStringSelection,
-        # smooth  => int $self->{'smooth'}->GetValue,
-        # substeps => $self->{'substeps'}->GetStringSelection,
+        grading_type => $self->{'grading_type'}->GetStringSelection,
+        background_color  => color($self->get_current_color)->values( as => 'string' ),
     }
 }
 
@@ -155,14 +155,16 @@ sub set_settings {
     my ( $self, $data ) = @_;
     return 0 unless ref $data eq 'HASH' and exists $data->{'select'};
     $self->PauseCallBack();
-    for my $key (qw/color use_bg/){ # smooth
+    for my $key (qw/color use_bg_color/){
         next unless exists $data->{$key} and exists $self->{$key};
         $self->{$key}->SetValue( $data->{$key} );
     }
-    for my $key (qw/select repeat grading gradient dynamics/){ # substeps
+    for my $key (qw/select repeat grading gradient dynamics grading_type/){
         next unless exists $data->{$key} and exists $self->{$key};
         $self->{$key}->SetSelection( $self->{$key}->FindString($data->{$key}) );
     }
+    $self->set_current_color( color( $data->{'background_color'} )->values( as => 'hash' ) )
+        if exists $data->{'background_color'};
     $self->RestoreCallBack();
     1;
 }
