@@ -37,7 +37,7 @@ sub new {
     $self->{'grading'}   = Wx::ComboBox->new( $self, -1,  1,  [-1,-1],[75, -1], [1 .. 16]);
     $self->{'gradient'}  = Wx::ComboBox->new( $self, -1, 25,  [-1,-1],[80, -1], [0, 1,  2,  3,  4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30, 35, 40, 50, 65, 80, 100]);
     $self->{'dynamics'}  = Wx::ComboBox->new( $self, -1,  0,  [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
-    $self->{'grading_type'} = Wx::RadioBox->new( $self, -1, ' G r a d i n g ', [-1,-1],[-1,-1], ['Group','Sub'] );
+    $self->{'grading_type'} = Wx::RadioBox->new( $self, -1, ' G r a d i n g ', [-1,-1],[-1, -1], ['Group','Sub', 'No'] );
     $self->{'grading_type'}->SetToolTip("choose a rough gradient by grouping several color areas into one or a more smooth by introducing an amount of subgradient colors");
 
     $self->{'color'}->SetToolTip('use chosen color selection or just simple gray scale');
@@ -89,11 +89,11 @@ sub new {
 
     my $shades_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     # $shades_sizer->AddSpacer( $std_margin );
-    $shades_sizer->Add( $self->{'grading_type'}, 0, $item_prop,  0);
-    $shades_sizer->AddStretchSpacer();
-    $shades_sizer->Add( $group_lbl,              0, $item_prop, 12);
+    $shades_sizer->Add( $self->{'grading_type'}, 0, $item_prop,   4);
+    $shades_sizer->AddSpacer( 52 );
+    $shades_sizer->Add( $group_lbl,              0, $item_prop,  16);
     $shades_sizer->AddSpacer( 10 );
-    $shades_sizer->Add( $self->{'grading'},      0, $item_prop,  4);
+    $shades_sizer->Add( $self->{'grading'},      0, $item_prop,   8);
     $shades_sizer->AddStretchSpacer();
     $shades_sizer->AddSpacer( $std_margin );
 

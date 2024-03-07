@@ -239,7 +239,7 @@ my %vals;
     $code .= '        last;'."\n";
     $code .= '      }'."\n";
     $code .= '      $img->SetRGB( $x_pix,   $y_pix,   @bg_color) if $i == $last_color;'."\n"
-            if $self->{'data'}{'mapping'}{'use_bg_color'};
+            if $self->{'data'}{'mapping'}{'use_bg_color'}; # and not $self->{'flag'}{'sketch'}
     $code .= '    }'."\n";
     $code .= '    $y_num += $y_delta_step;'."\n";
     $code .= $self->{'flag'}{'sketch'}
