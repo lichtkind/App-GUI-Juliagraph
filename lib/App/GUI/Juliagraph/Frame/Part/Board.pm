@@ -110,7 +110,7 @@ sub paint {
                     'x+y'  => '$x+$y',              'x*y'  => '$x*$y',
                     'x-y'  =>     '$x-$y',          'y-x'  => '$y-$x'}->{ $self->{'data'}{'constraints'}{'stop_metric'} };
 
-    my @bg_color = $self->{'data'}{'mapping'}{'use_bg_color'}
+    my @bg_color = ($self->{'data'}{'mapping'}{'color'} and $self->{'data'}{'mapping'}{'use_bg_color'})
                  ? color( $self->{'data'}{'mapping'}{'background_color'} )->values( in => 'RGB', as=>'list' )
                  : (0,0,0);
     my $background_color = Wx::Colour->new( @bg_color );
@@ -239,7 +239,7 @@ my %vals;
     $code .= '        last;'."\n";
     $code .= '      }'."\n";
     $code .= '      $img->SetRGB( $x_pix,   $y_pix,   @bg_color) if $i == $last_color;'."\n"
-            if $self->{'data'}{'mapping'}{'use_bg_color'} and not $self->{'flag'}{'sketch'};
+            if $self->{'data'}{'mapping'}{'use_bg_color'};
     $code .= '    }'."\n";
     $code .= '    $y_num += $y_delta_step;'."\n";
     $code .= $self->{'flag'}{'sketch'}
@@ -260,7 +260,7 @@ my %vals;
     die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
     say "run:",timestr(timediff(Benchmark->new, $t0));
-say  "$_: ".$vals{$_} for keys %vals;
+    unless ($self->{'flag'}{'sketch'}){ say  "$_: ".$vals{$_} for keys %vals }
 
 
     $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );

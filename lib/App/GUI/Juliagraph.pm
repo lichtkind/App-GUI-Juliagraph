@@ -73,7 +73,7 @@ You may also change it by editor or delet it to reset configs to default.
 
 =head1 DESCRIPTION
 
-Mandelbrot (first thee) and Julia fractals (second three following) are
+Mandelbrot (first two pictures) and Julia fractals (second four) are
 just mathematical diagrams, showing you how iterating the equation
 C<z_n+1 = z_n ** 2 + C> behaves in the complex plane.
 The values at the pixel coordinates or some chosen constant is taken as
