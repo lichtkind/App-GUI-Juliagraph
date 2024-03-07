@@ -36,8 +36,10 @@ sub new {
 sub init {
     my ( $self ) = @_;
     $self->{$_}->init() for 1 .. 4;
-    $self->{1}->set_settings({active => 1, use_factor => 1, factor_r => 0, factor_i => 0, exponent => 0});
+    $self->{1}->set_settings({active => 0, use_factor => 1, factor_r => 1, factor_i => 1, exponent => 1});
     $self->{2}->set_settings({active => 1, use_factor => 1, factor_r => 1, factor_i => 1, exponent => 2});
+    $self->{3}->set_settings({active => 0, use_factor => 1, factor_r => 1, factor_i => 1, exponent => 3});
+    $self->{4}->set_settings({active => 0, use_factor => 1, factor_r => 1, factor_i => 1, exponent => 4});
 }
 
 sub get_settings {

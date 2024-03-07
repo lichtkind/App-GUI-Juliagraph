@@ -22,7 +22,7 @@ sub new {
     my $exp_txt = "exponent above iterator variable z_n+1 = z_n**exponent * factor\nzero turns factor into constant";
     my $exp_lbl   = Wx::StaticText->new($self, -1, 'E x p o n e n t :' );
     $exp_lbl->SetToolTip($exp_txt);
-    $self->{'exponent'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[75, 35], [0 .. 16]);
+    $self->{'exponent'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1],[75, 35], [1 .. 16]);
     $self->{'exponent'}->SetToolTip($exp_txt);
 
     my $r_lbl     = Wx::StaticText->new($self, -1, 'Re : ' );
