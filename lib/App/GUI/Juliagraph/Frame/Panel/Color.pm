@@ -159,8 +159,8 @@ sub select_state {
     $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash, 'silent' );
 }
 
-sub init { $_[0]->set_settings( { 0 => '#FFFFFF', 1 => '#F9E595', 2 => '#A1680C', 3 => '#B63A3E',
-                                  4 => '#777777', 5 => '#555555', 6 => '#333333', 7 => '#111111',
+sub init { $_[0]->set_settings( { 0 => '#FFFFFF', 1 => '#F9E595', 2 => '#e09010', 3 => '#B63A3E',
+                                  4 => '#90663c', 5 => '#633b3b', 6 => '#333333', 7 => '#111111',
                                   dynamics => 0, delta_S => 0, delta_L => 0 } )
 }
 

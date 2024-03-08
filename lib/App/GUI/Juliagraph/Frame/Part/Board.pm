@@ -69,8 +69,10 @@ sub set_settings {
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
-     use Benchmark;
-     my $t0 = Benchmark->new();
+    use Benchmark;
+    my $t0 = Benchmark->new();
+
+    my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
     my %factor = ();
     my $max_exp;
     for my $mnr (1 .. 4){
@@ -175,7 +177,6 @@ sub paint {
         $stop = 50 if $stop > 50;
     }
 
-    my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
     my ($x_const, $y_const, $x, $y, $x_old, $y_old, $x_pot, $y_pot);
     my $last_color = $colors - 1;
 
