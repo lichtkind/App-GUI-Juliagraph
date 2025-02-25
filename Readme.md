@@ -9,6 +9,7 @@
 [Home on CPAN](https://metacpan.org/pod/App::GUI::Juliagraph)
 
     This is the landing page for the user documentation on github.
+    Please use the link above to visit the de facto homepage of the project.
     There is also a download link on the left side under "Tools".
 
 
@@ -64,7 +65,7 @@
     Graphics::Toolkit::Color 1.71
     WxPerl (Wx) 0.9
 
-
+[SEE ALSO](https://lichtkind/code)
 
 [CHANGES](https://github.com/lichtkind/App-GUI-Juliagraph/blob/main/Changes) (with roadmap)
 
@@ -72,7 +73,7 @@
 
 ### COPYRIGHT
 
-    Copyright(c) 2023 Herbert Breunung,
+    Copyright(c) 2023-25 Herbert Breunung,
 
-    All rights reserved.  This program is free software; you can
-    redistribute it and/or modify it under GPL version 3
+    All rights reserved.  This program is free software;
+    you can redistribute it and/or modify it under GPL version 3
