@@ -44,7 +44,7 @@ sub new {
 
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @interactive_tabs;
 
-    $self->{'progress'}            = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 5, [20, 20, 110]);
+    $self->{'progress_bar'}        = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 5, [20, 20, 110]);
     $self->{'board'}               = App::GUI::Juliagraph::Frame::Panel::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}     = App::GUI::Juliagraph::Dialog::About->new();
 
@@ -129,7 +129,7 @@ sub new {
     my $cmdi_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $image_lbl = Wx::StaticText->new( $self, -1, 'Pen Color:' );
     $cmdi_sizer->Add( $image_lbl,     0, $all_attr, 15 );
-    $cmdi_sizer->Add( $self->{'progress'},         0, &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL| &Wx::wxALL, 10 );
+    $cmdi_sizer->Add( $self->{'progress_bar'},         0, &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL| &Wx::wxALL, 10 );
     $cmdi_sizer->AddSpacer(5);
     $cmdi_sizer->Add( $self->{'btn'}{'draw'},      0, $all_attr, 5 );
     $cmdi_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);

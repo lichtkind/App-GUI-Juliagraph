@@ -53,9 +53,9 @@ sub get_settings {
 }
 
 sub set_settings {
-    my ( $self, $data ) = @_;
-    return 0 unless ref $data eq 'HASH' and exists $data->{'monomial_1'};
-    $self->{$_}->set_settings($data->{'monomial_'.$_}) for 1..4;
+    my ( $self, $settings ) = @_;
+    return 0 unless ref $settings eq 'HASH' and exists $settings->{'monomial_1'};
+    $self->{$_}->set_settings( $settings->{'monomial_'.$_} ) for 1..4;
     1;
 }
 
