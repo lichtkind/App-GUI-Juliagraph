@@ -1,12 +1,12 @@
 use v5.12;
 use warnings;
 
-package App::GUI::Juliagraph::Frame::Panel::Mapping;
+package App::GUI::Juliagraph::Frame::Tab::Mapping;
 use base qw/Wx::Panel/;
 use App::GUI::Juliagraph::Widget::SliderStep;
 use App::GUI::Juliagraph::Widget::ColorDisplay;
-use App::GUI::Juliagraph::Frame::Part::ColorBrowser;
-use App::GUI::Juliagraph::Frame::Part::ColorPicker;
+use App::GUI::Juliagraph::Frame::Panel::ColorBrowser;
+use App::GUI::Juliagraph::Frame::Panel::ColorPicker;
 use Graphics::Toolkit::Color qw/color/;
 use Wx;
 
@@ -48,8 +48,8 @@ sub new {
     $self->{'gradient'}->SetToolTip('how many shades has a gradient between two selected colors');
     $self->{'dynamics'}->SetToolTip('how many big is the slant of a color gradient in one or another direction');
     $self->{'background_color'} = App::GUI::Juliagraph::Widget::ColorDisplay->new( $self, 80, 20, 'background', {red => 0, green => 0, blue => 0} );
-    $self->{'picker'}  = App::GUI::Juliagraph::Frame::Part::ColorPicker->new( $self, $config->get_value('color') );
-    $self->{'browser'} = App::GUI::Juliagraph::Frame::Part::ColorBrowser->new( $self, 'background', {red => 0, green => 0, blue => 0} );
+    $self->{'picker'}  = App::GUI::Juliagraph::Frame::Panel::ColorPicker->new( $self, $config->get_value('color') );
+    $self->{'browser'} = App::GUI::Juliagraph::Frame::Panel::ColorBrowser->new( $self, 'background', {red => 0, green => 0, blue => 0} );
     $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'grading_type'},  sub { $self->{'callback'}->() } );

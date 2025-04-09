@@ -1,8 +1,9 @@
+#
+
+package App::GUI::Juliagraph::Frame::Tab::Constraints;
 use v5.12;
 use warnings;
 use Wx;
-
-package App::GUI::Juliagraph::Frame::Panel::Constraints;
 use base qw/Wx::Panel/;
 use App::GUI::Juliagraph::Widget::SliderStep;
 

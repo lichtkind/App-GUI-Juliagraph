@@ -5,15 +5,15 @@ use Wx::AUI;
 
 package App::GUI::Juliagraph::Frame;
 use base qw/Wx::Frame/;
-use App::GUI::Juliagraph::Frame::Panel::Constraints;
-use App::GUI::Juliagraph::Frame::Panel::Polynomial;
-use App::GUI::Juliagraph::Frame::Panel::Mapping;
-use App::GUI::Juliagraph::Frame::Panel::Color;
-use App::GUI::Juliagraph::Frame::Part::Board;
 use App::GUI::Juliagraph::Dialog::About;
-use App::GUI::Juliagraph::Widget::ProgressBar;
-use App::GUI::Juliagraph::Settings;
 use App::GUI::Juliagraph::Config;
+use App::GUI::Juliagraph::Settings;
+use App::GUI::Juliagraph::Frame::Tab::Constraints;
+use App::GUI::Juliagraph::Frame::Tab::Polynomial;
+use App::GUI::Juliagraph::Frame::Tab::Mapping;
+use App::GUI::Juliagraph::Frame::Tab::Color;
+use App::GUI::Juliagraph::Frame::Panel::Board;
+use App::GUI::Juliagraph::Widget::ProgressBar;
 
 my @interactive_tabs = qw/constraints polynomial mapping/;
 my @silent_tabs = qw/color/;
@@ -33,10 +33,10 @@ sub new {
 
     # create GUI parts
     $self->{'tabs'}            = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
-    $self->{'tab'}{'constraints'}  = App::GUI::Juliagraph::Frame::Panel::Constraints->new( $self->{'tabs'} );
-    $self->{'tab'}{'polynomial'}   = App::GUI::Juliagraph::Frame::Panel::Polynomial->new( $self->{'tabs'} );
-    $self->{'tab'}{'mapping'}      = App::GUI::Juliagraph::Frame::Panel::Mapping->new( $self->{'tabs'}, $self->{'config'} );
-    $self->{'tab'}{'color'}        = App::GUI::Juliagraph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
+    $self->{'tab'}{'constraints'}  = App::GUI::Juliagraph::Frame::Tab::Constraints->new( $self->{'tabs'} );
+    $self->{'tab'}{'polynomial'}   = App::GUI::Juliagraph::Frame::Tab::Polynomial->new( $self->{'tabs'} );
+    $self->{'tab'}{'mapping'}      = App::GUI::Juliagraph::Frame::Tab::Mapping->new( $self->{'tabs'}, $self->{'config'} );
+    $self->{'tab'}{'color'}        = App::GUI::Juliagraph::Frame::Tab::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'constraints'},  'Constraints');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'polynomial'},   'Polynomial');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},      'Color Mapping');
@@ -45,7 +45,7 @@ sub new {
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @interactive_tabs;
 
     $self->{'progress'}            = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 5, [20, 20, 110]);
-    $self->{'board'}               = App::GUI::Juliagraph::Frame::Part::Board->new( $self , 600, 600 );
+    $self->{'board'}               = App::GUI::Juliagraph::Frame::Panel::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}     = App::GUI::Juliagraph::Dialog::About->new();
 
     my $btnw = 50; my $btnh     = 40;# button width and height

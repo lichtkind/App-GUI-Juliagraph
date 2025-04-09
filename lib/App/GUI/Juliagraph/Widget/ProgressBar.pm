@@ -7,7 +7,7 @@ use base qw/Wx::Panel/;
 
 sub new {
     my ( $class, $parent, $x, $y, $color  ) = @_;
-    return unless ref $color eq 'ARRAY' and @$color == 3;
+    return unless ref $color eq 'ARRAY' and @{$color} == 3;
 
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y]);
 
@@ -48,22 +48,19 @@ sub reset {
 }
 
 sub set_color {
-    my ( $self, $color ) = @_;
-    return unless ref $color eq 'HASH' and exists $color->{'red'} and exists $color->{'green'} and exists $color->{'blue'};
-    $self->{'color'} = $color;
+    my ( $self, $r, $g, $b ) = @_;
+    return unless defined $b;
+    $self->{'color'} = [$r, $g, $b];
 }
 
 sub add_percentage {
-    my ( $self, $p, $color ) = @_;
-    return unless defined $p and $p <= 100 and $p >= 0 and $p != $self->{'percentage'};
-    push @{$self->{'percentage'}}, $color, $p;
+    my ( $self, $percent, $color ) = @_;
+    return unless defined $percent and $percent <= 100 and $percent >= 0
+        and $percent != $self->{'percentage'} and ref $color eq 'ARRAY' and @$color == 3;
+    push @{$self->{'percentage'}}, $color, $percent; # say " $percent  $color->[0],$color->[1],$color->[2]";
+    $self->Refresh;
 }
 
 sub get_percentage { $_[0]->{'percentage'} }
-
-sub full {
-    my ( $self ) = @_;
-    $self->Refresh;
-}
 
 1;

@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Juliagraph::Frame::Part::Board;
+package App::GUI::Juliagraph::Frame::Panel::Board;
 use base qw/Wx::Panel/;
 
 use Graphics::Toolkit::Color qw/color/;

@@ -7,7 +7,7 @@ use base qw/Wx::Panel/;
 
 sub new {
     my ( $class, $parent, $x, $y, $nr, $init  ) = @_;
-    return unless ref $init eq 'HASH' and exists $init->{'red'} and exists $init->{'green'} and exists $init->{'blue'};
+    return unless ref $init eq 'HASH' and exists $init->{'red'} and exists $init->{'green'}and exists $init->{'blue'};
 
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y]);
 
@@ -30,13 +30,12 @@ sub init {
     $self->set_color( $self->{'init'} );
 }
 
-sub get_nr { $_[0]->{'nr'} }
-
 sub set_color {
     my ( $self, $color ) = @_;
     return unless ref $color eq 'HASH' and exists $color->{'red'} and exists $color->{'green'} and exists $color->{'blue'};
     $self->{$_} = $color->{$_} for qw/red green blue/;
     $self->Refresh;
+
 }
 
 sub get_color {
@@ -48,5 +47,13 @@ sub get_color {
     }
 }
 
+sub get_nr { $_[0]->{'nr'} }
+
+sub SetCallBack {
+    my ( $self, $code) = @_;
+    return unless ref $code eq 'CODE';
+    $self->{'callback'} = $code;
+}
 
 1;
+

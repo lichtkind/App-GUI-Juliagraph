@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Juliagraph::Frame::Part::Monomial;
+package App::GUI::Juliagraph::Frame::Panel::Monomial;
 use base qw/Wx::Panel/;
 use App::GUI::Juliagraph::Widget::SliderStep;
 

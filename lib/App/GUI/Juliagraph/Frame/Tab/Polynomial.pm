@@ -2,16 +2,16 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Juliagraph::Frame::Panel::Polynomial;
+package App::GUI::Juliagraph::Frame::Tab::Polynomial;
 use base qw/Wx::Panel/;
 
-use App::GUI::Juliagraph::Frame::Part::Monomial;
+use App::GUI::Juliagraph::Frame::Panel::Monomial;
 
 sub new {
     my ( $class, $parent) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
-    $self->{$_} = App::GUI::Juliagraph::Frame::Part::Monomial->new( $self, $_-1) for 1 .. 4;
+    $self->{$_} = App::GUI::Juliagraph::Frame::Panel::Monomial->new( $self, $_-1) for 1 .. 4;
 
     my $base_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $vert_attr = $base_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
