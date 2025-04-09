@@ -38,9 +38,9 @@ sub new {
     $self->{'tab'}{'mapping'}      = App::GUI::Juliagraph::Frame::Tab::Mapping->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tab'}{'color'}        = App::GUI::Juliagraph::Frame::Tab::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'constraints'},  'Constraints');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'polynomial'},   'Polynomial');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'polynomial'},   'Polynomials');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},      'Color Mapping');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},        'Color Selection');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},        'Colors');
 
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @interactive_tabs;
 
@@ -127,7 +127,7 @@ sub new {
     my $line_attr    = $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT ;
 
     my $cmdi_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    my $image_lbl = Wx::StaticText->new( $self, -1, 'Image:' );
+    my $image_lbl = Wx::StaticText->new( $self, -1, 'Pen Color:' );
     $cmdi_sizer->Add( $image_lbl,     0, $all_attr, 15 );
     $cmdi_sizer->Add( $self->{'progress'},         0, &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL| &Wx::wxALL, 10 );
     $cmdi_sizer->AddSpacer(5);
@@ -150,7 +150,7 @@ sub new {
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
     $self->{'btn'}{'draw'}->SetFocus;
-    my $size = [1110, 815];
+    my $size = [1200, 815];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);

@@ -116,11 +116,11 @@ sub new {
     $f_sizer->AddSpacer( 10 );
     $f_sizer->Add( $self->{'button'}{'gradient'},  0, $all_attr, 5 );
     $f_sizer->Add( $self->{'widget'}{'dynamic'},   0, $all_attr, 5 );
-    $f_sizer->AddSpacer( 25 );
+    $f_sizer->AddSpacer( 20 );
     $f_sizer->Add( $self->{'button'}{'complement'},0, $all_attr, 5 );
     $f_sizer->Add( $self->{'widget'}{'delta_S'},   0, $all_attr, 5 );
     $f_sizer->Add( $self->{'widget'}{'delta_L'},   0, $all_attr, 5 );
-    $f_sizer->AddSpacer( 25 );
+    $f_sizer->AddSpacer( 20 );
     $f_sizer->Add( $self->{'button'}{'left'},      0, $all_attr, 5 );
     $f_sizer->Add( $self->{'button'}{'right'},     0, $all_attr, 5 );
     $f_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);

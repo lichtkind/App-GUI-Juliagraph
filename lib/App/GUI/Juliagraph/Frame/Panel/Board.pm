@@ -1,8 +1,10 @@
+
+# drawing board
+
+package App::GUI::Juliagraph::Frame::Panel::Board;
 use v5.12;
 use warnings;
 use Wx;
-
-package App::GUI::Juliagraph::Frame::Panel::Board;
 use base qw/Wx::Panel/;
 
 use Graphics::Toolkit::Color qw/color/;
@@ -62,7 +64,7 @@ sub set_settings {
     my( $self, $data ) = @_;
     return unless ref $data eq 'HASH';
     $self->GetParent->{'progress'}->reset;
-    $self->{'data'} = $data;
+    $self->{'set'} = $data;
     $self->{'flag'}{'new'} = 1;
 }
 
@@ -72,200 +74,200 @@ sub paint {
     use Benchmark;
     my $t0 = Benchmark->new();
 
-    my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
-    my %factor = ();
-    my $max_exp;
-    for my $mnr (1 .. 4){
-        my $settings = $self->{'data'}{'monomial_'.$mnr};
-        next unless $settings->{'active'};
-        my $f = $settings->{'use_factor'} ? [$settings->{'factor_r'}, $settings->{'factor_i'}] : [1,1];
-        if (exists $factor{$settings->{'exponent'}}) {
-            $factor{ $settings->{'exponent'} }[0] *= $f->[0];
-            $factor{ $settings->{'exponent'} }[1] *= $f->[1];
-        } else { $factor{ $settings->{'exponent'} } = $f }
-        $max_exp = $settings->{'exponent'} unless defined $max_exp;
-        $max_exp = $settings->{'exponent'} if $max_exp < $settings->{'exponent'};
-    }
-    $max_exp = 0 unless defined $max_exp;
+    #~ my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
+    #~ my %factor = ();
+    #~ my $max_exp;
+    #~ for my $mnr (1 .. 4){
+        #~ my $settings = $self->{'data'}{'monomial_'.$mnr};
+        #~ next unless $settings->{'active'};
+        #~ my $f = $settings->{'use_factor'} ? [$settings->{'factor_r'}, $settings->{'factor_i'}] : [1,1];
+        #~ if (exists $factor{$settings->{'exponent'}}) {
+            #~ $factor{ $settings->{'exponent'} }[0] *= $f->[0];
+            #~ $factor{ $settings->{'exponent'} }[1] *= $f->[1];
+        #~ } else { $factor{ $settings->{'exponent'} } = $f }
+        #~ $max_exp = $settings->{'exponent'} unless defined $max_exp;
+        #~ $max_exp = $settings->{'exponent'} if $max_exp < $settings->{'exponent'};
+    #~ }
+    #~ $max_exp = 0 unless defined $max_exp;
 
-    my $zoom_size = 4 * (10** (-$self->{'data'}{'constraints'}{'zoom'}));
-    my $stop = $self->{'data'}{'constraints'}{'stop_value'};
-    my $x_delta = $zoom_size;
-    my $x_delta_step = $x_delta / $self->{'size'}{'x'};
-    my $x_min = $self->{'data'}{'constraints'}{'pos_x'} - ($x_delta / 2);
-    my $y_delta = $zoom_size;
-    my $y_delta_step = $y_delta / $self->{'size'}{'y'};
-    my $y_min = $self->{'data'}{'constraints'}{'pos_y'} - ($y_delta / 2);
-    my $const_a = ($self->{'data'}{'constraints'}{'constant'} eq 'constant') ? $self->{'data'}{'constraints'}{'const_a'} : 0;
-    my $const_b = ($self->{'data'}{'constraints'}{'constant'} eq 'constant') ? $self->{'data'}{'constraints'}{'const_b'} : 0;
-    $const_a *= $factor{0}[0] if exists $factor{0} and $factor{0}[0];
-    $const_b *= $factor{0}[1] if exists $factor{0} and $factor{0}[1];
-    my $position = $self->{'data'}{'constraints'}{'position'};
-    $position = substr($position, 7) if substr($position, 0, 7) eq 'degree ';
-    if ($position =~ /\d/){
-        $max_exp = $position if $max_exp < $position;
-    }
+    #~ my $zoom_size = 4 * (10** (-$self->{'data'}{'constraints'}{'zoom'}));
+    #~ my $stop = $self->{'data'}{'constraints'}{'stop_value'};
+    #~ my $x_delta = $zoom_size;
+    #~ my $x_delta_step = $x_delta / $self->{'size'}{'x'};
+    #~ my $x_min = $self->{'data'}{'constraints'}{'pos_x'} - ($x_delta / 2);
+    #~ my $y_delta = $zoom_size;
+    #~ my $y_delta_step = $y_delta / $self->{'size'}{'y'};
+    #~ my $y_min = $self->{'data'}{'constraints'}{'pos_y'} - ($y_delta / 2);
+    #~ my $const_a = ($self->{'data'}{'constraints'}{'constant'} eq 'constant') ? $self->{'data'}{'constraints'}{'const_a'} : 0;
+    #~ my $const_b = ($self->{'data'}{'constraints'}{'constant'} eq 'constant') ? $self->{'data'}{'constraints'}{'const_b'} : 0;
+    #~ $const_a *= $factor{0}[0] if exists $factor{0} and $factor{0}[0];
+    #~ $const_b *= $factor{0}[1] if exists $factor{0} and $factor{0}[1];
+    #~ my $position = $self->{'data'}{'constraints'}{'position'};
+    #~ $position = substr($position, 7) if substr($position, 0, 7) eq 'degree ';
+    #~ if ($position =~ /\d/){
+        #~ $max_exp = $position if $max_exp < $position;
+    #~ }
 
-    my $metric = { '|var|' => '($x*$x) + ($y*$y)', '|x*y|' => 'abs($x*$y)',
-                     '|x|' => 'abs($x)',             '|y|' => 'abs($y)',
-                   '|x+y|' => 'abs($x+$y)',      '|x|+|y|' => 'abs($x)+abs($y)',
-                    'x+y'  => '$x+$y',              'x*y'  => '$x*$y',
-                    'x-y'  =>     '$x-$y',          'y-x'  => '$y-$x'}->{ $self->{'data'}{'constraints'}{'stop_metric'} };
+    #~ my $metric = { '|var|' => '($x*$x) + ($y*$y)', '|x*y|' => 'abs($x*$y)',
+                     #~ '|x|' => 'abs($x)',             '|y|' => 'abs($y)',
+                   #~ '|x+y|' => 'abs($x+$y)',      '|x|+|y|' => 'abs($x)+abs($y)',
+                    #~ 'x+y'  => '$x+$y',              'x*y'  => '$x*$y',
+                    #~ 'x-y'  =>     '$x-$y',          'y-x'  => '$y-$x'}->{ $self->{'data'}{'constraints'}{'stop_metric'} };
 
-    my @bg_color = ($self->{'data'}{'mapping'}{'color'} and $self->{'data'}{'mapping'}{'use_bg_color'})
-                 ? color( $self->{'data'}{'mapping'}{'background_color'} )->values( in => 'RGB', as=>'list' )
-                 : (0,0,0);
-    my $background_color = Wx::Colour->new( @bg_color );
-    $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
-    $dc->Clear();
-    #return $dc;
+    #~ my @bg_color = ($self->{'data'}{'mapping'}{'color'} and $self->{'data'}{'mapping'}{'use_bg_color'})
+                 #~ ? color( $self->{'data'}{'mapping'}{'background_color'} )->values( in => 'RGB', as=>'list' )
+                 #~ : (0,0,0);
+    #~ my $background_color = Wx::Colour->new( @bg_color );
+    #~ $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
+    #~ $dc->Clear();
+    #~ #return $dc;
 
-    # compute color gradient
-    my $progress = $self->GetParent->{'progress'};
-    my $colors = ($self->{'data'}{'mapping'}{'select'}-1) * ($self->{'data'}{'mapping'}{'gradient'}+1)
-                * $self->{'data'}{'mapping'}{'repeat'}    * $self->{'data'}{'mapping'}{'grading'};
-    my @color = ();
-    if ($self->{'data'}{'mapping'}{'color'}){
-        $self->{'data'}{'color'}{ $self->{'data'}{'mapping'}{'select'} } = $self->{'data'}{'color'}{ 8 };
-        for my $i (0 .. $self->{'data'}{'mapping'}{'select'} - 2) {
-            my @gradient = map {[$_->values]}
-                           color($self->{'data'}{'color'}{$i})->gradient( to => $self->{'data'}{'color'}{$i+1},
-                                                                          steps => $self->{'data'}{'mapping'}{'gradient'}+2,
-                                                                          dynamic => $self->{'data'}{'mapping'}{'dynamics'},
-                                                                        );
-            pop @gradient;
-            @color = (@color, @gradient);
-        }
-    } else {
-            @color = map {[$_->values]} color('white')->gradient( to => 'black',
-                                                               steps => $self->{'data'}{'mapping'}{'select'} * ($self->{'data'}{'mapping'}{'gradient'}+2),
-                                                             dynamic => $self->{'data'}{'mapping'}{'dynamics'},
-                                                                );
-    }
-    my $subgradient = int($self->{'data'}{'mapping'}{'grading'} > 1 and $self->{'data'}{'mapping'}{'grading_type'} eq 'Group');
-    if ($subgradient){
-        my @temp = @color;
-        @color = ();
-        for my $color (@temp){
-            push @color, $color for 1 .. $self->{'data'}{'mapping'}{'grading'};
-        }
-    }
-    if ($self->{'data'}{'mapping'}{'repeat'} > 1){
-        my @temp = @color;
-        @color = (@color, @temp) for 2 .. $self->{'data'}{'mapping'}{'repeat'};
-    }
-    if ($self->{'flag'}{'draw'}){
-        $progress->add_percentage( $_ / $#color * 100, $color[$_] ) for 0 .. $#color;
-        $progress->full;
-    }
-    if ($self->{'data'}{'mapping'}{'grading'} > 1 and $self->{'data'}{'mapping'}{'grading_type'} eq 'Sub' and not $self->{'flag'}{'sketch'}){
-        for my $i (0 .. $#color){
-            my $next = ($i == $#color) ? color( @bg_color ) : color( $color[$i+1] ) ;
-            my @c = color( $color[$i] )->gradient( to => $next,
-                                                   steps => $self->{'data'}{'mapping'}{'grading'}+2,
-                                                   dynamic => $self->{'data'}{'mapping'}{'dynamics'},
-                                                 );
-            pop @c;
-            $color[$i] = [@c];
-        }
-    }
+    #~ # compute color gradient
+    #~ my $progress = $self->GetParent->{'progress'};
+    #~ my $colors = ($self->{'data'}{'mapping'}{'select'}-1) * ($self->{'data'}{'mapping'}{'gradient'}+1)
+                #~ * $self->{'data'}{'mapping'}{'repeat'}    * $self->{'data'}{'mapping'}{'grading'};
+    #~ my @color = ();
+    #~ if ($self->{'data'}{'mapping'}{'color'}){
+        #~ $self->{'data'}{'color'}{ $self->{'data'}{'mapping'}{'select'} } = $self->{'data'}{'color'}{ 8 };
+        #~ for my $i (0 .. $self->{'data'}{'mapping'}{'select'} - 2) {
+            #~ my @gradient = map {[$_->values]}
+                           #~ color($self->{'data'}{'color'}{$i})->gradient( to => $self->{'data'}{'color'}{$i+1},
+                                                                          #~ steps => $self->{'data'}{'mapping'}{'gradient'}+2,
+                                                                          #~ dynamic => $self->{'data'}{'mapping'}{'dynamics'},
+                                                                        #~ );
+            #~ pop @gradient;
+            #~ @color = (@color, @gradient);
+        #~ }
+    #~ } else {
+            #~ @color = map {[$_->values]} color('white')->gradient( to => 'black',
+                                                               #~ steps => $self->{'data'}{'mapping'}{'select'} * ($self->{'data'}{'mapping'}{'gradient'}+2),
+                                                             #~ dynamic => $self->{'data'}{'mapping'}{'dynamics'},
+                                                                #~ );
+    #~ }
+    #~ my $subgradient = int($self->{'data'}{'mapping'}{'grading'} > 1 and $self->{'data'}{'mapping'}{'grading_type'} eq 'Group');
+    #~ if ($subgradient){
+        #~ my @temp = @color;
+        #~ @color = ();
+        #~ for my $color (@temp){
+            #~ push @color, $color for 1 .. $self->{'data'}{'mapping'}{'grading'};
+        #~ }
+    #~ }
+    #~ if ($self->{'data'}{'mapping'}{'repeat'} > 1){
+        #~ my @temp = @color;
+        #~ @color = (@color, @temp) for 2 .. $self->{'data'}{'mapping'}{'repeat'};
+    #~ }
+    #~ if ($self->{'flag'}{'draw'}){
+        #~ $progress->add_percentage( $_ / $#color * 100, $color[$_] ) for 0 .. $#color;
+        #~ $progress->full;
+    #~ }
+    #~ if ($self->{'data'}{'mapping'}{'grading'} > 1 and $self->{'data'}{'mapping'}{'grading_type'} eq 'Sub' and not $self->{'flag'}{'sketch'}){
+        #~ for my $i (0 .. $#color){
+            #~ my $next = ($i == $#color) ? color( @bg_color ) : color( $color[$i+1] ) ;
+            #~ my @c = color( $color[$i] )->gradient( to => $next,
+                                                   #~ steps => $self->{'data'}{'mapping'}{'grading'}+2,
+                                                   #~ dynamic => $self->{'data'}{'mapping'}{'dynamics'},
+                                                 #~ );
+            #~ pop @c;
+            #~ $color[$i] = [@c];
+        #~ }
+    #~ }
 
-    if ($self->{'flag'}{'sketch'}){
-        $x_delta_step *= SKETCH_FACTOR;
-        $y_delta_step *= SKETCH_FACTOR;
-        $colors = 25 if $colors > 25;
-        $stop = 50 if $stop > 50;
-    }
+    #~ if ($self->{'flag'}{'sketch'}){
+        #~ $x_delta_step *= SKETCH_FACTOR;
+        #~ $y_delta_step *= SKETCH_FACTOR;
+        #~ $colors = 25 if $colors > 25;
+        #~ $stop = 50 if $stop > 50;
+    #~ }
 
-    my ($x_const, $y_const, $x, $y, $x_old, $y_old, $x_pot, $y_pot);
-    my $last_color = $colors - 1;
+    #~ my ($x_const, $y_const, $x, $y, $x_old, $y_old, $x_pot, $y_pot);
+    #~ my $last_color = $colors - 1;
 
-    my $code = 'my ($x_num, $x_pix) = ($x_min, 0);'."\n";
-    $code .= $self->{'flag'}{'sketch'}
-           ? 'for (0 .. $self->{size}{x} / SKETCH_FACTOR){'."\n"
-           : 'for (0 .. $self->{size}{x}){'."\n";
-    $code .= '  my ($y_num, $y_pix) = ($y_min, $self->{size}{y});'."\n";
-    $code .= $self->{'flag'}{'sketch'}
-           ? '  for (0 .. $self->{size}{y} / SKETCH_FACTOR){'."\n"
-           : '  for (0 .. $self->{size}{y}){'."\n";
+    #~ my $code = 'my ($x_num, $x_pix) = ($x_min, 0);'."\n";
+    #~ $code .= $self->{'flag'}{'sketch'}
+           #~ ? 'for (0 .. $self->{size}{x} / SKETCH_FACTOR){'."\n"
+           #~ : 'for (0 .. $self->{size}{x}){'."\n";
+    #~ $code .= '  my ($y_num, $y_pix) = ($y_min, $self->{size}{y});'."\n";
+    #~ $code .= $self->{'flag'}{'sketch'}
+           #~ ? '  for (0 .. $self->{size}{y} / SKETCH_FACTOR){'."\n"
+           #~ : '  for (0 .. $self->{size}{y}){'."\n";
 
-    my $x_start_value = ($self->{'data'}{'constraints'}{'constant'} eq 'start value') ? $self->{'data'}{'constraints'}{'const_a'} : 0;
-    my $y_start_value = ($self->{'data'}{'constraints'}{'constant'} eq 'start value') ? $self->{'data'}{'constraints'}{'const_b'} : 0;
+    #~ my $x_start_value = ($self->{'data'}{'constraints'}{'constant'} eq 'start value') ? $self->{'data'}{'constraints'}{'const_a'} : 0;
+    #~ my $y_start_value = ($self->{'data'}{'constraints'}{'constant'} eq 'start value') ? $self->{'data'}{'constraints'}{'const_b'} : 0;
 
-    if ($position eq 'start value'){
-        $x_start_value = $x_start_value ? $x_start_value . ' + $x_num' : '$x_num';
-        $y_start_value = $y_start_value ? $y_start_value . ' + $y_num' : '$y_num';
-    }
+    #~ if ($position eq 'start value'){
+        #~ $x_start_value = $x_start_value ? $x_start_value . ' + $x_num' : '$x_num';
+        #~ $y_start_value = $y_start_value ? $y_start_value . ' + $y_num' : '$y_num';
+    #~ }
 
-my %vals;
-    $code .= '    $x = '.$x_start_value.';'."\n";
-    $code .= '    $y = '.$y_start_value.';'."\n";
-    $code .= '    for my $i (0 .. '.$last_color.'){'."\n";
-    $code .= '      $x_pot = $x_old = $x;'."\n";
-    $code .= '      $y_pot = $y_old = $y;'."\n";
-    $code .= '      $x = '.(($position eq 'constant') ? $const_a.'+ $x_num' : $const_a).';'."\n";
-    $code .= '      $y = '.(($position eq 'constant') ? $const_b.'+ $y_num' : $const_b).';'."\n";
+#~ my %vals;
+    #~ $code .= '    $x = '.$x_start_value.';'."\n";
+    #~ $code .= '    $y = '.$y_start_value.';'."\n";
+    #~ $code .= '    for my $i (0 .. '.$last_color.'){'."\n";
+    #~ $code .= '      $x_pot = $x_old = $x;'."\n";
+    #~ $code .= '      $y_pot = $y_old = $y;'."\n";
+    #~ $code .= '      $x = '.(($position eq 'constant') ? $const_a.'+ $x_num' : $const_a).';'."\n";
+    #~ $code .= '      $y = '.(($position eq 'constant') ? $const_b.'+ $y_num' : $const_b).';'."\n";
 
-    for my $exponent (2 .. $max_exp){
-        $code .= '      ($x_pot, $y_pot) = (($x_pot * $x_old) - ($y_pot * $y_old), ($x_pot * $y_old) + ($x_old * $y_pot));'."\n";
-        my $x_factor = (exists $factor{$exponent} and $factor{$exponent}[0]) ? ' * '.$factor{$exponent}[0] : '';
-        my $y_factor = (exists $factor{$exponent} and $factor{$exponent}[1]) ? ' * '.$factor{$exponent}[1] : '';
-        if ($position eq $exponent){
-            $x_factor .= ' * $x_num';
-            $y_factor .= ' * $y_num';
-        }
-        $code .= '      $x += $x_pot '.$x_factor.';'."\n" if $x_factor;
-        $code .= '      $y += $y_pot '.$y_factor.';'."\n" if $y_factor;
-    }
-    my $x_linear = (exists $factor{1} and $factor{1}[0]) ? ' * '.$factor{1}[0] : '';
-    my $y_linear = (exists $factor{1} and $factor{1}[1]) ? ' * '.$factor{1}[1] : '';
-    if ($position eq 1){
-        $x_linear .= ' * $x_num';
-        $y_linear .= ' * $y_num';
-    }
-    $code .= '      $x += $x_old '.$x_linear.';'."\n" if $x_linear;
-    $code .= '      $y += $y_old '.$y_linear.';'."\n" if $y_linear;
-    $code .= '      if ('.$metric.' > $stop){'."\n";
-    $code .= $subgradient
-           ? '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i][0]});'."\n"
-           : '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i]});'."\n";
-    $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, @{$color[$i]});'."\n".
-             '        $img->SetRGB( $x_pix+1, $y_pix,   @{$color[$i]});'."\n".
-             '        $img->SetRGB( $x_pix+1, $y_pix+1, @{$color[$i]});'."\n".
-             '        $img->SetRGB( $x_pix+1, $y_pix+2, @{$color[$i]});'."\n".
-             '        $img->SetRGB( $x_pix+2, $y_pix+1, @{$color[$i]});'."\n" if $self->{'flag'}{'sketch'}; # fat pixel
-    $code .= '        my $v = int (log( 1 * sqrt('.$metric.' ) / sqrt($stop) +1));'."\n";
-    $code .= '        $vals{$v}++;'."\n";
- #   $code .= '        print " ",$v;'."\n";
-    $code .= '        last;'."\n";
-    $code .= '      }'."\n";
-    $code .= '      $img->SetRGB( $x_pix,   $y_pix,   @bg_color) if $i == $last_color;'."\n"
-            if $self->{'data'}{'mapping'}{'use_bg_color'}; # and not $self->{'flag'}{'sketch'}
-    $code .= '    }'."\n";
-    $code .= '    $y_num += $y_delta_step;'."\n";
-    $code .= $self->{'flag'}{'sketch'}
-           ? '    $y_pix -= SKETCH_FACTOR;'."\n"
-           : '    $y_pix --;'."\n";
-    $code .= '  }'."\n";
-    $code .= '  $x_num += $x_delta_step;'."\n";
-    $code .= $self->{'flag'}{'sketch'}
-           ? '  $x_pix += SKETCH_FACTOR;'."\n"
-           : '  $x_pix ++;'."\n";
-    $code .= '}'."\n";
+    #~ for my $exponent (2 .. $max_exp){
+        #~ $code .= '      ($x_pot, $y_pot) = (($x_pot * $x_old) - ($y_pot * $y_old), ($x_pot * $y_old) + ($x_old * $y_pot));'."\n";
+        #~ my $x_factor = (exists $factor{$exponent} and $factor{$exponent}[0]) ? ' * '.$factor{$exponent}[0] : '';
+        #~ my $y_factor = (exists $factor{$exponent} and $factor{$exponent}[1]) ? ' * '.$factor{$exponent}[1] : '';
+        #~ if ($position eq $exponent){
+            #~ $x_factor .= ' * $x_num';
+            #~ $y_factor .= ' * $y_num';
+        #~ }
+        #~ $code .= '      $x += $x_pot '.$x_factor.';'."\n" if $x_factor;
+        #~ $code .= '      $y += $y_pot '.$y_factor.';'."\n" if $y_factor;
+    #~ }
+    #~ my $x_linear = (exists $factor{1} and $factor{1}[0]) ? ' * '.$factor{1}[0] : '';
+    #~ my $y_linear = (exists $factor{1} and $factor{1}[1]) ? ' * '.$factor{1}[1] : '';
+    #~ if ($position eq 1){
+        #~ $x_linear .= ' * $x_num';
+        #~ $y_linear .= ' * $y_num';
+    #~ }
+    #~ $code .= '      $x += $x_old '.$x_linear.';'."\n" if $x_linear;
+    #~ $code .= '      $y += $y_old '.$y_linear.';'."\n" if $y_linear;
+    #~ $code .= '      if ('.$metric.' > $stop){'."\n";
+    #~ $code .= $subgradient
+           #~ ? '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i][0]});'."\n"
+           #~ : '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i]});'."\n";
+    #~ $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, @{$color[$i]});'."\n".
+             #~ '        $img->SetRGB( $x_pix+1, $y_pix,   @{$color[$i]});'."\n".
+             #~ '        $img->SetRGB( $x_pix+1, $y_pix+1, @{$color[$i]});'."\n".
+             #~ '        $img->SetRGB( $x_pix+1, $y_pix+2, @{$color[$i]});'."\n".
+             #~ '        $img->SetRGB( $x_pix+2, $y_pix+1, @{$color[$i]});'."\n" if $self->{'flag'}{'sketch'}; # fat pixel
+    #~ $code .= '        my $v = int (log( 1 * sqrt('.$metric.' ) / sqrt($stop) +1));'."\n";
+    #~ $code .= '        $vals{$v}++;'."\n";
+ #~ #   $code .= '        print " ",$v;'."\n";
+    #~ $code .= '        last;'."\n";
+    #~ $code .= '      }'."\n";
+    #~ $code .= '      $img->SetRGB( $x_pix,   $y_pix,   @bg_color) if $i == $last_color;'."\n"
+            #~ if $self->{'data'}{'mapping'}{'use_bg_color'}; # and not $self->{'flag'}{'sketch'}
+    #~ $code .= '    }'."\n";
+    #~ $code .= '    $y_num += $y_delta_step;'."\n";
+    #~ $code .= $self->{'flag'}{'sketch'}
+           #~ ? '    $y_pix -= SKETCH_FACTOR;'."\n"
+           #~ : '    $y_pix --;'."\n";
+    #~ $code .= '  }'."\n";
+    #~ $code .= '  $x_num += $x_delta_step;'."\n";
+    #~ $code .= $self->{'flag'}{'sketch'}
+           #~ ? '  $x_pix += SKETCH_FACTOR;'."\n"
+           #~ : '  $x_pix ++;'."\n";
+    #~ $code .= '}'."\n";
 
-    say "compile:",timestr(timediff(Benchmark->new, $t0));
-    $t0 = Benchmark->new();
-
-
-    eval $code; # say $code;
-    die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
-
-    say "run:",timestr(timediff(Benchmark->new, $t0));
-    unless ($self->{'flag'}{'sketch'}){ say  "$_: ".$vals{$_} for keys %vals }
+    #~ say "compile:",timestr(timediff(Benchmark->new, $t0));
+    #~ $t0 = Benchmark->new();
 
 
-    $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
-    $self->{'image'} = $img unless $self->{'flag'}{'sketch'};
+    #~ eval $code; # say $code;
+    #~ die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
+
+    #~ say "run:",timestr(timediff(Benchmark->new, $t0));
+    #~ unless ($self->{'flag'}{'sketch'}){ say  "$_: ".$vals{$_} for keys %vals }
+
+
+    #~ $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
+    #~ $self->{'image'} = $img unless $self->{'flag'}{'sketch'};
 
     delete $self->{'flag'};
     $dc;
