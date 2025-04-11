@@ -257,15 +257,16 @@ sub paint {
            : '  $x_pix ++;'."\n";
     $code .= '}'."\n";
 
-    #~ say "compile:",timestr(timediff(Benchmark->new, $t0));
-    #~ $t0 = Benchmark->new();
+    say "compile:",timestr(timediff(Benchmark->new, $t0));
+    $t0 = Benchmark->new();
 
 
-    eval $code; # say $code;
+    eval $code; #
+say $code;
     die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
-    #~ say "run:",timestr(timediff(Benchmark->new, $t0));
-    #~ unless ($self->{'flag'}{'sketch'}){ say  "$_: ".$vals{$_} for keys %vals }
+    say "run:",timestr(timediff(Benchmark->new, $t0));
+    # unless ($self->{'flag'}{'sketch'}){ say  "$_: ".$vals{$_} for keys %vals }
 
 
     $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );

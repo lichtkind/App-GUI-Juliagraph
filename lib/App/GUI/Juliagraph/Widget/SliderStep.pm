@@ -31,16 +31,20 @@ sub new {
     $self->{'exponent'} = $exp // 1;
     $self->{'callback'} = sub {};
 
+    my $std  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
+    my $box  = $std | &Wx::wxTOP | &Wx::wxBOTTOM;
+
     my $sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $sizer->Add( $self->{'btn'}{'-'}, 0, &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_VERTICAL, 5);
-    $sizer->Add( $self->{'btn'}{'+'}, 0, &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_VERTICAL, 5);
-    $sizer->Insert( $slider_pos-1, $self->{'slider'}, 0, &Wx::wxGROW | &Wx::wxALL| &Wx::wxALIGN_CENTER_VERTICAL, 8);
-    $sizer->Add( 0,     1, &Wx::wxEXPAND|&Wx::wxGROW);
+    $sizer->Add( $self->{'btn'}{'-'}, 0, $box, 0);
+    $sizer->Add( $self->{'btn'}{'+'}, 0, $box, 0);
+    $sizer->AddSpacer( 10 );
+    $sizer->Insert( $slider_pos, $self->{'slider'}, 0, $box, 3);
+    $sizer->Add( 0,                   1, &Wx::wxEXPAND|&Wx::wxGROW);
     $self->SetSizer($sizer);
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'-'}, sub { $self->{'callback'}->( -$self->GetValue ) });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'+'}, sub { $self->{'callback'}->( $self->GetValue ) });
-    Wx::Event::EVT_SLIDER( $self, $self->{'slider'}, sub { $self->{'slider'}->SetToolTip( 'step size: '. $self->GetValue ); });
+    Wx::Event::EVT_SLIDER( $self, $self->{'slider'},   sub { $self->{'slider'}->SetToolTip( 'step size: '. $self->GetValue ); });
 
     return $self;
 }

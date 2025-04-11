@@ -38,13 +38,13 @@ sub new {
     $self->{'tab'}{'mapping'}      = App::GUI::Juliagraph::Frame::Tab::Mapping->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tab'}{'color'}        = App::GUI::Juliagraph::Frame::Tab::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'constraints'},  'Constraints');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'polynomial'},   'Polynomials');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},      'Color Mapping');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'polynomial'},   'Monomials');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},      'Visuals');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},        'Colors');
 
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @interactive_tabs;
 
-    $self->{'progress_bar'}        = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 5, [20, 20, 110]);
+    $self->{'progress_bar'}        = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 430, 5, [20, 20, 110]);
     $self->{'board'}               = App::GUI::Juliagraph::Frame::Panel::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}     = App::GUI::Juliagraph::Dialog::About->new();
 
@@ -135,8 +135,8 @@ sub new {
     $cmdi_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $board_sizer->Add( $self->{'board'}, 0, $all_attr,  5);
-    $board_sizer->Add( $cmdi_sizer,      0, $vert_attr, 5);
+    $board_sizer->Add( $self->{'board'}, 0, $all_attr,   5);
+    $board_sizer->Add( $cmdi_sizer,      0, $vert_attr, 20);
     $board_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $setting_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
