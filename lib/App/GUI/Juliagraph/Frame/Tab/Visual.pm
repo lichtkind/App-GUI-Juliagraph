@@ -1,20 +1,25 @@
+
+# visible tab with all visual settings
+
+package App::GUI::Juliagraph::Frame::Tab::Visual;
 use v5.12;
 use warnings;
-
-package App::GUI::Juliagraph::Frame::Tab::Mapping;
 use base qw/Wx::Panel/;
-use App::GUI::Juliagraph::Widget::SliderStep;
-use App::GUI::Juliagraph::Widget::ColorDisplay;
-use App::GUI::Juliagraph::Frame::Panel::ColorBrowser;
-use App::GUI::Juliagraph::Frame::Panel::ColorPicker;
-use Graphics::Toolkit::Color qw/color/;
 use Wx;
+use Graphics::Toolkit::Color qw/color/;
+use App::GUI::Juliagraph::Widget::SliderStep;
+
+my $default_sttings =  {
+    color => 1, select => 8, repeat => 1, gradient => 10, dynamics => 0,
+    use_bg_color => 1, grading_type => 'Sub', grading => 1,
+};
 
 sub new {
     my ( $class, $parent, $config ) = @_;
 
     my $self = $class->SUPER::new( $parent, -1);
     $self->{'config'}     = $config;
+    $self->{'callback'} = sub {};
 
     my $color_lbl = Wx::StaticText->new($self, -1, 'C o l o r : ' );
     my $sel_lbl  = Wx::StaticText->new($self, -1, 'S e l e c t : ' );
@@ -47,10 +52,6 @@ sub new {
     $self->{'grading'}->SetToolTip('how many neighbouring stop values are being translated into one color or how many additional colors are introduced by subgradient');
     $self->{'gradient'}->SetToolTip('how many shades has a gradient between two selected colors');
     $self->{'dynamics'}->SetToolTip('how many big is the slant of a color gradient in one or another direction');
-    $self->{'background_color'} = App::GUI::Juliagraph::Widget::ColorDisplay->new( $self, 80, 20, 'background', {red => 0, green => 0, blue => 0} );
-    $self->{'picker'}  = App::GUI::Juliagraph::Frame::Panel::ColorPicker->new( $self, $config->get_value('color') );
-    $self->{'browser'} = App::GUI::Juliagraph::Frame::Panel::ColorBrowser->new( $self, 'background', {red => 0, green => 0, blue => 0} );
-    $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'grading_type'},  sub { $self->{'callback'}->() } );
     Wx::Event::EVT_CHECKBOX( $self, $self->{$_},            sub { $self->{'callback'}->() }) for qw/color use_bg_color/;
@@ -60,6 +61,11 @@ sub new {
     my $item_prop = &Wx::wxALIGN_LEFT|&Wx::wxTOP|&Wx::wxBOTTOM|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW;
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW ;
     my $std_margin = 10;
+
+    my $std  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
+    my $box  = $std | &Wx::wxTOP | &Wx::wxBOTTOM;
+    my $item = $std | &Wx::wxLEFT | &Wx::wxRIGHT;
+    my $row  = $std | &Wx::wxTOP;
 
     my $color_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $color_sizer->Add( $color_lbl,          0, $item_prop, 12);
@@ -117,23 +123,17 @@ sub new {
     $sizer->Add( $shades_sizer, 0, $sizer_prop, $std_margin);
     $sizer->AddSpacer( 15 );
     $self->SetSizer($sizer);
-    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
+    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
     $sizer->Add( $bg_sizer,     0, $sizer_prop, $std_margin);
     $sizer->AddSpacer( 10 );
-    $sizer->Add( $self->{'browser'}, 0, $sizer_prop, $std_margin);
-    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
-    $sizer->Add( $self->{'picker'}, 0, $sizer_prop, $std_margin);
 
-    $self->{'callback'} = sub {};
     $self->init();
     $self;
 }
 
 sub init {
     my ( $self ) = @_;
-    $self->set_settings ({ color => 1, select => 8,  repeat => 1, gradient => 10, dynamics => 0,
-                           use_bg_color => 1, background_color => 'rgb: 0,0,0', grading_type => 'Sub', grading => 1,
-                            } );
+    $self->set_settings ( );
 }
 
 sub get_settings {
@@ -147,7 +147,6 @@ sub get_settings {
         gradient => $self->{'gradient'}->GetStringSelection,
         dynamics => $self->{'dynamics'}->GetStringSelection,
         grading_type => $self->{'grading_type'}->GetStringSelection,
-        background_color  => color($self->get_current_color)->values( as => 'string' ),
     }
 }
 
@@ -186,11 +185,5 @@ sub RestoreCallBack {
     delete $self->{'pause'};
 }
 
-
-sub get_current_color { $_[0]->{'background_color'}->get_color() }
-sub set_current_color {
-    $_[0]->{'background_color'}->set_color( $_[1] );
-    $_[0]->{'browser'}->set_data( $_[1] );
-}
 
 1;

@@ -13,19 +13,20 @@ sub new {
 
     $self->{$_} = App::GUI::Juliagraph::Frame::Panel::Monomial->new( $self, $_-1) for 1 .. 4;
 
-    my $base_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
-    my $vert_attr = $base_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
-    my $all_attr  = $base_attr | &Wx::wxALL;
+    my $std  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
+    my $box  = $std | &Wx::wxTOP | &Wx::wxBOTTOM;
+    my $item = $std | &Wx::wxLEFT | &Wx::wxRIGHT;
+    my $row  = $std | &Wx::wxTOP;
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $sizer->AddSpacer( 5 );
-    $sizer->Add( $self->{'1'},                    0, $all_attr,  5);
-    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $all_attr, 10);
-    $sizer->Add( $self->{'2'},                    0, $all_attr,  5);
-    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $all_attr, 10);
-    $sizer->Add( $self->{'3'},                    0, $all_attr,  5);
-    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $all_attr, 10);
-    $sizer->Add( $self->{'4'},                    0, $all_attr,  5);
+    $sizer->AddSpacer(  10 );
+    $sizer->Add( $self->{'1'},                    0, $item, 10);
+    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box,  10);
+    $sizer->Add( $self->{'2'},                    0, $item, 10);
+    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box,  10);
+    $sizer->Add( $self->{'3'},                    0, $item, 10);
+    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box,  10);
+    $sizer->Add( $self->{'4'},                    0, $item, 10);
     $sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer($sizer);
 

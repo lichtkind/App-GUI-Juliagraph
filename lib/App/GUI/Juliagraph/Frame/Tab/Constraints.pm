@@ -7,6 +7,11 @@ use Wx;
 use base qw/Wx::Panel/;
 use App::GUI::Juliagraph::Widget::SliderStep;
 
+my $default_sttings = { type => 'Mandelbrot', constant => 'start value', position => 'constant',
+    zoom => 0, pos_x => 0, pos_y => 0, const_a => 0, const_b => 0,
+    stop_value => 1000, stop_metric => '|var|'
+};
+
 sub new {
     my ( $class, $parent) = @_;
     my $self = $class->SUPER::new( $parent, -1);
@@ -21,7 +26,8 @@ sub new {
     my $const_lbl  = Wx::StaticText->new($self, -1, 'C o n s t a n t :' );
     my $a_lbl      = Wx::StaticText->new($self, -1, 'A : ' );
     my $b_lbl      = Wx::StaticText->new($self, -1, 'B : ' );
-    my $stop_lbl   = Wx::StaticText->new($self, -1, 'Iteration Stop' );
+    my $stop_lbl   = Wx::StaticText->new($self, -1, 'I t e r a t i o n  S t o p : ' );
+    my $stop_nr_lbl  = Wx::StaticText->new($self, -1, 'M a x : ' );
     my $stop_val_lbl  = Wx::StaticText->new($self, -1, 'V a l u e : ' );
     my $metric_lbl  = Wx::StaticText->new($self, -1, 'M e t r i c : ' );
     $coor_assign_lbl->SetToolTip("how numeric coordinates are part of computation:\n - not at all\n - as start value of the iteration \n - added as constant at any iteration \n - as factor of monomial of nth degree");
@@ -49,15 +55,18 @@ sub new {
     $self->{'button_y'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, );
     $self->{'button_a'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, );
     $self->{'button_b'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 90, 3, 0.3, 2, );
-    $self->{'stop_value'}  = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [20, 40, 70, 100, 200, 500, 1000, 2000, 5000, 10000]);
-    $self->{'stop_value'}->SetToolTip('abort iteration when variable value is above this boundary');
-    $self->{'stop_metric'} = Wx::ComboBox->new( $self, -1, '|var|', [-1,-1],[95, -1], ['|var|', '|x|+|y|', '|x|', '|y|', '|x+y|', 'x+y', 'x-y', 'y-x', 'x*y', '|x*y|']);
-    $self->{'stop_value'}->SetToolTip('with formula is computed with iterator variable before compared with stop value');
-
     $self->{'button_x'}->SetCallBack(sub { my $value = shift;$self->{'pos_x'}->SetValue( $self->{'pos_x'}->GetValue + ($value * $self->zoom_size) ) });
     $self->{'button_y'}->SetCallBack(sub { my $value = shift;$self->{'pos_y'}->SetValue( $self->{'pos_y'}->GetValue + ($value * $self->zoom_size) ) });
     $self->{'button_a'}->SetCallBack(sub { $self->{'const_a'}->SetValue( $self->{'const_a'}->GetValue + shift ) });
     $self->{'button_b'}->SetCallBack(sub { $self->{'const_b'}->SetValue( $self->{'const_b'}->GetValue + shift ) });    $self->{'button_zoom'}->SetCallBack(sub { $self->{'zoom'}->SetValue( $self->{'zoom'}->GetValue + shift ) });
+
+    $self->{'stop_nr'}   = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [20, 40, 70, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]);
+    $self->{'stop_nr'}->SetToolTip('abort iteration when iterator reachen following number');
+    $self->{'stop_value'}  = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [20, 40, 70, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]);
+    $self->{'stop_value'}->SetToolTip('abort iteration when variable value is above this boundary');
+    $self->{'stop_metric'} = Wx::ComboBox->new( $self, -1, '|var|', [-1,-1],[95, -1], ['|var|', '|x|+|y|', '|x|', '|y|', '|x+y|', 'x+y', 'x-y', 'y-x', 'x*y', '|x*y|']);
+    $self->{'stop_value'}->SetToolTip('with formula is computed with iterator variable before compared with stop value');
+
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'type'},  sub {
         my $sel = $self->{'type'}->GetStringSelection;
@@ -134,13 +143,17 @@ sub new {
 
     my $stop_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $stop_sizer->AddSpacer( $left_margin );
-    $stop_sizer->Add( $stop_val_lbl,          0, $all, 22);
-    $stop_sizer->AddSpacer( 10 );
-    $stop_sizer->Add( $self->{'stop_value'},  0, $all, 0);
-    $stop_sizer->Add( 0, 0, $all );
-    $stop_sizer->Add( $metric_lbl,            0, $all, 22);
-    $stop_sizer->AddSpacer( 10 );
-    $stop_sizer->Add( $self->{'stop_metric'}, 0, $all, 0);
+    $stop_sizer->Add( $stop_nr_lbl,           0, $box, 12);
+    $stop_sizer->AddSpacer(  5 );
+    $stop_sizer->Add( $self->{'stop_nr'},     0, $box,  5);
+    $stop_sizer->AddSpacer( 50 );
+    $stop_sizer->Add( $stop_val_lbl,          0, $box, 12);
+    $stop_sizer->AddSpacer(  5 );
+    $stop_sizer->Add( $self->{'stop_value'},  0, $box,  5);
+    $stop_sizer->AddSpacer( 25 );
+    $stop_sizer->Add( $metric_lbl,            0, $box, 12);
+    $stop_sizer->AddSpacer(  5 );
+    $stop_sizer->Add( $self->{'stop_metric'}, 0, $box,  5);
     $stop_sizer->AddSpacer( 10 );
     $stop_sizer->AddSpacer( $left_margin );
 
@@ -152,15 +165,15 @@ sub new {
     $sizer->Add( $zoom_sizer,  0, $row, 2);
     $sizer->AddSpacer(  5 );
     $sizer->Add( $pos_lbl,     0, $item, $left_margin);
-    $sizer->Add( $x_sizer,     0, $row, 2);
+    $sizer->Add( $x_sizer,     0, $row, 6);
     $sizer->Add( $y_sizer,     0, $row, 0);
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
     $sizer->Add( $const_lbl,   0, $item, $left_margin);
-    $sizer->Add( $a_sizer,     0, $row, 2);
+    $sizer->Add( $a_sizer,     0, $row, 6);
     $sizer->Add( $b_sizer,     0, $row, 0);
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
-    $sizer->Add( $stop_lbl,    0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
-    $sizer->Add( $stop_sizer,  0, $box, 0);
+    $sizer->Add( $stop_lbl,    0, $item, $left_margin);
+    $sizer->Add( $stop_sizer,  0, $row,  7);
     $sizer->AddSpacer( $left_margin );
     $self->SetSizer($sizer);
 
@@ -170,9 +183,7 @@ sub new {
 
 sub init {
     my ( $self ) = @_;
-    $self->set_settings ({ type => 'Mandelbrot', constant => 'start value', position => 'constant',
-           zoom => 0, pos_x => 0, pos_y => 0,
-           const_a => 0, const_b => 0, stop_value => 1000, stop_metric => '|var|' } );
+    $self->set_settings ( $default_sttings );
     $self->{'constant'}->Enable(0);
     $self->{'position'}->Enable(0);
 }
@@ -194,16 +205,16 @@ sub get_settings {
 }
 
 sub set_settings {
-    my ( $self, $data ) = @_;
-    return 0 unless ref $data eq 'HASH' and exists $data->{'position'};
+    my ( $self, $settings ) = @_;
+    return 0 unless ref $settings eq 'HASH' and exists $settings->{'position'};
     $self->PauseCallBack();
     for my $key (qw/const_a const_b pos_x pos_y zoom/){
-        next unless exists $data->{$key} and exists $self->{$key};
-        $self->{$key}->SetValue( $data->{$key} );
+        next unless exists $settings->{$key} and exists $self->{$key};
+        $self->{$key}->SetValue( $settings->{$key} );
     }
     for my $key (qw/type position constant stop_value stop_metric/){
-        next unless exists $data->{$key} and exists $self->{$key};
-        $self->{$key}->SetSelection( $self->{$key}->FindString($data->{$key}) );
+        next unless exists $settings->{$key} and exists $self->{$key};
+        $self->{$key}->SetSelection( $self->{$key}->FindString($settings->{$key}) );
     }
     $self->RestoreCallBack();
     1;
