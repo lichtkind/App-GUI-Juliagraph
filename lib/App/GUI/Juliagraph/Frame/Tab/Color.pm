@@ -16,7 +16,8 @@ use App::GUI::Juliagraph::Widget::PositionMarker;
 use Graphics::Toolkit::Color qw/color/;
 
 our $default_color_def = $App::GUI::Juliagraph::Frame::Panel::ColorSetPicker::default_color;
-my $default_settings = { 1=> 'blue', 2=> 'red', dynamic => 0, delta_S => 0, delta_L => 0 };
+my $default_settings = { 1=> 'black', 2=> 'red', 3=> 'orange', 4 => 'blue',
+                         dynamic => 0, delta_S => 0, delta_L => 0 };
 
 sub new {
     my ( $class, $parent, $config ) = @_;
@@ -24,22 +25,24 @@ sub new {
 
     $self->{'call_back'}  = sub {};
     $self->{'config'}     = $config;
-    $self->{'color_count'} = 10;        # number of displayed colors
-    $self->{'active_color_count'} = 2;  # nr of currently used colors, overwritten on init
+    $self->{'color_count'} = 11;        # number of displayed colors
+    $self->{'active_color_count'} = 4;  # nr of currently used colors, overwritten on init
     $self->{'current_color_nr'} = 0;    # index starts from 0
-    $self->{'display_size'} = 33;
+    $self->{'display_size'} = 30;
 
-    $self->{'used_colors'}       = [ color('blue')->gradient( to => 'red', steps => $self->{'active_color_count'}) ];
-    $self->{'used_colors'}[$_]   = color( $default_color_def ) for $self->{'active_color_count'} .. $self->{'color_count'}-1;
-    $self->{'color_marker'}      = [ map { App::GUI::Juliagraph::Widget::PositionMarker->new
+    $self->{'used_colors'}     = [ color('blue')->gradient( to => 'red', steps => $self->{'active_color_count'}) ];
+    $self->{'used_colors'}[$_] = color( $default_color_def ) for $self->{'active_color_count'} .. $self->{'color_count'}-1;
+    $self->{'color_marker'}    = [ map { App::GUI::Juliagraph::Widget::PositionMarker->new
                                            ($self, $self->{'display_size'}, 20, $_, '', $default_color_def) } 0 .. $self->{'color_count'}-1 ];
     $self->{'color_display'}[$_] = App::GUI::Juliagraph::Widget::ColorDisplay->new
         ($self, $self->{'display_size'}-2, $self->{'display_size'},
          $_, $self->{'used_colors'}[$_]->values(as => 'hash')      ) for 0 .. $self->{'color_count'}-1;
-    $self->{'color_marker'}[$_-1]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 2 .. $self->{'color_count'};
-    $self->{'color_display'}[$_-1]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 2 .. $self->{'color_count'};
-    $self->{'color_marker'}[0]->SetToolTip("color number 1, is always used, even when color flow is deactivated, click on it before change it with sliders below");
-    $self->{'color_display'}[0]->SetToolTip("color number 1, is always used, even when color flow is deactivated, click on it before change it with sliders below");
+    $self->{'color_marker'}[$_+1]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 1 .. $self->{'color_count'}-2;
+    $self->{'color_display'}[$_+1]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 1 .. $self->{'color_count'}-2;
+    $self->{'color_marker'}[0]->SetToolTip("background color, shown where values do not converge");
+    $self->{'color_display'}[0]->SetToolTip("background color, shown where values do not converge");
+    $self->{'color_marker'}[1]->SetToolTip("color shown where values do not converge within allowed iteration maximum");
+    $self->{'color_display'}[1]->SetToolTip("color shown where values do not converge within allowed iteration maximum");
 
     $self->{'label'}{'color_set_store'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'label'}{'color_set_funct'} = Wx::StaticText->new($self, -1, 'Colors Set Function' );
@@ -126,16 +129,19 @@ sub new {
     $f_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $state_sizer = $self->{'state_sizer'} = Wx::BoxSizer->new(&Wx::wxHORIZONTAL); # $self->{'plate_sizer'}->Clear(1);
-    $state_sizer->AddSpacer( 15 );
+    $state_sizer->AddSpacer( 12 );
     my @option_sizer;
     for my $nr (0 .. $self->{'color_count'}-1){
+        #$state_sizer->AddSpacer( 1 );
         $option_sizer[$nr] = Wx::BoxSizer->new( &Wx::wxVERTICAL );
         $option_sizer[$nr]->AddSpacer( 2 );
         $option_sizer[$nr]->Add( $self->{'color_display'}[$nr],0, $all_attr, 3);
         $option_sizer[$nr]->Add( $self->{'color_marker'}[$nr], 0, $all_attr, 3);
         $state_sizer->Add( $option_sizer[$nr],                 0, $all_attr, 6);
-        $state_sizer->AddSpacer( 3 );
+        #$state_sizer->AddSpacer( 1 );
     }
+    $state_sizer->Insert( 2, Wx::StaticLine->new( $self, -1,[-1,-1],[-1,-1], &Wx::wxLI_VERTICAL), 0, &Wx::wxGROW);
+    $state_sizer->Insert( 4, Wx::StaticLine->new( $self, -1,[-1,-1],[-1,-1], &Wx::wxLI_VERTICAL), 0, &Wx::wxGROW);
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);

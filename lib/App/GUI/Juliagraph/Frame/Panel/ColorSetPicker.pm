@@ -30,7 +30,7 @@ sub new {
     $self->{'save'} = Wx::Button->new( $self, -1, 'Save',    [-1,-1], [$btnw, $btnh] );
     $self->{'new'}  = Wx::Button->new( $self, -1, 'New',     [-1,-1], [$btnw, $btnh] );
 
-    $self->{'display'}[$_] = App::GUI::Juliagraph::Widget::ColorDisplay->new( $self, 16, 9, $_, $default_color ) for 0 .. $self->{'max_display_count'}-1;
+    $self->{'display'}[$_] = App::GUI::Juliagraph::Widget::ColorDisplay->new( $self, 15, 9, $_, $default_color ) for 0 .. $self->{'max_display_count'}-1;
 
     $self->{'select'}->SetToolTip("select color set in list directly");
     $self->{'<'}->SetToolTip("go to previous color set name in list");
@@ -90,7 +90,7 @@ sub new {
     $row1->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $row2 = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $row2->AddSpacer( 14 );
+    $row2->AddSpacer( 10 );
     $row2->Add( $self->{'display'}[$_], 0, $all_attr, 6 ) for 0 .. $self->{'max_display_count'}-1;
     $row2->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
