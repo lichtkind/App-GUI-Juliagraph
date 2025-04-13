@@ -6,8 +6,9 @@ use v5.12;
 use warnings;
 use Wx;
 use base qw/Wx::Panel/;
-
 use Graphics::Toolkit::Color qw/color/;
+use App::GUI::Juliagraph::Compute::Image;
+
 use constant SKETCH_FACTOR => 4;
 
 sub new {
@@ -78,6 +79,67 @@ sub paint {
     use Benchmark;
     my $t0 = Benchmark->new();
     my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
+
+
+    my $code = 'my ($x_num, $x_pix);'."\n";
+
+    say "compile:",timestr(timediff(Benchmark->new, $t0));
+    $t0 = Benchmark->new();
+
+
+    eval $code; #
+say $code;
+    die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
+
+    say "run:",timestr(timediff(Benchmark->new, $t0));
+    # unless ($self->{'flag'}{'sketch'}){ say  "$_: ".$vals{$_} for keys %vals }
+
+
+    $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
+    $self->{'image'} = $img unless $self->{'flag'}{'sketch'};
+
+    delete $self->{'flag'};
+    $dc;
+}
+
+sub save_file {
+    my( $self, $file_name, $width, $height ) = @_;
+    my $file_end = lc substr( $file_name, -3 );
+    if ($file_end eq 'svg') { $self->save_svg_file( $file_name, $width, $height ) }
+    elsif ($file_end eq 'png' or $file_end eq 'jpg') { $self->save_bmp_file( $file_name, $file_end, $width, $height ) }
+    else { return "unknown file ending: '$file_end'" }
+}
+
+sub save_svg_file {
+    my( $self, $file_name, $width, $height ) = @_;
+    $width  //= $self->GetParent->{'config'}->get_value('image_size');
+    $height //= $self->GetParent->{'config'}->get_value('image_size');
+    $width  //= $self->{'size'}{'x'};
+    $height //= $self->{'size'}{'y'};
+    my $dc = Wx::SVGFileDC->new( $file_name, $width, $height, 250 );  #  250 dpi
+    $self->paint( $dc, $width, $height );
+}
+
+sub save_bmp_file {
+    my( $self, $file_name, $file_end, $width, $height ) = @_;
+    $width  //= $self->GetParent->{'config'}->get_value('image_size');
+    $height //= $self->GetParent->{'config'}->get_value('image_size');
+    $width  //= $self->{'size'}{'x'};
+    $height //= $self->{'size'}{'y'};
+    # reuse $set->{'image'}
+    my $bmp = Wx::Bitmap->new( $width, $height, 24); # bit depth
+    my $dc = Wx::MemoryDC->new( );
+    $dc->SelectObject( $bmp );
+    $self->paint( $dc, $width, $height);
+    # $dc->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10 + $self->{'menu_size'});
+    $dc->SelectObject( &Wx::wxNullBitmap );
+    $bmp->SaveFile( $file_name, $file_end eq 'png' ? &Wx::wxBITMAP_TYPE_PNG : &Wx::wxBITMAP_TYPE_JPEG );
+}
+
+1;
+
+__END__
+
     my %factor = ();
     my $max_exp;
     for my $mnr (1 .. 4){
@@ -101,11 +163,13 @@ sub paint {
     my $y_delta = $zoom_size;
     my $y_delta_step = $y_delta / $self->{'size'}{'y'};
     my $y_min = $set->{'constraints'}{'pos_y'} - ($y_delta / 2);
-    my $const_a = ($set->{'constraints'}{'constant'} eq 'constant') ? $set->{'constraints'}{'const_a'} : 0;
-    my $const_b = ($set->{'constraints'}{'constant'} eq 'constant') ? $set->{'constraints'}{'const_b'} : 0;
+    # my $const_a = ($set->{'constraints'}{'constant'} eq 'constant') ? $set->{'constraints'}{'const_a'} : 0;
+    # my $const_b = ($set->{'constraints'}{'constant'} eq 'constant') ? $set->{'constraints'}{'const_b'} : 0;
+    my $const_a = 0;
+    my $const_b = 0;
     $const_a *= $factor{0}[0] if exists $factor{0} and $factor{0}[0];
     $const_b *= $factor{0}[1] if exists $factor{0} and $factor{0}[1];
-    my $position = $set->{'constraints'}{'position'};
+    my $position = $set->{'constraints'}{'coordinates_use'};
     $position = substr($position, 7) if substr($position, 0, 7) eq 'degree ';
     if ($position =~ /\d/){
         $max_exp = $position if $max_exp < $position;
@@ -174,12 +238,15 @@ sub paint {
         }
     }
 
-    if ($self->{'flag'}{'sketch'}){
+        if ($self->{'flag'}{'sketch'}){
         $x_delta_step *= SKETCH_FACTOR;
         $y_delta_step *= SKETCH_FACTOR;
         $colors = 25 if $colors > 25;
         $stop = 50 if $stop > 50;
     }
+
+    my ($x_const, $y_const, $x, $y, $x_old, $y_old, $x_pot, $y_pot);
+    my $last_color = $colors - 1;
 
     my ($x_const, $y_const, $x, $y, $x_old, $y_old, $x_pot, $y_pot);
     my $last_color = $colors - 1;
@@ -256,60 +323,3 @@ sub paint {
            ? '  $x_pix += SKETCH_FACTOR;'."\n"
            : '  $x_pix ++;'."\n";
     $code .= '}'."\n";
-
-    say "compile:",timestr(timediff(Benchmark->new, $t0));
-    $t0 = Benchmark->new();
-
-
-    eval $code; #
-say $code;
-    die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
-
-    say "run:",timestr(timediff(Benchmark->new, $t0));
-    # unless ($self->{'flag'}{'sketch'}){ say  "$_: ".$vals{$_} for keys %vals }
-
-
-    $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
-    $self->{'image'} = $img unless $self->{'flag'}{'sketch'};
-
-    delete $self->{'flag'};
-    $dc;
-}
-
-sub save_file {
-    my( $self, $file_name, $width, $height ) = @_;
-    my $file_end = lc substr( $file_name, -3 );
-    if ($file_end eq 'svg') { $self->save_svg_file( $file_name, $width, $height ) }
-    elsif ($file_end eq 'png' or $file_end eq 'jpg') { $self->save_bmp_file( $file_name, $file_end, $width, $height ) }
-    else { return "unknown file ending: '$file_end'" }
-}
-
-sub save_svg_file {
-    my( $self, $file_name, $width, $height ) = @_;
-    $width  //= $self->GetParent->{'config'}->get_value('image_size');
-    $height //= $self->GetParent->{'config'}->get_value('image_size');
-    $width  //= $self->{'size'}{'x'};
-    $height //= $self->{'size'}{'y'};
-    my $dc = Wx::SVGFileDC->new( $file_name, $width, $height, 250 );  #  250 dpi
-    $self->paint( $dc, $width, $height );
-}
-
-sub save_bmp_file {
-    my( $self, $file_name, $file_end, $width, $height ) = @_;
-    $width  //= $self->GetParent->{'config'}->get_value('image_size');
-    $height //= $self->GetParent->{'config'}->get_value('image_size');
-    $width  //= $self->{'size'}{'x'};
-    $height //= $self->{'size'}{'y'};
-    # reuse $set->{'image'}
-    my $bmp = Wx::Bitmap->new( $width, $height, 24); # bit depth
-    my $dc = Wx::MemoryDC->new( );
-    $dc->SelectObject( $bmp );
-    $self->paint( $dc, $width, $height);
-    # $dc->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10 + $self->{'menu_size'});
-    $dc->SelectObject( &Wx::wxNullBitmap );
-    $bmp->SaveFile( $file_name, $file_end eq 'png' ? &Wx::wxBITMAP_TYPE_PNG : &Wx::wxBITMAP_TYPE_JPEG );
-}
-
-1;
-
-__END__

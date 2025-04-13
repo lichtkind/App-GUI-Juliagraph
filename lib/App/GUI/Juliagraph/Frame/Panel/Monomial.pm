@@ -17,12 +17,13 @@ sub new {
 
     $self->{'active'} = Wx::CheckBox->new( $self, -1, ' On', [-1,-1], [ 70, -1]);
     $self->{'active'}->SetToolTip("switch thit polynome on or off");
-
+    $self->{'use_log'} = Wx::CheckBox->new( $self, -1, ' log', [-1,-1], [ 60, -1]);
+    $self->{'use_log'}->SetToolTip(' if on you put a log in fornt of this monomial term: z_n+1 = log( z_n**exp * factor )');
+    $self->{'use_minus'} = Wx::CheckBox->new( $self, -1, ' Minus', [-1,-1], [ 80, -1]);
+    $self->{'use_minus'}->SetToolTip('if on this monomial will be subtracted instead of added');
     $self->{'use_factor'} = Wx::CheckBox->new( $self, -1, ' Factor', [-1,-1], [ 80, -1]);
     $self->{'use_factor'}->SetToolTip('use or discard factor in formula z_n+1 = z_n**exp * factor');
 
-    $self->{'use_log'} = Wx::CheckBox->new( $self, -1, ' log', [-1,-1], [ 60, -1]);
-    $self->{'use_log'}->SetToolTip(' if in you put a log in fornt of this monomial term');
 
     my $exp_txt = "exponent above iterator variable z_n+1 = z_n**exponent * factor\nzero turns factor into constant";
     my $exp_lbl   = Wx::StaticText->new($self, -1, 'E x p o n e n t :' );
@@ -59,9 +60,11 @@ sub new {
     $first_sizer->AddSpacer( $std_margin );
     $first_sizer->Add( $self->{'active'},     0, $box,  5);
     $first_sizer->AddSpacer( $std_margin );
-    $first_sizer->Add( $self->{'use_factor'}, 0, $box,  5);
-    $first_sizer->AddSpacer( $std_margin );
     $first_sizer->Add( $self->{'use_log'},    0, $box,  5);
+    $first_sizer->AddSpacer( $std_margin );
+    $first_sizer->Add( $self->{'use_minus'},  0, $box,  5);
+    $first_sizer->AddSpacer( $std_margin );
+    $first_sizer->Add( $self->{'use_factor'}, 0, $box,  2);
     $first_sizer->AddStretchSpacer( );
     $first_sizer->Add( $exp_lbl,              0, $box, 12);
     $first_sizer->AddSpacer( 10 );
@@ -85,9 +88,9 @@ sub new {
     $i_sizer->AddSpacer( $std_margin );
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $sizer->Add( $first_sizer, 0, $row, 0 );
-    $sizer->Add( $r_sizer,     0, $row, 5 );
-    $sizer->Add( $i_sizer,     0, $row, 0 );
+    $sizer->Add( $first_sizer, 0, $row,  0 );
+    $sizer->Add( $r_sizer,     0, $row, 10 );
+    $sizer->Add( $i_sizer,     0, $row,  5 );
     $sizer->AddSpacer( 10 );
     $self->SetSizer($sizer);
     $self;
@@ -95,34 +98,46 @@ sub new {
 
 sub init {
     my ( $self ) = @_;
-    $self->set_settings ({ exponent => $self->{'init_exp'},
-                           factor_r => 1, factor_i => 1, active => 0, use_factor => 1 } );
+    $self->set_settings ({ active => 0, use_log => 0, use_factor => 1, use_minus => 0,
+                           factor_r => 1, factor_i => 1, exponent => $self->{'init_exp'}, } );
 }
 sub get_settings {
     my ( $self ) = @_;
     {
         active     => $self->{'active'}->GetValue   ? $self->{'active'}->GetValue : 0,
-        use_factor => $self->{'use_factor'}->GetValue ? $self->{'use_factor'}->GetValue : 0,
         use_log    => $self->{'use_log'}->GetValue ? $self->{'use_log'}->GetValue : 0,
+        use_minus  => $self->{'use_minus'}->GetValue ? $self->{'use_minus'}->GetValue : 0,
+        use_factor => $self->{'use_factor'}->GetValue ? $self->{'use_factor'}->GetValue : 0,
         factor_r   => $self->{'factor_r'}->GetValue ? $self->{'factor_r'}->GetValue : 0,
         factor_i   => $self->{'factor_i'}->GetValue ? $self->{'factor_i'}->GetValue : 0,
         exponent   => $self->{'exponent'}->GetStringSelection,
     }
 }
 sub set_settings {
-    my ( $self, $data ) = @_;
-    return 0 unless ref $data eq 'HASH';
+    my ( $self, $settings ) = @_;
+    return 0 unless ref $settings eq 'HASH';
     $self->PauseCallBack();
-    for my $key (qw/active use_factor use_log factor_r factor_i/){
-        next unless exists $data->{$key} and exists $self->{$key};
-        $self->{$key}->SetValue( $data->{$key} );
+    for my $key (qw/active use_log use_minus use_factor factor_r factor_i/){
+        next unless exists $settings->{$key} and exists $self->{$key};
+        $self->{$key}->SetValue( $settings->{$key} );
     }
     for my $key (qw/exponent/){
-        next unless exists $data->{$key} and exists $self->{$key};
-        $self->{$key}->SetSelection( $self->{$key}->FindString($data->{$key}) );
+        next unless exists $settings->{$key} and exists $self->{$key};
+        $self->{$key}->SetSelection( $self->{$key}->FindString( $settings->{$key}) );
     }
     $self->RestoreCallBack();
     1;
+}
+
+sub enable_factor {
+    my ( $self, $on ) = @_;
+    $self->{'factor_r'}->Enable( $on );
+    $self->{'button_r'}->Enable( $on );
+    $self->{'factor_i'}->Enable( $on );
+    $self->{'button_i'}->Enable( $on );
+    $self->{'use_factor'}->Enable( $on );
+    $self->{'use_factor'}->SetValue( $on );
+    $self->{'active'}->SetValue( 1 ) if $on;
 }
 
 sub SetCallBack {

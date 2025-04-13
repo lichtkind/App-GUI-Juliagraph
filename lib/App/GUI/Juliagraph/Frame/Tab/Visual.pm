@@ -58,58 +58,55 @@ sub new {
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/select repeat grading gradient dynamics/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{'select'},  sub { $self->{'callback'}->(); $self->GetParent->GetParent->{'tab'}{'color'}->set_state_count( $self->{'select'}->GetStringSelection - 1 ) });
 
-    my $item_prop = &Wx::wxALIGN_LEFT|&Wx::wxTOP|&Wx::wxBOTTOM|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW;
-    my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW ;
     my $std_margin = 10;
-
     my $std  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $box  = $std | &Wx::wxTOP | &Wx::wxBOTTOM;
     my $item = $std | &Wx::wxLEFT | &Wx::wxRIGHT;
     my $row  = $std | &Wx::wxTOP;
 
     my $color_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $color_sizer->Add( $color_lbl,          0, $item_prop, 12);
+    $color_sizer->Add( $color_lbl,          0, $box, 12);
     $color_sizer->AddSpacer( 10 );
-    $color_sizer->Add( $self->{'color'},    0, $item_prop,  0);
+    $color_sizer->Add( $self->{'color'},    0, $box,  0);
     $color_sizer->AddStretchSpacer();
-    $color_sizer->Add( $sel_lbl,            0, $item_prop, 12);
+    $color_sizer->Add( $sel_lbl,            0, $box, 12);
     $color_sizer->AddSpacer( 10 );
-    $color_sizer->Add( $self->{'select'},   0, $item_prop,  4);
+    $color_sizer->Add( $self->{'select'},   0, $box,  4);
     $color_sizer->AddSpacer( 25 );
-    $color_sizer->Add( $repeat_lbl,         0, $item_prop, 12);
+    $color_sizer->Add( $repeat_lbl,         0, $box, 12);
     $color_sizer->AddSpacer( 10 );
-    $color_sizer->Add( $self->{'repeat'},   0, $item_prop,  4);
+    $color_sizer->Add( $self->{'repeat'},   0, $box,  4);
     $color_sizer->AddSpacer( $std_margin );
 
     my $grad_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     # $grad_sizer->AddSpacer( $std_margin );
-    $grad_sizer->Add( $grad_lbl,            0, $item_prop, 12);
+    $grad_sizer->Add( $grad_lbl,            0, $box, 12);
     $grad_sizer->AddSpacer( 10 );
-    $grad_sizer->Add( $self->{'gradient'},  0, $item_prop,  4);
+    $grad_sizer->Add( $self->{'gradient'},  0, $box,  4);
     $grad_sizer->AddSpacer( 25 );
-    $grad_sizer->Add( $dyn_lbl,             0, $item_prop, 12);
+    $grad_sizer->Add( $dyn_lbl,             0, $box, 12);
     $grad_sizer->AddSpacer( 10 );
-    $grad_sizer->Add( $self->{'dynamics'},  0, $item_prop,  4);
+    $grad_sizer->Add( $self->{'dynamics'},  0, $box,  4);
     $grad_sizer->AddStretchSpacer();
     $grad_sizer->AddSpacer( $std_margin );
 
     my $shades_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     # $shades_sizer->AddSpacer( $std_margin );
-    $shades_sizer->Add( $self->{'grading_type'}, 0, $item_prop,   4);
+    $shades_sizer->Add( $self->{'grading_type'}, 0, $box,   4);
     $shades_sizer->AddSpacer( 52 );
-    $shades_sizer->Add( $group_lbl,              0, $item_prop,  16);
+    $shades_sizer->Add( $group_lbl,              0, $box,  16);
     $shades_sizer->AddSpacer( 10 );
-    $shades_sizer->Add( $self->{'grading'},      0, $item_prop,   8);
+    $shades_sizer->Add( $self->{'grading'},      0, $box,   8);
     $shades_sizer->AddStretchSpacer();
     $shades_sizer->AddSpacer( $std_margin );
 
     my $bg_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $bg_sizer->AddSpacer( $std_margin );
-    $bg_sizer->Add( $bg_lbl,                     0, $item_prop,  12);
+    $bg_sizer->Add( $bg_lbl,                     0, $box,  12);
     $bg_sizer->AddSpacer( 10 );
-    $bg_sizer->Add( $self->{'use_bg_color'},     0, $item_prop,   0);
+    $bg_sizer->Add( $self->{'use_bg_color'},     0, $box,   0);
     $bg_sizer->AddSpacer( 10 );
-    $bg_sizer->Add( $self->{'background_color'}, 0, $item_prop,  12);
+    $bg_sizer->Add( $self->{'background_color'}, 0, $box,  12);
     $bg_sizer->AddSpacer( $std_margin );
 
     my $sizer_prop = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT|&Wx::wxRIGHT;

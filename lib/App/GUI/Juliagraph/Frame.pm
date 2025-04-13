@@ -36,8 +36,9 @@ sub new {
     $self->{'tab'}{'color'}        = App::GUI::Juliagraph::Frame::Tab::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'constraints'},  'Constraints');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'polynomial'},   'Monomials');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},      'Visuals');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},       'Color Mapping');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},        'Colors');
+    $self->{'tab'}{'constraints'}->set_polynome( $self->{'tab'}{'polynomial'} );
 
     @tab_names = keys %{ $self->{'tab'} };
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @tab_names;

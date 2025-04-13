@@ -60,6 +60,13 @@ sub set_settings {
     1;
 }
 
+sub disable_factor {
+    my ( $self, $nr ) = @_;
+    return unless defined $nr;
+    $self->{$_}->enable_factor(1) for 1 .. 4;
+    $self->{$nr}->enable_factor(0) if $nr > 0 and $nr < 5;
+}
+
 sub SetCallBack {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
