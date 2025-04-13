@@ -1,6 +1,13 @@
-0.6    2023-11-30  lichtkind
+0.7    2025-04-16  lichtkind
 -------
-    * = minor feature release
+    * = major feature release
+    * * complete reworked color mapping
+    * * rewritten drawing calculation
+    * * reworked constriants
+    * + added explicit start value, iter max
+    * + assigning coordinates ad factor to any monomial
+    * * copied over color tab from hormonograph
+    * + monomials have 2 more options (log + sign)
 
 
 0.5    2023-11-27  lichtkind

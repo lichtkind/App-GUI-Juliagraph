@@ -20,7 +20,7 @@ sub new {
     $self->{'callback'} = sub {};
     $self->{'polynome'} = '';
 
-    my $coordinates_lbl  = Wx::StaticText->new($self, -1, 'P i x e l   C o o r d i n a t e s : ' );
+    my $coor_lbl     = Wx::StaticText->new($self, -1, 'P i x e l   C o o r d i n a t e s : ' );
     my $zoom_lbl     = Wx::StaticText->new($self, -1, 'Z o o m : ' );
     my $pos_lbl      = Wx::StaticText->new($self, -1, 'P o s i t i o n : ' );
     my $x_lbl        = Wx::StaticText->new($self, -1, 'X : ' );
@@ -33,9 +33,9 @@ sub new {
     my $start_lbl    = Wx::StaticText->new($self, -1, 'S t a r t    V a l u e : ' );
     my $stop_lbl     = Wx::StaticText->new($self, -1, 'I t e r a t i o n   S t o p : ' );
     my $stop_nr_lbl  = Wx::StaticText->new($self, -1, 'M a x : ' );
-    my $stop_val_lbl  = Wx::StaticText->new($self, -1, 'V a l u e : ' );
-    my $metric_lbl  = Wx::StaticText->new($self, -1, 'M e t r i c : ' );
-    $coordinates_lbl->SetToolTip("Which role play pixel coordinates in computation:\n - as start value of the iteration (z_0)\n - added as constant at any iteration \n - as factor of one monomial on next page (numbered from top to bottom)");
+    my $stop_val_lbl = Wx::StaticText->new($self, -1, 'V a l u e : ' );
+    my $metric_lbl   = Wx::StaticText->new($self, -1, 'M e t r i c : ' );
+    $coor_lbl->SetToolTip("Which role play pixel coordinates in computation:\n - as start value of the iteration (z_0)\n - added as constant at any iteration \n - as factor of one monomial on next page (numbered from top to bottom)");
     $zoom_lbl->SetToolTip('zoom factor: the larger the more you zoom in');
     $pos_lbl->SetToolTip('center coordinates of visible sector');
     $const_lbl->SetToolTip('complex constant that will be used according settings in first paragraph');
@@ -103,11 +103,11 @@ sub new {
     my $left_margin = 20;
     my $type_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $type_sizer->AddSpacer( $left_margin );
-    $type_sizer->Add( $self->{'type'},             0, $box,  0);
+    $type_sizer->Add( $self->{'type'},            0, $box,  0);
     $type_sizer->AddSpacer( 35 );
-    $type_sizer->Add( $coordinates_lbl,            0, $row, 15);
+    $type_sizer->Add( $coor_lbl,                  0, $row, 15);
     $type_sizer->AddSpacer(  6 );
-    $type_sizer->Add( $self->{'coordinates_use'},  0, $box,  8);
+    $type_sizer->Add( $self->{'coordinates_use'}, 0, $row,  8);
     $type_sizer->AddStretchSpacer( );
 
     my $zoom_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
@@ -181,26 +181,26 @@ sub new {
     $stop_sizer->AddSpacer( $left_margin );
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $sizer->Add( $type_sizer,    0, $row, 10);
+    $sizer->Add( $type_sizer,      0, $row, 10);
     $sizer->AddSpacer(  3 );
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
-    $sizer->Add( $zoom_lbl,      0, $item, $left_margin);
-    $sizer->Add( $zoom_sizer,    0, $row, 2);
+    $sizer->Add( $zoom_lbl,        0, $item, $left_margin);
+    $sizer->Add( $zoom_sizer,      0, $row, 2);
     $sizer->AddSpacer(  5 );
-    $sizer->Add( $pos_lbl,       0, $item, $left_margin);
-    $sizer->Add( $x_sizer,       0, $row, 6);
-    $sizer->Add( $y_sizer,       0, $row, 0);
+    $sizer->Add( $pos_lbl,         0, $item, $left_margin);
+    $sizer->Add( $x_sizer,         0, $row, 6);
+    $sizer->Add( $y_sizer,         0, $row, 0);
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
-    $sizer->Add( $const_lbl,     0, $item, $left_margin);
-    $sizer->Add( $const_a_sizer, 0, $row, 6);
-    $sizer->Add( $const_b_sizer, 0, $row, 0);
+    $sizer->Add( $const_lbl,       0, $item, $left_margin);
+    $sizer->Add( $const_a_sizer,   0, $row, 6);
+    $sizer->Add( $const_b_sizer,   0, $row, 0);
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
-    $sizer->Add( $start_lbl,     0, $item, $left_margin);
-    $sizer->Add( $start_a_sizer, 0, $row, 6);
-    $sizer->Add( $start_b_sizer, 0, $row, 0);
+    $sizer->Add( $start_lbl,       0, $item, $left_margin);
+    $sizer->Add( $start_a_sizer,   0, $row, 6);
+    $sizer->Add( $start_b_sizer,   0, $row, 0);
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
-    $sizer->Add( $stop_lbl,      0, $item, $left_margin);
-    $sizer->Add( $stop_sizer,    0, $row,  6);
+    $sizer->Add( $stop_lbl,        0, $item, $left_margin);
+    $sizer->Add( $stop_sizer,      0, $row,  6);
     $sizer->AddSpacer( $left_margin );
     $self->SetSizer($sizer);
 
