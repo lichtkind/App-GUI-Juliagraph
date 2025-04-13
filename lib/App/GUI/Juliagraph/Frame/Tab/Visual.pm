@@ -5,8 +5,8 @@ package App::GUI::Juliagraph::Frame::Tab::Visual;
 use v5.12;
 use warnings;
 use base qw/Wx::Panel/;
-use Wx;
 use Graphics::Toolkit::Color qw/color/;
+use Wx;
 use App::GUI::Juliagraph::Widget::SliderStep;
 
 my $default_sttings =  {
@@ -20,6 +20,8 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1);
     $self->{'config'}     = $config;
     $self->{'callback'} = sub {};
+
+    my $scale_lbl = Wx::StaticText->new($self, -1, 'Scale Sivision : ' );
 
     my $color_lbl = Wx::StaticText->new($self, -1, 'C o l o r : ' );
     my $sel_lbl  = Wx::StaticText->new($self, -1, 'S e l e c t : ' );
