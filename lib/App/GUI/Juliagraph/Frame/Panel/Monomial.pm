@@ -101,7 +101,7 @@ sub new {
 
 sub init {
     my ( $self ) = @_;
-    $self->set_settings ({ active => $self->{'init_exp'} == 2,
+    $self->set_settings ({ active => $self->{'init_exp'} == 2, # only second is on by default
                            use_log => 0, use_factor => 1, use_minus => 0,
                            factor_r => 1, factor_i => 1, exponent => $self->{'init_exp'}, } );
 }
