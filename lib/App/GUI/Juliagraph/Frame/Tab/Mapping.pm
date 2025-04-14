@@ -1,7 +1,7 @@
 
 # visible tab with all visual settings
 
-package App::GUI::Juliagraph::Frame::Tab::Visual;
+package App::GUI::Juliagraph::Frame::Tab::Mapping;
 use v5.12;
 use warnings;
 use base qw/Wx::Panel/;
@@ -11,7 +11,7 @@ use App::GUI::Juliagraph::Widget::SliderStep;
 
 my $default_sttings =  {
     color => 1, select => 8, repeat => 1, gradient => 10, dynamics => 0,
-    use_bg_color => 1, grading_type => 'Sub', grading => 1,
+    use_bg_color => 1, grading => 1,
 };
 
 sub new {
@@ -21,7 +21,7 @@ sub new {
     $self->{'config'}     = $config;
     $self->{'callback'} = sub {};
 
-    my $scale_lbl = Wx::StaticText->new($self, -1, 'Scale Sivision : ' );
+    my $scale_lbl = Wx::StaticText->new($self, -1, 'S c a l e   D i v i s i o n : ' );
 
     my $color_lbl = Wx::StaticText->new($self, -1, 'C o l o r : ' );
     my $sel_lbl  = Wx::StaticText->new($self, -1, 'S e l e c t : ' );
@@ -38,14 +38,12 @@ sub new {
     $dyn_lbl->SetToolTip('how many big is the slant of a color gradient in one or another direction');
 
     $self->{'color'}     = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[45, -1]);
-    $self->{'use_bg_color'}    = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[45, -1]);
+    $self->{'use_bg_color'} = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[45, -1]);
     $self->{'select'}    = Wx::ComboBox->new( $self, -1,   8, [-1,-1],[65, -1], [2 .. 8]);
     $self->{'repeat'}    = Wx::ComboBox->new( $self, -1, 256, [-1,-1],[65, -1], [1 .. 20]);
     $self->{'grading'}   = Wx::ComboBox->new( $self, -1,  1,  [-1,-1],[75, -1], [1 .. 16]);
     $self->{'gradient'}  = Wx::ComboBox->new( $self, -1, 25,  [-1,-1],[80, -1], [0, 1,  2,  3,  4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30, 35, 40, 50, 65, 80, 100]);
     $self->{'dynamics'}  = Wx::ComboBox->new( $self, -1,  0,  [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
-    $self->{'grading_type'} = Wx::RadioBox->new( $self, -1, ' G r a d i n g ', [-1,-1],[-1, -1], ['No','Sub'] );
-    $self->{'grading_type'}->SetToolTip("choose a rough gradient by grouping several color areas into one or a more smooth by introducing an amount of subgradient colors");
 
     $self->{'color'}->SetToolTip('use chosen color selection or just simple gray scale');
     $self->{'use_bg_color'}->SetToolTip('use chosen background color or just black');
@@ -55,7 +53,6 @@ sub new {
     $self->{'gradient'}->SetToolTip('how many shades has a gradient between two selected colors');
     $self->{'dynamics'}->SetToolTip('how many big is the slant of a color gradient in one or another direction');
 
-    Wx::Event::EVT_RADIOBOX( $self, $self->{'grading_type'},  sub { $self->{'callback'}->() } );
     Wx::Event::EVT_CHECKBOX( $self, $self->{$_},            sub { $self->{'callback'}->() }) for qw/color use_bg_color/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/select repeat grading gradient dynamics/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{'select'},  sub { $self->{'callback'}->(); $self->GetParent->GetParent->{'tab'}{'color'}->set_state_count( $self->{'select'}->GetStringSelection - 1 ) });
@@ -94,7 +91,6 @@ sub new {
 
     my $shades_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     # $shades_sizer->AddSpacer( $std_margin );
-    $shades_sizer->Add( $self->{'grading_type'}, 0, $box,   4);
     $shades_sizer->AddSpacer( 52 );
     $shades_sizer->Add( $group_lbl,              0, $box,  16);
     $shades_sizer->AddSpacer( 10 );
@@ -114,6 +110,7 @@ sub new {
     my $sizer_prop = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT|&Wx::wxRIGHT;
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->AddSpacer( $std_margin );
+    $sizer->Add( $scale_lbl,        0, $item, $std_margin);
     $sizer->AddSpacer( 10 );
     $sizer->Add( $color_sizer,  0, $sizer_prop, $std_margin);
     $sizer->AddSpacer( 25 );
@@ -145,7 +142,6 @@ sub get_settings {
         grading => $self->{'grading'}->GetStringSelection,
         gradient => $self->{'gradient'}->GetStringSelection,
         dynamics => $self->{'dynamics'}->GetStringSelection,
-        grading_type => $self->{'grading_type'}->GetStringSelection,
     }
 }
 
@@ -157,7 +153,7 @@ sub set_settings {
         next unless exists $data->{$key} and exists $self->{$key};
         $self->{$key}->SetValue( $data->{$key} );
     }
-    for my $key (qw/select repeat grading gradient dynamics grading_type/){
+    for my $key (qw/select repeat grading gradient dynamics/){
         next unless exists $data->{$key} and exists $self->{$key};
         $self->{$key}->SetSelection( $self->{$key}->FindString($data->{$key}) );
     }

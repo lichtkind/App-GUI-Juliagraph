@@ -26,7 +26,6 @@ sub new {
 
     Wx::Event::EVT_PAINT( $self, sub {
         my( $self, $event ) = @_;
-say "sketch";
 
         return unless ref $self->{'settings'};
         $self->{'x_pos'} = $self->GetPosition->x;
@@ -74,12 +73,17 @@ sub set_settings {
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
+
     my $progress_bar = $self->GetParent->{'progress_bar'};
     my $set = $self->{'settings'};
     use Benchmark;
     my $t0 = Benchmark->new();
     my $img = Wx::Image->new($self->{'size'}{'x'},$self->{'size'}{'y'});
 
+    my @bg_color = (0,0,0);
+    my $background_color = Wx::Colour->new( @bg_color );
+    $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );
+    $dc->Clear();
 
     my $code = 'my ($x_num, $x_pix);'."\n";
 

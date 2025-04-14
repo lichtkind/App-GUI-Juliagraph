@@ -10,11 +10,10 @@ use App::GUI::Juliagraph::Settings;
 use App::GUI::Juliagraph::Dialog::About;
 use App::GUI::Juliagraph::Frame::Tab::Constraints;
 use App::GUI::Juliagraph::Frame::Tab::Polynomial;
-use App::GUI::Juliagraph::Frame::Tab::Visual;
+use App::GUI::Juliagraph::Frame::Tab::Mapping;
 use App::GUI::Juliagraph::Frame::Tab::Color;
 use App::GUI::Juliagraph::Frame::Panel::Board;
 use App::GUI::Juliagraph::Widget::ProgressBar;
-my @tab_names;
 
 sub new {
     my ( $class, $parent, $title ) = @_;
@@ -30,18 +29,18 @@ sub new {
 
     # create GUI parts
     $self->{'tabs'}            = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
-    $self->{'tab'}{'constraints'}  = App::GUI::Juliagraph::Frame::Tab::Constraints->new( $self->{'tabs'} );
-    $self->{'tab'}{'polynomial'}   = App::GUI::Juliagraph::Frame::Tab::Polynomial->new( $self->{'tabs'} );
-    $self->{'tab'}{'visual'}       = App::GUI::Juliagraph::Frame::Tab::Visual->new( $self->{'tabs'}, $self->{'config'} );
-    $self->{'tab'}{'color'}        = App::GUI::Juliagraph::Frame::Tab::Color->new( $self->{'tabs'}, $self->{'config'} );
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'constraints'},  'Constraints');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'polynomial'},   'Monomials');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},       'Color Mapping');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},        'Colors');
-    $self->{'tab'}{'constraints'}->set_polynome( $self->{'tab'}{'polynomial'} );
+    $self->{'tab'}{'constraint'}  = App::GUI::Juliagraph::Frame::Tab::Constraints->new( $self->{'tabs'} );
+    $self->{'tab'}{'monomial'}    = App::GUI::Juliagraph::Frame::Tab::Polynomial->new( $self->{'tabs'} );
+    $self->{'tab'}{'mapping'}     = App::GUI::Juliagraph::Frame::Tab::Mapping->new( $self->{'tabs'}, $self->{'config'} );
+    $self->{'tab'}{'color'}       = App::GUI::Juliagraph::Frame::Tab::Color->new( $self->{'tabs'}, $self->{'config'} );
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'constraint'}, 'Constraints');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'monomial'},   'Monomials');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},    'Color Mapping');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},      'Colors');
+    $self->{'tab'}{'constraint'}->set_polynome( $self->{'tab'}{'monomial'} );
 
-    @tab_names = keys %{ $self->{'tab'} };
-    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @tab_names;
+    $self->{'tab_names'} = [keys %{ $self->{'tab'} }];
+    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'tab_names'}};
 
     $self->{'progress_bar'}        = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 430, 5, [20, 20, 110]);
     $self->{'board'}               = App::GUI::Juliagraph::Frame::Panel::Board->new( $self , 600, 600 );
@@ -155,7 +154,8 @@ sub new {
     $self->SetMaxSize($size);
 
     $self->update_recent_settings_menu();
-    $self->init();
+    # $self->init();
+    $self->sketch();
     $self;
 }
 
@@ -177,7 +177,7 @@ sub update_recent_settings_menu {
 
 sub init {
     my ($self) = @_;
-    $self->{'tab'}{$_}->init() for @tab_names;
+    $self->{'tab'}{$_}->init() for @{$self->{'tab_names'}};
     $self->sketch( );
     $self->SetStatusText( "all settings are set to default", 1);
     $self->show_settings_save(1);
@@ -201,18 +201,12 @@ sub sketch {
 
 sub get_settings {
     my $self = shift;
-    return {
-        $self->{'tab'}{'polynomial'}->get_settings,
-        constraints => $self->{'tab'}{'constraints'}->get_settings,
-        mapping     => $self->{'tab'}{'visual'}->get_settings,
-        color       => $self->{'tab'}{'color'}->get_settings,
-    };
+    return { map { $_ => $self->{'tab'}{ $_ }->get_settings } @{$self->{'tab_names'}} };
 }
 sub set_settings {
-    my ($self, $data) = @_;
-    return unless ref $data eq 'HASH';
-    $self->{'tab'}{$_}->set_settings( $data->{$_} ) for qw/constraints visual color/;
-    $self->{'tab'}{'polynomial'}->set_settings( $data );
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH';
+    $self->{'tab'}{$_}->set_settings( $settings->{$_} ) for @{$self->{'tab_names'}};
 }
 
 sub show_settings_save {

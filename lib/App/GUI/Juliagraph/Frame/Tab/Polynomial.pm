@@ -11,12 +11,12 @@ sub new {
     my ( $class, $parent) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
-    $self->{$_} = App::GUI::Juliagraph::Frame::Panel::Monomial->new( $self, $_-1) for 1 .. 4;
+    $self->{'monomial_count'} = 4;
+    $self->{$_} = App::GUI::Juliagraph::Frame::Panel::Monomial->new( $self, $_) for 1 .. $self->{'monomial_count'};
 
     my $std  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $box  = $std | &Wx::wxTOP | &Wx::wxBOTTOM;
     my $item = $std | &Wx::wxLEFT | &Wx::wxRIGHT;
-    my $row  = $std | &Wx::wxTOP;
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->AddSpacer(  10 );
@@ -34,43 +34,27 @@ sub new {
     $self;
 }
 
-sub init {
-    my ( $self ) = @_;
-    $self->{$_}->init() for 1 .. 4;
-    $self->{1}->set_settings({active => 0, use_factor => 1, factor_r => 1, factor_i => 1, exponent => 1});
-    $self->{2}->set_settings({active => 1, use_factor => 1, factor_r => 1, factor_i => 1, exponent => 2});
-    $self->{3}->set_settings({active => 0, use_factor => 1, factor_r => 1, factor_i => 1, exponent => 3});
-    $self->{4}->set_settings({active => 0, use_factor => 1, factor_r => 1, factor_i => 1, exponent => 4});
-}
+sub init         { $_[0]->{$_}->init() for 1 .. $_[0]->{'monomial_count'} }
 
-sub get_settings {
-    my ( $self ) = @_;
-    (
-        monomial_1 => $self->{'1'}->get_settings(),
-        monomial_2 => $self->{'2'}->get_settings(),
-        monomial_3 => $self->{'3'}->get_settings(),
-        monomial_4 => $self->{'4'}->get_settings(),
-    )
-}
-
+sub get_settings {  return {  map { $_ => $_[0]->{$_}->get_settings() } 1 .. $_[0]->{'monomial_count'} } }
 sub set_settings {
     my ( $self, $settings ) = @_;
-    return 0 unless ref $settings eq 'HASH' and exists $settings->{'monomial_1'};
-    $self->{$_}->set_settings( $settings->{'monomial_'.$_} ) for 1..4;
+    return 0 unless ref $settings eq 'HASH' and exists $settings->{'1'};
+    $self->{$_}->set_settings( $settings->{$_} ) for 1 .. $self->{'monomial_count'};
     1;
 }
 
 sub disable_factor {
     my ( $self, $nr ) = @_;
     return unless defined $nr;
-    $self->{$_}->enable_factor(1) for 1 .. 4;
-    $self->{$nr}->enable_factor(0) if $nr > 0 and $nr < 5;
+    $self->{$_}->enable_factor(1) for 1 .. $self->{'monomial_count'};
+    $self->{$nr}->enable_factor(0) if $nr > 0 and $nr <= $self->{'monomial_count'};
 }
 
 sub SetCallBack {
     my ($self, $code) = @_;
     return unless ref $code eq 'CODE';
-    $self->{$_}->SetCallBack($code) for 1 .. 4
+    $self->{$_}->SetCallBack($code) for 1 .. $self->{'monomial_count'};
 }
 
 1;
