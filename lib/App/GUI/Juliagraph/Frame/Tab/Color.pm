@@ -37,12 +37,10 @@ sub new {
     $self->{'color_display'}[$_] = App::GUI::Juliagraph::Widget::ColorDisplay->new
         ($self, $self->{'display_size'}-2, $self->{'display_size'},
          $_, $self->{'used_colors'}[$_]->values(as => 'hash')      ) for 0 .. $self->{'color_count'}-1;
-    $self->{'color_marker'}[$_+1]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 1 .. $self->{'color_count'}-2;
-    $self->{'color_display'}[$_+1]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 1 .. $self->{'color_count'}-2;
-    $self->{'color_marker'}[0]->SetToolTip("background color, shown where values do not converge");
-    $self->{'color_display'}[0]->SetToolTip("background color, shown where values do not converge");
-    $self->{'color_marker'}[1]->SetToolTip("color shown where values do not converge within allowed iteration maximum");
-    $self->{'color_display'}[1]->SetToolTip("color shown where values do not converge within allowed iteration maximum");
+    $self->{'color_marker'}[$_-1]->SetToolTip("color $_, to change (marked by arrow - crosses mark currently passive colors)") for 2 .. $self->{'color_count'};
+    $self->{'color_display'}[$_-1]->SetToolTip("color $_, to change (marked by arrow - crosses mark currently passive colors)") for 2 .. $self->{'color_count'};
+    $self->{'color_marker'}[0]->SetToolTip("color 1, often background color, shown where values do not converge");
+    $self->{'color_display'}[0]->SetToolTip("color 1, often background color, shown where values do not converge");
 
     $self->{'label'}{'color_set_store'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'label'}{'color_set_funct'} = Wx::StaticText->new($self, -1, 'Colors Set Function' );
@@ -141,7 +139,6 @@ sub new {
         #$state_sizer->AddSpacer( 1 );
     }
     $state_sizer->Insert( 2, Wx::StaticLine->new( $self, -1,[-1,-1],[-1,-1], &Wx::wxLI_VERTICAL), 0, &Wx::wxGROW);
-    $state_sizer->Insert( 4, Wx::StaticLine->new( $self, -1,[-1,-1],[-1,-1], &Wx::wxLI_VERTICAL), 0, &Wx::wxGROW);
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);

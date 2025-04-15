@@ -44,11 +44,10 @@ sub set_settings {
     1;
 }
 
-sub disable_factor {
+sub enable_coor {
     my ( $self, $nr ) = @_;
     return unless defined $nr;
-    $self->{$_}->enable_factor(1) for 1 .. $self->{'monomial_count'};
-    $self->{$nr}->enable_factor(0) if $nr > 0 and $nr <= $self->{'monomial_count'};
+    $self->{$_}->enable_coor(1) for 1 .. $self->{'monomial_count'};
 }
 
 sub SetCallBack {

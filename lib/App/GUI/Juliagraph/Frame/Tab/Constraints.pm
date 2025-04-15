@@ -46,7 +46,7 @@ sub new {
     $stop_val_lbl->SetToolTip('stop value: when iteration variable Z reaches or exceeds it computation will be stopped and count of iterations needed will determine the color of that pixel');
     $metric_lbl->SetToolTip('metric for computing stop value (|var| = sqrt(z.re**2 + z.i**2), x = z.real, y = z.im');
 
-    $self->{'type'} = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1], [-1,-1], ['Julia','Mandelbrot', 'Any'] );
+    $self->{'type'} = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1], [-1,-1], ['Mandelbrot', 'Julia', 'Any'] );
     $self->{'type'}->SetToolTip( "choose fractal type: \njulia uses position as init value of iterator var and constant as such, mandelbrot is vice versa\nany means no such restrictions" );
     $self->{'coordinates_use'} = Wx::ComboBox->new( $self, -1, '', [-1,-1], [125, -1], [ 'start value', 'constant', 'monomial 1', 'monomial 2', 'monomial 3', 'monomial 4']);
     $self->{'coordinates_use'}->SetToolTip("Which role play pixel coordinates in computation:\n - as start value of the iteration (z_0)\n - added as constant at any iteration \n - as factor of one monomial on next page (numbered from top to bottom)");
@@ -93,7 +93,7 @@ sub new {
         $self->{'callback'}->();
     });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'stop_nr'}, sub {
-        $self->{'mapping'}{'div_max'}->SetValue( $self->{'stop_nr'}->GetValue ) if ref $self->{'mapping'};
+        $self->{'mapping'}{'scale_max'}->SetValue( $self->{'stop_nr'}->GetValue ) if ref $self->{'mapping'};
         $self->{'callback'}->();
 
     });
@@ -257,9 +257,9 @@ sub set_settings {
 sub set_type {
     my ( $self, $type ) = @_;
     return unless defined $type;
-    $type = ucfirst $type;
+    $type = ucfirst lc $type;
     my $selection_nr = $self->{'type'}->FindString( $type );
-    return unless $selection_nr > -1;
+    return if $selection_nr == -1;
     $self->{'type'}->SetSelection( $selection_nr );
     if ($type eq 'Julia') {
         $self->set_coordinates_use('start value');
@@ -282,18 +282,18 @@ sub set_coordinates_use {
     if ($usage eq 'start value') {
         $self->{$_}->Enable(1) for @{$self->{'const_widgets'}};
         $self->{$_}->Enable(0) for @{$self->{'start_widgets'}};
-        $self->{'polynome'}->disable_factor( 0 ) if ref $self->{'polynome'};
+        #$self->{'polynome'}->enable_coor( 0 ) if ref $self->{'polynome'};
     }
     elsif ($usage eq 'constant'){
         $self->{$_}->Enable(0) for @{$self->{'const_widgets'}};
         $self->{$_}->Enable(1) for @{$self->{'start_widgets'}};
-        $self->{'polynome'}->disable_factor( 0 ) if ref $self->{'polynome'};
+        #$self->{'polynome'}->enable_coor( 0 ) if ref $self->{'polynome'};
     }
     else {
         $self->{$_}->Enable(1) for @{$self->{'const_widgets'}};
         $self->{$_}->Enable(1) for @{$self->{'start_widgets'}};
         my $nr = chop $usage;
-        $self->{'polynome'}->disable_factor( $nr ) if ref $self->{'polynome'};
+        #$self->{'polynome'}->enable_coor( $nr ) if ref $self->{'polynome'};
     }
 }
 
@@ -308,7 +308,7 @@ sub set_mapping {
     my ($self, $ref) = @_;
     return unless ref $ref eq 'App::GUI::Juliagraph::Frame::Tab::Mapping';
     $self->{'mapping'} = $ref;
-    $self->{'mapping'}{'div_max'}->SetValue( $self->{'stop_nr'}->GetValue );
+    $self->{'mapping'}{'scale_max'}->SetValue( $self->{'stop_nr'}->GetValue );
 }
 
 sub SetCallBack {

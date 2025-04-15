@@ -18,11 +18,13 @@ sub new {
     $self->{'active'} = Wx::CheckBox->new( $self, -1, ' On', [-1,-1], [ 60, -1]);
     $self->{'active'}->SetToolTip("switch usage of this polynome on or off");
     $self->{'use_minus'} = Wx::CheckBox->new( $self, -1, ' -', [-1,-1], [ 50, -1]);
-    $self->{'use_minus'}->SetToolTip('if on this monomial will be subtracted instead of added');
+    $self->{'use_minus'}->SetToolTip('if on, this monomial will be subtracted instead of added');
     $self->{'use_log'} = Wx::CheckBox->new( $self, -1, ' log', [-1,-1], [ 60, -1]);
-    $self->{'use_log'}->SetToolTip(' if on you put a log in fornt of this monomial term: z_n+1 = log( factor * z_n**exp )');
+    $self->{'use_log'}->SetToolTip(' if on, you put a logarithm in front of this monomial term as in: z_n+1 = log( factor * z_n**exponent )');
     $self->{'use_factor'} = Wx::CheckBox->new( $self, -1, ' Factor', [-1,-1], [ 70, -1]);
-    $self->{'use_factor'}->SetToolTip('use or discard factor in formula z_n+1 = factor * z_n**exp');
+    $self->{'use_factor'}->SetToolTip('if on, you employ the complex factor from the text boxes below (Re and Im) in formula z_n+1 = factor * z_n**exponent');
+    $self->{'use_coor'} = Wx::CheckBox->new( $self, -1, ' Coor.', [-1,-1], [ 70, -1]);
+    $self->{'use_coor'}->SetToolTip('if on, the complex factor or 1 gets multiplied with current complex pixel coordinates');
 
 
     my $exp_txt = "exponent above iterator variable z_n+1 = z_n**exponent * factor\nzero turns factor into constant";
@@ -61,33 +63,35 @@ sub new {
     my $row  = $std | &Wx::wxTOP;
     my $first_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $first_sizer->AddSpacer( $std_margin );
-    $first_sizer->Add( $self->{'active'},     0, $box,  5);
-    $first_sizer->AddSpacer( $std_margin );
-    $first_sizer->Add( $self->{'use_minus'},  0, $box,  5);
-    $first_sizer->AddSpacer( $std_margin - 4);
-    $first_sizer->Add( $self->{'use_log'},    0, $box,  5);
-    $first_sizer->AddSpacer( $std_margin + 3);
-    $first_sizer->Add( $self->{'use_factor'}, 0, $box,  5);
+    $first_sizer->Add( $self->{'active'},       0, $box,  5);
+    $first_sizer->AddSpacer( $std_margin - 1 );
+    $first_sizer->Add( $self->{'use_minus'},    0, $box,  5);
+    $first_sizer->AddSpacer( $std_margin - 9);
+    $first_sizer->Add( $self->{'use_log'},      0, $box,  5);
+    $first_sizer->AddSpacer( $std_margin + 1);
+    $first_sizer->Add( $self->{'use_factor'},   0, $box,  5);
+    $first_sizer->AddSpacer( $std_margin + 5);
+    $first_sizer->Add( $self->{'use_coor'},     0, $box,  5);
     $first_sizer->AddStretchSpacer( );
     $first_sizer->Add( $self->{'lbl_exponent'}, 0, $box, 13);
     $first_sizer->AddSpacer( 10 );
-    $first_sizer->Add( $self->{'exponent'},   0, $box,  5);
+    $first_sizer->Add( $self->{'exponent'},     0, $box,  5);
     $first_sizer->AddSpacer( $std_margin+2 );
 
     my $r_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $r_sizer->AddSpacer( $std_margin );
-    $r_sizer->Add( $self->{'lbl_rf'},   0, $box, 12);
+    $r_sizer->Add( $self->{'lbl_rf'},     0, $box, 12);
     $r_sizer->AddSpacer( 5 );
-    $r_sizer->Add( $self->{'factor_r'}, 1, $box,  5);
-    $r_sizer->Add( $self->{'button_r'}, 0, $box,  5);
+    $r_sizer->Add( $self->{'factor_r'},   1, $box,  5);
+    $r_sizer->Add( $self->{'button_r'},   0, $box,  5);
     $r_sizer->AddSpacer( $std_margin );
 
     my $i_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $i_sizer->AddSpacer( $std_margin );
-    $i_sizer->Add( $self->{'lbl_if'},   0, $box, 12);
+    $i_sizer->Add( $self->{'lbl_if'},     0, $box, 12);
     $i_sizer->AddSpacer( 5 );
-    $i_sizer->Add( $self->{'factor_i'}, 1, $box,  5);
-    $i_sizer->Add( $self->{'button_i'}, 0, $box,  5);
+    $i_sizer->Add( $self->{'factor_i'},   1, $box,  5);
+    $i_sizer->Add( $self->{'button_i'},   0, $box,  5);
     $i_sizer->AddSpacer( $std_margin );
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
@@ -102,7 +106,7 @@ sub new {
 sub init {
     my ( $self ) = @_;
     $self->set_settings ({ active => $self->{'init_exp'} == 2, # only second is on by default
-                           use_log => 0, use_factor => 1, use_minus => 0,
+                           use_log => 0, use_factor => 1, use_minus => 0, use_coor => 0, enable_coor => 0,
                            factor_r => 1, factor_i => 1, exponent => $self->{'init_exp'}, } );
 }
 sub get_settings {
@@ -112,6 +116,7 @@ sub get_settings {
         use_log    => $self->{'use_log'}->GetValue ? $self->{'use_log'}->GetValue : 0,
         use_minus  => $self->{'use_minus'}->GetValue ? $self->{'use_minus'}->GetValue : 0,
         use_factor => $self->{'use_factor'}->GetValue ? $self->{'use_factor'}->GetValue : 0,
+        use_coor   => $self->{'use_coor'}->GetValue ? $self->{'use_coor'}->GetValue : 0,
         factor_r   => $self->{'factor_r'}->GetValue ? $self->{'factor_r'}->GetValue : 0,
         factor_i   => $self->{'factor_i'}->GetValue ? $self->{'factor_i'}->GetValue : 0,
         exponent   => $self->{'exponent'}->GetStringSelection,
@@ -121,7 +126,7 @@ sub set_settings {
     my ( $self, $settings ) = @_;
     return 0 unless ref $settings eq 'HASH';
     $self->PauseCallBack();
-    for my $key (qw/active use_log use_minus use_factor factor_r factor_i/){
+    for my $key (qw/active use_log use_minus use_factor use_coor factor_r factor_i/){
         next unless exists $settings->{$key} and exists $self->{$key};
         $self->{$key}->SetValue( $settings->{$key} );
     }
@@ -130,6 +135,7 @@ sub set_settings {
         $self->{$key}->SetSelection( $self->{$key}->FindString( $settings->{$key}) );
     }
     $self->enable_factor( $settings->{'use_factor'} );
+    $self->enable_coor( $settings->{'enable_coor'} );
     $self->enable_monomial( $settings->{'active'} );
     $self->RestoreCallBack();
     1;
@@ -137,7 +143,7 @@ sub set_settings {
 
 sub enable_monomial {
     my ( $self, $on ) = @_;
-    $self->{$_}->Enable( $on ) for qw/use_minus use_log use_factor
+    $self->{$_}->Enable( $on ) for qw/use_minus use_log use_factor use_coor
      lbl_rf lbl_if factor_r factor_i  button_r button_i lbl_exponent exponent/;
     $self->enable_factor if int $on;
 }
@@ -147,6 +153,13 @@ sub enable_factor {
     $on //= $self->{'use_factor'}->GetValue;
     $self->{$_}->Enable( $on ) for qw/factor_r factor_i button_r button_i lbl_rf lbl_if/;
     $self->{'use_factor'}->SetValue( $on ) unless int $self->{'use_factor'}->GetValue == int $on;
+}
+
+sub enable_coor {
+    my ( $self, $on ) = @_;
+    $on //= $self->{'enable_coor'};
+    $self->{'use_coor'}->Enable( $on );
+    $self->{'use_coor'}->SetValue( 0 ) unless $on;
 }
 
 sub SetCallBack {
