@@ -38,6 +38,7 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},    'Color Mapping');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},      'Colors');
     $self->{'tab'}{'constraint'}->set_polynome( $self->{'tab'}{'monomial'} );
+    $self->{'tab'}{'constraint'}->set_mapping( $self->{'tab'}{'mapping'} );
 
     $self->{'tab_names'} = [keys %{ $self->{'tab'} }];
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'tab_names'}};

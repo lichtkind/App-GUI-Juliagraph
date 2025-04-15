@@ -19,6 +19,7 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1);
     $self->{'callback'} = sub {};
     $self->{'polynome'} = '';
+    $self->{'mapping'} = '';
 
     my $coor_lbl     = Wx::StaticText->new($self, -1, 'P i x e l   C o o r d i n a t e s : ' );
     my $zoom_lbl     = Wx::StaticText->new($self, -1, 'Z o o m : ' );
@@ -90,6 +91,11 @@ sub new {
     Wx::Event::EVT_COMBOBOX( $self, $self->{'coordinates_use'}, sub {
         $self->set_coordinates_use( $self->{'coordinates_use'}->GetStringSelection );
         $self->{'callback'}->();
+    });
+    Wx::Event::EVT_COMBOBOX( $self, $self->{'stop_nr'}, sub {
+        $self->{'mapping'}{'div_max'}->SetValue( $self->{'stop_nr'}->GetValue ) if ref $self->{'mapping'};
+        $self->{'callback'}->();
+
     });
     Wx::Event::EVT_TEXT( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/const_a const_b center_x center_y zoom/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_},      sub { $self->{'callback'}->() }) for qw/stop_value stop_metric/;
@@ -297,6 +303,12 @@ sub set_polynome {
     my ($self, $ref) = @_;
     return unless ref $ref eq 'App::GUI::Juliagraph::Frame::Tab::Polynomial';
     $self->{'polynome'} = $ref;
+}
+sub set_mapping {
+    my ($self, $ref) = @_;
+    return unless ref $ref eq 'App::GUI::Juliagraph::Frame::Tab::Mapping';
+    $self->{'mapping'} = $ref;
+    $self->{'mapping'}{'div_max'}->SetValue( $self->{'stop_nr'}->GetValue );
 }
 
 sub SetCallBack {
