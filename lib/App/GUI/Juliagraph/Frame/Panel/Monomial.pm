@@ -106,7 +106,7 @@ sub new {
 sub init {
     my ( $self ) = @_;
     $self->set_settings ({ active => $self->{'init_exp'} == 2, # only second is on by default
-                           use_log => 0, use_factor => 1, use_minus => 0, use_coor => 0, enable_coor => 0,
+                           use_log => 0, use_factor => 1, use_minus => 0, use_coor => 0,
                            factor_r => 1, factor_i => 1, exponent => $self->{'init_exp'}, } );
 }
 sub get_settings {
@@ -135,7 +135,6 @@ sub set_settings {
         $self->{$key}->SetSelection( $self->{$key}->FindString( $settings->{$key}) );
     }
     $self->enable_factor( $settings->{'use_factor'} );
-    $self->enable_coor( $settings->{'enable_coor'} );
     $self->enable_monomial( $settings->{'active'} );
     $self->RestoreCallBack();
     1;
@@ -143,9 +142,10 @@ sub set_settings {
 
 sub enable_monomial {
     my ( $self, $on ) = @_;
-    $self->{$_}->Enable( $on ) for qw/use_minus use_log use_factor use_coor
+    $self->{$_}->Enable( $on ) for qw/use_minus use_log use_factor
      lbl_rf lbl_if factor_r factor_i  button_r button_i lbl_exponent exponent/;
     $self->enable_factor if int $on;
+    $self->{'use_coor'}->Enable(1) if $on and $self->{'enable_coor'};
 }
 
 sub enable_factor {
@@ -157,9 +157,13 @@ sub enable_factor {
 
 sub enable_coor {
     my ( $self, $on ) = @_;
-    $on //= $self->{'enable_coor'};
-    $self->{'use_coor'}->Enable( $on );
-    $self->{'use_coor'}->SetValue( 0 ) unless $on;
+    $self->{'enable_coor'} = $on;
+    if ($on){
+        $self->{'use_coor'}->Enable( 1 ) if $self->{'active'}->GetValue;
+    } else {
+        $self->{'use_coor'}->SetValue( 0 );
+        $self->{'use_coor'}->Enable( 0 );
+    }
 }
 
 sub SetCallBack {

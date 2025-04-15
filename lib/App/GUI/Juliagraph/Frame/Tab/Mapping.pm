@@ -12,7 +12,7 @@ use App::GUI::Juliagraph::Widget::SliderCombo;
 
 my $default_settings =  {
         custom_partition => 1, scale_parts => 20, scale_min => 0, scale_distro => 'square',
-        user_colors => 1, background_color => 'black', begin_color => 'color 2', end_color => 'color 4',
+        user_colors => 1, begin_color => 'color 2', end_color => 'color 4', background_color => 'black',
         gradient_dynamics => 0, gradient_space => 'HSL', use_subgradient => 0,
         subgradient_steps => 10, subgradient_dynamics => 0, subgradient_space => 'HSL',
     };
@@ -61,18 +61,18 @@ sub new {
     $self->{'custom_partition'} = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[30, -1]);
     $self->{'user_colors'}      = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[30, -1]);
     $self->{'use_subgradient'}  = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[30, -1]);
-    $self->{'scale_parts'} = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 230, 'Partitions:', "In how many parts the scale (min .. max) will be partitioned, meaning: how many different colors we use to paint the fractal", 2, 100, 20);
-    $self->{'scale_min'} = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 80, 'Min. :', "if zero the whole range (0..max) will be partitioned, if above zero, the first partition is zero .. min", 0, 100, 0);
-    $self->{'scale_max'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [60,-1], &Wx::wxTE_RIGHT | &Wx::wxTE_READONLY);
-    $self->{'scale_distro'} = Wx::ComboBox->new( $self, -1, 'linear', [-1,-1],[100, -1], [qw/linear square cube sqrt cubert log exp/]);
-    $self->{'begin_color'} = Wx::ComboBox->new( $self, -1, 'color 3', [-1,-1],[100, -1], [@color_names]);
-    $self->{'end_color'} = Wx::ComboBox->new( $self, -1, 'color 4', [-1,-1],[100, -1], [@color_names]);
-    $self->{'background_color'} = Wx::ComboBox->new( $self, -1, 'black', [-1,-1],[100, -1], [qw/black white blue/, 'color 1']);
-    $self->{'gradient_dynamics'}  = Wx::ComboBox->new( $self, -1,  0,  [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
-    $self->{'gradient_space'}  = Wx::ComboBox->new( $self, -1,  'RGB',  [-1,-1],[80, -1], [qw/RGB HSL/]);
-    $self->{'subgradient_steps'}  = Wx::ComboBox->new( $self, -1,  '10',  [-1,-1],[80, -1], [qw/5 10 15 20 25 30 35/]);
-    $self->{'subgradient_space'}  = Wx::ComboBox->new( $self, -1,  'RGB',  [-1,-1],[80, -1], [qw/RGB HSL/]);
-    $self->{'subgradient_dynamics'}  = Wx::ComboBox->new( $self, -1,  0,  [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
+    $self->{'scale_parts'}  = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 230, 'Partitions:', "In how many parts the scale (min .. max) will be partitioned, meaning: how many different colors we use to paint the fractal", 2, 100, 20);
+    $self->{'scale_min'}    = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 80, 'Min. :', "if zero the whole range (0..max) will be partitioned, if above zero, the first partition is zero .. min", 0, 100, 0);
+    $self->{'scale_max'}    = Wx::TextCtrl->new( $self, -1,         0, [-1,-1], [60,-1], &Wx::wxTE_RIGHT | &Wx::wxTE_READONLY);
+    $self->{'scale_distro'} = Wx::ComboBox->new( $self, -1, 'linear',  [-1,-1],[100, -1], [qw/linear square cube sqrt cubert log exp/]);
+    $self->{'begin_color'}  = Wx::ComboBox->new( $self, -1, 'color 3', [-1,-1],[100, -1], [@color_names]);
+    $self->{'end_color'}    = Wx::ComboBox->new( $self, -1, 'color 4', [-1,-1],[100, -1], [@color_names]);
+    $self->{'background_color'}   = Wx::ComboBox->new( $self, -1,'black', [-1,-1],[100,-1], [qw/black white blue/, 'color 1']);
+    $self->{'gradient_dynamics'}  = Wx::ComboBox->new( $self, -1,      0, [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
+    $self->{'gradient_space'}     = Wx::ComboBox->new( $self, -1,  'RGB', [-1,-1],[80, -1], [qw/RGB HSL/]);
+    $self->{'subgradient_steps'}  = Wx::ComboBox->new( $self, -1,   '10', [-1,-1],[80, -1], [qw/5 10 15 20 25 30 35/]);
+    $self->{'subgradient_space'}  = Wx::ComboBox->new( $self, -1,  'RGB', [-1,-1],[80, -1], [qw/RGB HSL/]);
+    $self->{'subgradient_dynamics'} = Wx::ComboBox->new($self, -1,     0, [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
     $self->{'custom_partition'}->SetToolTip('use chosen color selection to compute color rainbow (on) or just a gray scale');
     $self->{'user_colors'}->SetToolTip('use chosen color selection to compute color rainbow (on) or just a gray scale');
     $self->{'background_color'}->SetToolTip('which color is used to paint areas where iteration stays below stop value');
@@ -211,6 +211,7 @@ sub set_settings {
     $self->RestoreCallBack();
     1;
 }
+
 sub get_settings {
     my ( $self ) = @_;
     return {
@@ -219,10 +220,10 @@ sub get_settings {
         use_subgradient   => int $self->{'use_subgradient'}->GetValue,
         scale_min         => $self->{'scale_min'}->GetValue,
         scale_parts       => $self->{'scale_parts'}->GetValue,
-        scale_distro      => $self->{'scale_distro'}->GetValue,
-        background_color  => $self->{'background_color'}->GetValue,
-        begin_color       => $self->{'begin_color'}->GetValue,
-        end_color         => $self->{'end_color'}->GetValue,
+        scale_distro      => $self->{'scale_distro'}->GetStringSelection,
+        background_color  => $self->{'background_color'}->GetStringSelection,
+        begin_color       => $self->{'begin_color'}->GetStringSelection,
+        end_color         => $self->{'end_color'}->GetStringSelection,
         gradient_dynamics => $self->{'gradient_dynamics'}->GetStringSelection,
         gradient_space    => $self->{'gradient_space'}->GetStringSelection,
         subgradient_steps => $self->{'subgradient_steps'}->GetStringSelection,
@@ -245,7 +246,7 @@ sub enable_user_colors {
 }
 sub enable_subgradient {
     my ( $self, $on ) = @_;
-    $on //= $self->{'use_subgradient'};
+    $on //= $self->{'use_subgradient'}->GetValue;
     $self->{'use_subgradient'}->SetValue($on) unless int($on) == int $self->{'use_subgradient'}->GetValue;
     $self->{$_}->Enable( $on ) for qw/subgradient_steps subgradient_dynamics subgradient_space
                                     lbl_sub_step lbl_sub_dyn lbl_sub_space/;

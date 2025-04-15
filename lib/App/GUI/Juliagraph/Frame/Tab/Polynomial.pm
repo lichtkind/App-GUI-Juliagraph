@@ -34,7 +34,7 @@ sub new {
     $self;
 }
 
-sub init         { $_[0]->{$_}->init() for 1 .. $_[0]->{'monomial_count'} }
+sub init         { $_[0]->{$_}->init() for 1 .. $_[0]->{'monomial_count'};  $_[0]->enable_coor(0) }
 
 sub get_settings {  return {  map { $_ => $_[0]->{$_}->get_settings() } 1 .. $_[0]->{'monomial_count'} } }
 sub set_settings {
@@ -45,9 +45,9 @@ sub set_settings {
 }
 
 sub enable_coor {
-    my ( $self, $nr ) = @_;
-    return unless defined $nr;
-    $self->{$_}->enable_coor(1) for 1 .. $self->{'monomial_count'};
+    my ( $self, $on ) = @_;
+    return unless defined $on;
+    $self->{$_}->enable_coor( $on ) for 1 .. $self->{'monomial_count'};
 }
 
 sub SetCallBack {

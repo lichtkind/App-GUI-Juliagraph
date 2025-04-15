@@ -46,10 +46,14 @@ sub new {
     $stop_val_lbl->SetToolTip('stop value: when iteration variable Z reaches or exceeds it computation will be stopped and count of iterations needed will determine the color of that pixel');
     $metric_lbl->SetToolTip('metric for computing stop value (|var| = sqrt(z.re**2 + z.i**2), x = z.real, y = z.im');
 
-    $self->{'type'} = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1], [-1,-1], ['Mandelbrot', 'Julia', 'Any'] );
-    $self->{'type'}->SetToolTip( "choose fractal type: \njulia uses position as init value of iterator var and constant as such, mandelbrot is vice versa\nany means no such restrictions" );
-    $self->{'coordinates_use'} = Wx::ComboBox->new( $self, -1, '', [-1,-1], [125, -1], [ 'start value', 'constant', 'monomial 1', 'monomial 2', 'monomial 3', 'monomial 4']);
-    $self->{'coordinates_use'}->SetToolTip("Which role play pixel coordinates in computation:\n - as start value of the iteration (z_0)\n - added as constant at any iteration \n - as factor of one monomial on next page (numbered from top to bottom)");
+    $self->{'type'} = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1], [-1, -1], ['Mandelbrot', 'Julia', 'Any'] );
+    $self->{'type'}->SetToolTip( "Choose fractal type: \njulia uses position as init value of iterator var and constant as such, mandelbrot is vice versa\nany means no such restrictions." );
+    $self->{'coor_as_start'} = Wx::CheckBox->new( $self, -1, ' Start',  [-1,-1], [-1, -1]);
+    $self->{'coor_as_const'} = Wx::CheckBox->new( $self, -1, ' Const.', [-1,-1], [-1, -1]);
+    $self->{'coor_as_monom'} = Wx::CheckBox->new( $self, -1, ' Monom',  [-1,-1], [-1, -1]);
+    $self->{'coor_as_start'}->SetToolTip( "Use current pixel coordinates as iteration start value, or add them to it." );
+    $self->{'coor_as_const'}->SetToolTip( "Use current pixel coordinates as constant added at every iteration." );
+    $self->{'coor_as_monom'}->SetToolTip( "Use current pixel coordinates as monomial factor in the next tab page." );
 
     $self->{'zoom'}     = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [ 80, -1] );
     $self->{'center_x'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
@@ -85,17 +89,21 @@ sub new {
     $self->{'start_widgets'} = [qw/start_a start_b button_sa button_sb lbl_start lbl_starta lbl_startb/];
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'type'},  sub {
-        $self->set_type( $self->{'type'}->GetStringSelection );
-        $self->{'callback'}->();
+        $self->set_type( $self->{'type'}->GetStringSelection );           $self->{'callback'}->();
     });
-    Wx::Event::EVT_COMBOBOX( $self, $self->{'coordinates_use'}, sub {
-        $self->set_coordinates_use( $self->{'coordinates_use'}->GetStringSelection );
-        $self->{'callback'}->();
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'coor_as_monom'}, sub {
+        $self->set_coordinates_as_factor( $self->{'coor_as_monom'}->GetValue );
+        $self->freeze_last_coor_option(); $self->{'callback'}->();
+    });
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'coor_as_const'}, sub {
+        $self->freeze_last_coor_option(); $self->{'callback'}->();
+    });
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'coor_as_start'}, sub {
+        $self->freeze_last_coor_option(); $self->{'callback'}->();
     });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'stop_nr'}, sub {
         $self->{'mapping'}{'scale_max'}->SetValue( $self->{'stop_nr'}->GetValue ) if ref $self->{'mapping'};
         $self->{'callback'}->();
-
     });
     Wx::Event::EVT_TEXT( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/const_a const_b center_x center_y zoom/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_},      sub { $self->{'callback'}->() }) for qw/stop_value stop_metric/;
@@ -107,13 +115,17 @@ sub new {
     my $all  = $std | &Wx::wxALL;
 
     my $left_margin = 20;
+    my $coor_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $coor_sizer->Add( $self->{'coor_as_start'},   0, $box, 2);
+    $coor_sizer->Add( $self->{'coor_as_const'},   0, $box, 2);
+    $coor_sizer->Add( $self->{'coor_as_monom'},   0, $box, 2);
+
     my $type_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $type_sizer->AddSpacer( $left_margin );
-    $type_sizer->Add( $self->{'type'},            0, $box,  0);
-    $type_sizer->AddSpacer( 35 );
-    $type_sizer->Add( $coor_lbl,                  0, $row, 15);
-    $type_sizer->AddSpacer(  6 );
-    $type_sizer->Add( $self->{'coordinates_use'}, 0, $row,  5);
+    $type_sizer->Add( $self->{'type'},        0, $box,  16);
+    $type_sizer->AddSpacer( 40 );
+    $type_sizer->Add( $coor_lbl,              0, $row,  32);
+    $type_sizer->Add( $coor_sizer,            0, $item, 30);
     $type_sizer->AddStretchSpacer( );
 
     my $zoom_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
@@ -124,23 +136,23 @@ sub new {
 
     my $x_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $x_sizer->AddSpacer( $left_margin );
-    $x_sizer->Add( $x_lbl,              0, $row, 12);
+    $x_sizer->Add( $x_lbl,                    0, $row, 12);
     $x_sizer->AddSpacer( 10 );
-    $x_sizer->Add( $self->{'center_x'}, 1, $box, 5);
-    $x_sizer->Add( $self->{'button_x'}, 0, $box, 5);
+    $x_sizer->Add( $self->{'center_x'},       1, $box, 5);
+    $x_sizer->Add( $self->{'button_x'},       0, $box, 5);
     $x_sizer->AddSpacer( $left_margin );
 
     my $y_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $y_sizer->AddSpacer( $left_margin );
-    $y_sizer->Add( $y_lbl,              0, $row, 17);
+    $y_sizer->Add( $y_lbl,                    0, $row, 17);
     $y_sizer->AddSpacer( 10 );
-    $y_sizer->Add( $self->{'center_y'}, 1, $box, 10);
-    $y_sizer->Add( $self->{'button_y'}, 0, $box, 10);
+    $y_sizer->Add( $self->{'center_y'},       1, $box, 10);
+    $y_sizer->Add( $self->{'button_y'},       0, $box, 10);
     $y_sizer->AddSpacer( $left_margin );
 
     my $const_a_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $const_a_sizer->AddSpacer( $left_margin );
-    $const_a_sizer->Add( $self->{'lbl_consta'}, 0, $row, 12);
+    $const_a_sizer->Add( $self->{'lbl_consta'},0, $row, 12);
     $const_a_sizer->AddSpacer( 10 );
     $const_a_sizer->Add( $self->{'const_a'},   1, $box,  5);
     $const_a_sizer->Add( $self->{'button_ca'}, 0, $box,  5);
@@ -214,14 +226,13 @@ sub new {
     $self;
 }
 
-sub init {
-    my ( $self ) = @_;
-    $self->set_settings ( $default_settings );
-}
-
+sub init         { $_[0]->set_settings ( $default_settings ) }
 sub get_settings {
     my ( $self ) = @_;
     {
+        coor_as_start => int $self->{'coor_as_start'}->GetValue,
+        coor_as_const => int $self->{'coor_as_const'}->GetValue,
+        coor_as_monom => int $self->{'coor_as_monom'}->GetValue,
         zoom     => $self->{'zoom'}->GetValue  + 0,
         center_x => $self->{'center_x'}->GetValue + 0,
         center_y => $self->{'center_y'}->GetValue + 0,
@@ -230,7 +241,6 @@ sub get_settings {
         start_a  => $self->{'start_a'}->GetValue + 0,
         start_b  => $self->{'start_b'}->GetValue + 0,
         type     => $self->{'type'}->GetStringSelection,
-        coordinates_use => $self->{'coordinates_use'}->GetStringSelection,
         stop_nr  => $self->{'stop_nr'}->GetStringSelection,
         stop_value => $self->{'stop_value'}->GetStringSelection,
         stop_metric => $self->{'stop_metric'}->GetStringSelection,
@@ -241,14 +251,16 @@ sub set_settings {
     my ( $self, $settings ) = @_;
     return 0 unless ref $settings eq 'HASH' and exists $settings->{'type'};
     $self->PauseCallBack();
-    for my $key (qw/const_a const_b start_a start_b center_x center_y zoom/){
+    for my $key (qw/coor_as_start coor_as_const coor_as_monom
+                    const_a const_b start_a start_b center_x center_y zoom/){
         next unless exists $settings->{$key} and exists $self->{$key};
         $self->{$key}->SetValue( $settings->{$key} );
     }
-    for my $key (qw/coordinates_use stop_nr stop_value stop_metric/){
+    for my $key (qw/stop_nr stop_value stop_metric/){
         next unless exists $settings->{$key} and exists $self->{$key};
         $self->{$key}->SetSelection( $self->{$key}->FindString($settings->{$key}) );
     }
+    $self->set_coordinates_as_factor( $settings->{'coor_as_monom'} );
     $self->set_type( $settings->{'type'} );
     $self->RestoreCallBack();
     1;
@@ -261,39 +273,47 @@ sub set_type {
     my $selection_nr = $self->{'type'}->FindString( $type );
     return if $selection_nr == -1;
     $self->{'type'}->SetSelection( $selection_nr );
-    if ($type eq 'Julia') {
-        $self->set_coordinates_use('start value');
-        $self->{'coordinates_use'}->Enable(0);
+    if ($type eq 'Mandelbrot'){
+        $self->{$_}->SetValue( 0 ) for qw/const_a const_b start_a start_b/;
+        $self->{$_}->Enable( 0 ) for @{$self->{'const_widgets'}};
+        $self->{'coor_as_start'}->SetValue( 0 );
+        $self->{'coor_as_const'}->SetValue( 1 );
+    } elsif ($type eq 'Julia') {
+        $self->{$_}->SetValue( 0 ) for qw/start_a start_b/;
+        $self->{$_}->Enable( 1 ) for @{$self->{'const_widgets'}};
+        $self->{'coor_as_start'}->SetValue( 1 );
+        $self->{'coor_as_const'}->SetValue( 0 );
     }
-    elsif ($type eq 'Mandelbrot'){
-        $self->set_coordinates_use('constant');
-        $self->{'coordinates_use'}->Enable(0);
+    if ($type eq 'Any') {
+        $self->{$_}->Enable(1) for @{$self->{'const_widgets'}}, @{$self->{'start_widgets'}},
+                                   qw/coor_as_start coor_as_const coor_as_monom/;
+        $self->freeze_last_coor_option;
+    } else {
+        $self->{$_}->Enable(0) for @{$self->{'start_widgets'}},
+                                   qw/coor_as_start coor_as_const coor_as_monom/;
+        $self->{'coor_as_monom'}->SetValue( 0 );
+        $self->{'polynome'}->init() if ref $self->{'polynome'};
     }
-    elsif ($type eq 'Any') { $self->{'coordinates_use'}->Enable(1) }
+}
+sub set_coordinates_as_factor {
+    my ( $self, $on ) = @_;
+    $on //= $self->{'coor_as_monom'}->GetValue;
+    $self->{'coor_as_monom'}->SetValue( $on );
+    $self->{'polynome'}->enable_coor( $on ) if ref $self->{'polynome'};
 }
 
-sub set_coordinates_use {
-    my ( $self, $usage ) = @_;
-    return unless defined $usage;
-    $usage = lc $usage;
-    my $selection_nr = $self->{'coordinates_use'}->FindString( $usage );
-    return unless $selection_nr > -1;
-    $self->{'coordinates_use'}->SetSelection( $selection_nr );
-    if ($usage eq 'start value') {
-        $self->{$_}->Enable(1) for @{$self->{'const_widgets'}};
-        $self->{$_}->Enable(0) for @{$self->{'start_widgets'}};
-        #$self->{'polynome'}->enable_coor( 0 ) if ref $self->{'polynome'};
-    }
-    elsif ($usage eq 'constant'){
-        $self->{$_}->Enable(0) for @{$self->{'const_widgets'}};
-        $self->{$_}->Enable(1) for @{$self->{'start_widgets'}};
-        #$self->{'polynome'}->enable_coor( 0 ) if ref $self->{'polynome'};
-    }
-    else {
-        $self->{$_}->Enable(1) for @{$self->{'const_widgets'}};
-        $self->{$_}->Enable(1) for @{$self->{'start_widgets'}};
-        my $nr = chop $usage;
-        #$self->{'polynome'}->enable_coor( $nr ) if ref $self->{'polynome'};
+sub freeze_last_coor_option {
+    my ( $self ) = @_;
+    my %val = (s => int($self->{'coor_as_start'}->GetValue),
+               c => int($self->{'coor_as_const'}->GetValue),
+               m => int($self->{'coor_as_monom'}->GetValue),
+    );
+    if ($val{'s'} + $val{'c'} + $val{'m'}  == 1){
+        $self->{'coor_as_start'}->Enable(0) if $val{'s'};
+        $self->{'coor_as_const'}->Enable(0) if $val{'c'};
+        $self->{'coor_as_monom'}->Enable(0) if $val{'m'};
+    } else {
+        $self->{$_}->Enable(1) for qw/coor_as_start coor_as_const coor_as_monom/;
     }
 }
 
