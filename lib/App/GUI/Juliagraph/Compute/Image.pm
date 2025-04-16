@@ -4,23 +4,88 @@
 package App::GUI::Juliagraph::Compute::Image;
 use v5.12;
 use warnings;
-use Wx;
 use Benchmark;
+use Graphics::Toolkit::Color qw/color/;
+use Wx;
+
+use constant SKETCH_FACTOR => 4;
 
 sub from_settings {
-    my( $set, $size, $progress_bar, $sketch_size ) = @_;
+    my( $set, $size, $progress_bar, $sketch ) = @_;
     my $img = Wx::Image->new( $size->{'x'}, $size->{'y'} );
+    my $sketch_factor = (defined $sketch) ? SKETCH_FACTOR : 0;
 
     my $t0 = Benchmark->new();
 
-    my $code = 'my ($x_num, $x_pix);'."\n";
-    #eval $code; #
-    #say $code;
-    say "compile:",timestr(timediff(Benchmark->new, $t0));
+    my $max_iter  =  int $set->{'constraint'}{'stop_nr'} ** 2;
+    my $max_value =  $set->{'constraint'}{'stop_value'} ** 2;
+    my $zoom      = 140 * $set->{'constraint'}{'zoom'};
+    my $schranke = $max_value ** 2;
+    my @gradient = color('white')->gradient( to => 'black', steps => $max_iter, dynamic => 0 );
+    my @color = map { [$_->values( 'RGB' )] } @gradient;
 
-    #    die "bad iter code - $@ :\n$code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
-    # say "run:",timestr(timediff(Benchmark->new, $t0));
-    # unless ($self->{'flag'}{'sketch'}){ say  "$_: ".$vals{$_} for keys %vals }
+    my $max_pixel_x  = $size->{x}-1;
+    my $max_pixel_y  = $size->{y}-1;
+    my $offset_x = (- $size->{'x'} / 2 / $zoom) + $set->{'constraint'}{'center_x'};
+    my $offset_y = (- $size->{'y'} / 2 / $zoom) + $set->{'constraint'}{'center_y'};
+    my $delta_x  = 1 / $zoom;
+    my $delta_y  = 1 / $zoom;
+    my $start_a  = $set->{'constraint'}{'start_a'};
+    my $start_b  = $set->{'constraint'}{'start_b'};
+    my $const_a  = $set->{'constraint'}{'const_a'};
+    my $const_b  = $set->{'constraint'}{'const_b'};
+    if ($sketch_factor){
+        $delta_x *= $sketch_factor;
+        $delta_y *= $sketch_factor;
+        $max_pixel_x  /= $sketch_factor;
+        $max_pixel_y  /= $sketch_factor;
+    }
+
+    my ($z_a_q, $z_b_q, $color, $px, $py) = (0,0,0);
+    my $end_color = $color[ -1 ];
+    my $x = $offset_x;
+
+    my $const_a_code =
+
+    my @paint_code;
+    if ($sketch_factor){
+        push @paint_code, '    $px = $pixel_x * 4', '    $py = $pixel_y * 4';
+        for my $x (0 .. $sketch_factor -1){
+            for my $y (0 .. $sketch_factor -1){
+                push @paint_code, '    $img->SetRGB( $px+'.$x.', $py+'.$y.', @$color)';
+            }
+        }
+    } else {
+        push @paint_code, '    $img->SetRGB( $pixel_x, $pixel_y, @$color)';
+    }
+
+    my @code = (
+        'for my $pixel_x (0 .. $max_pixel_x){',
+        '  my $y = $offset_y',
+        '  for my $pixel_y (0 .. $max_pixel_y){',
+       ($set->{'constraint'}{'coor_as_start'} ?
+        '    my ($z_a, $z_b) = ($start_a+$x, $start_b+$y)' :
+        '    my ($z_a, $z_b) = ($start_a, $start_b)' ),
+        '    $color = $end_color',
+        '    for my $i (0 .. $max_iter - 1){',
+        '      $z_a_q = $z_a * $z_a',
+        '      $z_b_q = $z_b * $z_b',
+        '      $color = $color[ $i ], last if $z_a_q + $z_b_q > $schranke',
+        '      ($z_a, $z_b) = ($z_a_q - $z_b_q, 2 * $z_a * $z_b)',
+        ($set->{'constraint'}{'coor_as_const'} ?
+       ('      $z_a += $x + '.$const_a, '      $z_b += $y + '.$const_b) :
+       ('      $z_a += '.$const_a,      '      $z_b += '.$const_b     ) ),
+        '    }', @paint_code,
+        '    $y += $delta_y',
+        '  }',
+        '  $x += $delta_x',
+        '}',
+    );
+
+    my $code = join '', map { $_ . ";\n"} @code;
+    eval $code;
+    die "bad iter code - $@ :\n$code" if $@; # say $code;
+    say "compile:",timestr(timediff(Benchmark->new, $t0));
 
     return $img;
 }

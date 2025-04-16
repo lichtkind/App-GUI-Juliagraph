@@ -118,7 +118,7 @@ sub new {
     Wx::Event::EVT_MENU( $self, 12400, sub { $self->save_image_dialog });
     Wx::Event::EVT_MENU( $self, 13300, sub { $self->{'dialog'}{'about'}->ShowModal });
 
-    my $std_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALIGN_CENTER_HORIZONTAL;
+    my $std_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALIGN_CENTER_VERTICAL;
     my $vert_attr = $std_attr | &Wx::wxTOP;
     my $vset_attr = $std_attr | &Wx::wxTOP| &Wx::wxBOTTOM;
     my $horiz_attr = $std_attr | &Wx::wxLEFT;
@@ -149,7 +149,7 @@ sub new {
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
     $self->{'btn'}{'draw'}->SetFocus;
-    my $size = [1200, 815];
+    my $size = [1200, 810];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);

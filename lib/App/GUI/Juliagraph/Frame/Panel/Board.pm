@@ -6,10 +6,7 @@ use v5.12;
 use warnings;
 use Wx;
 use base qw/Wx::Panel/;
-use Graphics::Toolkit::Color qw/color/;
 use App::GUI::Juliagraph::Compute::Image;
-
-use constant SKETCH_FACTOR => 4;
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
@@ -43,7 +40,6 @@ sub new {
         1;
     }); # Blit (xdest, ydest, width, height, DC *src, xsrc, ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false)
     # Wx::Event::EVT_LEFT_DOWN( $self->{'board'}, sub {});
-
     return $self;
 }
 
@@ -74,10 +70,9 @@ sub paint {
     my( $self, $dc, $width, $height ) = @_;
     my $progress_bar = $self->GetParent->{'progress_bar'};
     my $img = App::GUI::Juliagraph::Compute::Image::from_settings(
-        $self->{'settings'}, $self->{'size'}, $progress_bar,
-        (defined $self->{'flag'}{'sketch'} ? SKETCH_FACTOR : 0 ),
+        $self->{'settings'}, $self->{'size'}, $progress_bar, $self->{'flag'}{'sketch'},
     );
-    $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 );
+    $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 ); # at point (0, 0) with no mask
     $self->{'image'} = $img unless $self->{'flag'}{'sketch'};
     delete $self->{'flag'};
     $dc;

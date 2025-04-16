@@ -6,12 +6,13 @@ use warnings;
 use Wx;
 use base qw/Wx::Panel/;
 use App::GUI::Juliagraph::Widget::SliderStep;
+use App::GUI::Juliagraph::Widget::SliderCombo;
 
 my $default_settings = {
     type => 'Mandelbrot', coordinates_use => 'constant',
-    zoom => 0, center_x => 0, center_y => 0,
+    zoom => 1, center_x => 0, center_y => 0,
     const_a => 0, const_b => 0, start_a => 0, start_b => 0,
-    stop_nr => 1000, stop_value => 1000, stop_metric => '|var|'
+    stop_nr => 6, stop_value => 3, stop_metric => '|var|'
 };
 
 sub new {
@@ -33,8 +34,6 @@ sub new {
     $self->{'lbl_startb'} = Wx::StaticText->new($self, -1, 'B : ' );
     $self->{'lbl_start'} = Wx::StaticText->new($self, -1, 'S t a r t    V a l u e : ' );
     my $stop_lbl     = Wx::StaticText->new($self, -1, 'I t e r a t i o n   S t o p : ' );
-    my $stop_nr_lbl  = Wx::StaticText->new($self, -1, 'M a x : ' );
-    my $stop_val_lbl = Wx::StaticText->new($self, -1, 'V a l u e : ' );
     my $metric_lbl   = Wx::StaticText->new($self, -1, 'M e t r i c : ' );
     $coor_lbl->SetToolTip("Which role play pixel coordinates in computation:\n - as start value of the iteration (z_0)\n - added as constant at any iteration \n - as factor of one monomial on next page (numbered from top to bottom)");
     $zoom_lbl->SetToolTip('zoom factor: the larger the more you zoom in');
@@ -42,8 +41,6 @@ sub new {
     $self->{'lbl_const'}->SetToolTip('complex constant that will be used according settings in first paragraph');
     $self->{'lbl_start'}->SetToolTip('value of iteration variable Z before first iteration');
     $stop_lbl->SetToolTip('conditions that stop the iteration (computation of pixel color)');
-    $stop_nr_lbl->SetToolTip('maximal amount of iterations run on one pixel coordinates');
-    $stop_val_lbl->SetToolTip('stop value: when iteration variable Z reaches or exceeds it computation will be stopped and count of iterations needed will determine the color of that pixel');
     $metric_lbl->SetToolTip('metric for computing stop value (|var| = sqrt(z.re**2 + z.i**2), x = z.real, y = z.im');
 
     $self->{'type'} = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1], [-1, -1], ['Mandelbrot', 'Julia', 'Any'] );
@@ -55,20 +52,27 @@ sub new {
     $self->{'coor_as_const'}->SetToolTip( "Use current pixel coordinates as constant added at every iteration." );
     $self->{'coor_as_monom'}->SetToolTip( "Use current pixel coordinates as monomial factor in the next tab page." );
 
-    $self->{'zoom'}     = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [ 80, -1] );
-    $self->{'center_x'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
-    $self->{'center_y'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
-    $self->{'const_a'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
-    $self->{'const_b'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
-    $self->{'start_a'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
-    $self->{'start_b'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1],  [100, -1] );
-    $self->{'button_zoom'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 120, 3, 0.3, 3, 3);
-    $self->{'button_x'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 120, 3, 0.3, 3, 3);
-    $self->{'button_y'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 120, 3, 0.3, 3, 3);
-    $self->{'button_ca'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 120, 3, 0.3, 3, 3);
-    $self->{'button_cb'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 120, 3, 0.3, 3, 3);
-    $self->{'button_sa'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 120, 3, 0.3, 3, 3);
-    $self->{'button_sb'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 120, 3, 0.3, 3, 3);
+    $self->{'zoom'}     = Wx::TextCtrl->new( $self, -1, 1, [-1,-1], [ 80, -1] );
+    $self->{'center_x'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [100, -1] );
+    $self->{'center_y'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [100, -1] );
+    $self->{'const_a'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [100, -1] );
+    $self->{'const_b'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [100, -1] );
+    $self->{'start_a'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [100, -1] );
+    $self->{'start_b'}  = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [100, -1] );
+    $self->{'reset_zoom'}     = Wx::Button->new( $self, -1, 1, [-1,-1], [ 30, -1] );
+    $self->{'reset_center_x'} = Wx::Button->new( $self, -1, 0, [-1,-1], [ 30, -1] );
+    $self->{'reset_center_y'} = Wx::Button->new( $self, -1, 0, [-1,-1], [ 30, -1] );
+    $self->{'reset_const_a'}  = Wx::Button->new( $self, -1, 0, [-1,-1], [ 30, -1] );
+    $self->{'reset_const_b'}  = Wx::Button->new( $self, -1, 0, [-1,-1], [ 30, -1] );
+    $self->{'reset_start_a'}  = Wx::Button->new( $self, -1, 0, [-1,-1], [ 30, -1] );
+    $self->{'reset_start_b'}  = Wx::Button->new( $self, -1, 0, [-1,-1], [ 30, -1] );
+    $self->{'button_zoom'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 0.3, 2, 2);
+    $self->{'button_x'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 1  , 5, 3);
+    $self->{'button_y'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 1  , 5, 3);
+    $self->{'button_ca'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 0.3, 3, 3);
+    $self->{'button_cb'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 0.3, 3, 3);
+    $self->{'button_sa'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 0.3, 3, 3);
+    $self->{'button_sb'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 0.3, 3, 3);
     $self->{'button_zoom'}->SetToolTip('zoom factor: the larger the more you zoom in');
     $self->{'button_zoom'}->SetCallBack(sub { $self->{'zoom'}->SetValue( $self->{'zoom'}->GetValue + shift ) });
     $self->{'button_x'}->SetCallBack( sub { my $value = shift;$self->{'center_x'}->SetValue( $self->{'center_x'}->GetValue + ($value * $self->zoom_size) ) });
@@ -78,16 +82,24 @@ sub new {
     $self->{'button_sa'}->SetCallBack(sub { $self->{'start_a'}->SetValue( $self->{'start_a'}->GetValue + shift ) });
     $self->{'button_sb'}->SetCallBack(sub { $self->{'start_b'}->SetValue( $self->{'start_b'}->GetValue + shift ) });
 
-    $self->{'stop_nr'}   = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [20, 40, 70, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]);
-    $self->{'stop_nr'}->SetToolTip('maximal amount of iterations run on one pixel coordinates');
-    $self->{'stop_value'}  = Wx::ComboBox->new( $self, -1, 1000, [-1,-1],[95, -1], [20, 40, 70, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]);
-    $self->{'stop_value'}->SetToolTip('stop value: when iteration variable Z reaches or exceeds it computation will be stopped and count of iterations needed will determine the color of that pixel');
+    $self->{'reset_zoom'}->SetToolTip('Reset zoom level to one !');
+    $self->{'stop_nr'}     = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 365, 'Count:', "Square root of maximal amount of iterations run on one pixel coordinates", 3, 120, 5, 0.25);
+    $self->{'stop_nr'}->SetCallBack( sub { $self->{'callback'}->() });
+    $self->{'stop_value'}  = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 200, 'Value:', "Square root of value that triggeres bailout / iteration stop", 1, 120, 5, 0.25);
+    $self->{'stop_value'}->SetCallBack( sub { $self->{'callback'}->() });
     $self->{'stop_metric'} = Wx::ComboBox->new( $self, -1, '|var|', [-1,-1],[95, -1], ['|var|', '|x|+|y|', '|x|', '|y|', '|x+y|', 'x+y', 'x-y', 'y-x', 'x*y', '|x*y|']);
     $self->{'stop_metric'}->SetToolTip('metric for computing stop value (|var| = sqrt(z.re**2 + z.i**2), x = z.real, y = z.im');
 
-    $self->{'const_widgets'} = [qw/const_a const_b button_ca button_cb lbl_const lbl_consta lbl_constb/];
-    $self->{'start_widgets'} = [qw/start_a start_b button_sa button_sb lbl_start lbl_starta lbl_startb/];
+    $self->{'const_widgets'} = [qw/const_a const_b button_ca button_cb lbl_const lbl_consta lbl_constb reset_const_a reset_const_b /];
+    $self->{'start_widgets'} = [qw/start_a start_b button_sa button_sb lbl_start lbl_starta lbl_startb reset_start_a reset_start_b /];
 
+    Wx::Event::EVT_BUTTON( $self, $self->{'reset_zoom'},     sub { $self->{'zoom'}->SetValue(1) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'reset_center_x'}, sub { $self->{'center_x'}->SetValue(0) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'reset_center_y'}, sub { $self->{'center_y'}->SetValue(0) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'reset_const_a'},  sub { $self->{'const_a'}->SetValue(0) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'reset_const_b'},  sub { $self->{'const_b'}->SetValue(0) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'reset_start_a'},  sub { $self->{'start_a'}->SetValue(0) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'reset_start_b'},  sub { $self->{'start_b'}->SetValue(0) });
     Wx::Event::EVT_RADIOBOX( $self, $self->{'type'},  sub {
         $self->set_type( $self->{'type'}->GetStringSelection );           $self->{'callback'}->();
     });
@@ -105,7 +117,7 @@ sub new {
         $self->{'mapping'}{'scale_max'}->SetValue( $self->{'stop_nr'}->GetValue ) if ref $self->{'mapping'};
         $self->{'callback'}->();
     });
-    Wx::Event::EVT_TEXT( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/const_a const_b center_x center_y zoom/;
+    Wx::Event::EVT_TEXT( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/zoom center_x center_y const_a const_b start_a start_b/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_},      sub { $self->{'callback'}->() }) for qw/stop_value stop_metric/;
 
     my $std  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
@@ -130,73 +142,78 @@ sub new {
 
     my $zoom_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $zoom_sizer->AddSpacer( $left_margin );
-    $zoom_sizer->Add( $self->{'zoom'},        1, $box, 10);
-    $zoom_sizer->Add( $self->{'button_zoom'}, 0, $box, 10);
+    $zoom_sizer->Add( $self->{'zoom'},        1, $box,  5);
+    $zoom_sizer->Add( $self->{'button_zoom'}, 0, $box,  5);
+    $zoom_sizer->Add( $self->{'reset_zoom'},  0, $box,  5);
     $zoom_sizer->AddSpacer( $left_margin );
 
     my $x_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $x_sizer->AddSpacer( $left_margin );
     $x_sizer->Add( $x_lbl,                    0, $row, 12);
     $x_sizer->AddSpacer( 10 );
-    $x_sizer->Add( $self->{'center_x'},       1, $box, 5);
-    $x_sizer->Add( $self->{'button_x'},       0, $box, 5);
+    $x_sizer->Add( $self->{'center_x'},       1, $box,  5);
+    $x_sizer->Add( $self->{'button_x'},       0, $box,  5);
+    $x_sizer->Add( $self->{'reset_center_x'}, 0, $box,  5);
     $x_sizer->AddSpacer( $left_margin );
 
     my $y_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $y_sizer->AddSpacer( $left_margin );
-    $y_sizer->Add( $y_lbl,                    0, $row, 17);
+    $y_sizer->Add( $y_lbl,                    0, $row, 12);
     $y_sizer->AddSpacer( 10 );
-    $y_sizer->Add( $self->{'center_y'},       1, $box, 10);
-    $y_sizer->Add( $self->{'button_y'},       0, $box, 10);
+    $y_sizer->Add( $self->{'center_y'},       1, $box,  5);
+    $y_sizer->Add( $self->{'button_y'},       0, $box,  5);
+    $y_sizer->Add( $self->{'reset_center_y'}, 0, $box,  5);
     $y_sizer->AddSpacer( $left_margin );
 
     my $const_a_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $const_a_sizer->AddSpacer( $left_margin );
-    $const_a_sizer->Add( $self->{'lbl_consta'},0, $row, 12);
+    $const_a_sizer->Add( $self->{'lbl_consta'},    0, $row, 12);
     $const_a_sizer->AddSpacer( 10 );
-    $const_a_sizer->Add( $self->{'const_a'},   1, $box,  5);
-    $const_a_sizer->Add( $self->{'button_ca'}, 0, $box,  5);
+    $const_a_sizer->Add( $self->{'const_a'},       1, $box,  5);
+    $const_a_sizer->Add( $self->{'button_ca'},     0, $box,  5);
+    $const_a_sizer->Add( $self->{'reset_const_a'}, 0, $box,  5);
     $const_a_sizer->AddSpacer( $left_margin );
 
     my $const_b_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $const_b_sizer->AddSpacer( $left_margin );
-    $const_b_sizer->Add( $self->{'lbl_constb'}, 0, $row, 17);
+    $const_b_sizer->Add( $self->{'lbl_constb'},   0, $row, 12);
     $const_b_sizer->AddSpacer( 10 );
-    $const_b_sizer->Add( $self->{'const_b'},   1, $box, 10);
-    $const_b_sizer->Add( $self->{'button_cb'}, 0, $box, 10);
+    $const_b_sizer->Add( $self->{'const_b'},      1, $box,  5);
+    $const_b_sizer->Add( $self->{'button_cb'},    0, $box,  5);
+    $const_b_sizer->Add( $self->{'reset_const_b'},0, $box,  5);
     $const_b_sizer->AddSpacer( $left_margin );
 
     my $start_a_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $start_a_sizer->AddSpacer( $left_margin );
-    $start_a_sizer->Add( $self->{'lbl_starta'}, 0, $row, 17);
+    $start_a_sizer->Add( $self->{'lbl_starta'},    0, $row, 12);
     $start_a_sizer->AddSpacer( 10 );
-    $start_a_sizer->Add( $self->{'start_a'},   1, $box, 10);
-    $start_a_sizer->Add( $self->{'button_sa'}, 0, $box, 10);
+    $start_a_sizer->Add( $self->{'start_a'},       1, $box,  5);
+    $start_a_sizer->Add( $self->{'button_sa'},     0, $box,  5);
+    $start_a_sizer->Add( $self->{'reset_start_a'}, 0, $box,  5);
     $start_a_sizer->AddSpacer( $left_margin );
 
     my $start_b_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $start_b_sizer->AddSpacer( $left_margin );
-    $start_b_sizer->Add( $self->{'lbl_startb'}, 0, $row, 17);
+    $start_b_sizer->Add( $self->{'lbl_startb'},    0, $row, 12);
     $start_b_sizer->AddSpacer( 10 );
-    $start_b_sizer->Add( $self->{'start_b'},   1, $box, 10);
-    $start_b_sizer->Add( $self->{'button_sb'}, 0, $box, 10);
+    $start_b_sizer->Add( $self->{'start_b'},       1, $box,  5);
+    $start_b_sizer->Add( $self->{'button_sb'},     0, $box,  5);
+    $start_b_sizer->Add( $self->{'reset_start_b'}, 0, $box,  5);
     $start_b_sizer->AddSpacer( $left_margin );
 
     my $stop_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $stop_sizer->AddSpacer( $left_margin );
-    $stop_sizer->Add( $stop_nr_lbl,           0, $box, 12);
-    $stop_sizer->AddSpacer(  5 );
-    $stop_sizer->Add( $self->{'stop_nr'},     0, $box,  5);
-    $stop_sizer->AddSpacer( 50 );
-    $stop_sizer->Add( $stop_val_lbl,          0, $box, 12);
-    $stop_sizer->AddSpacer(  5 );
-    $stop_sizer->Add( $self->{'stop_value'},  0, $box,  5);
-    $stop_sizer->AddSpacer( 25 );
-    $stop_sizer->Add( $metric_lbl,            0, $box, 12);
-    $stop_sizer->AddSpacer(  5 );
-    $stop_sizer->Add( $self->{'stop_metric'}, 0, $box,  5);
-    $stop_sizer->AddSpacer( 10 );
-    $stop_sizer->AddSpacer( $left_margin );
+    $stop_sizer->Add( $self->{'stop_nr'},     1, $box,  5);
+    #$stop_sizer->AddSpacer( $left_margin - 10 );
+
+    my $stop2_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $stop2_sizer->AddSpacer( $left_margin );
+    $stop2_sizer->Add( $self->{'stop_value'},  1, $box,  5);
+    $stop2_sizer->AddSpacer( 20 );
+    $stop2_sizer->Add( $metric_lbl,            0, $box, 12);
+    $stop2_sizer->AddSpacer(  5 );
+    $stop2_sizer->Add( $self->{'stop_metric'}, 0, $box,  5);
+    $stop2_sizer->AddSpacer( $left_margin );
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->Add( $type_sizer,      0, $row, 10);
@@ -218,7 +235,8 @@ sub new {
     $sizer->Add( $start_b_sizer,   0, $row, 0);
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
     $sizer->Add( $stop_lbl,        0, $item, $left_margin);
-    $sizer->Add( $stop_sizer,      0, $row,  6);
+    $sizer->Add( $stop_sizer,      0, $row, 10);
+    $sizer->Add( $stop2_sizer,     0, $row,  6);
     $sizer->AddSpacer( $left_margin );
     $self->SetSizer($sizer);
 
@@ -232,11 +250,11 @@ sub set_settings {
     return 0 unless ref $settings eq 'HASH' and exists $settings->{'type'};
     $self->PauseCallBack();
     for my $key (qw/coor_as_start coor_as_const coor_as_monom
-                    const_a const_b start_a start_b center_x center_y zoom/){
+                    const_a const_b start_a start_b center_x center_y zoom stop_nr stop_value/){
         next unless exists $settings->{$key} and exists $self->{$key};
         $self->{$key}->SetValue( $settings->{$key} );
     }
-    for my $key (qw/stop_nr stop_value stop_metric/){
+    for my $key (qw/stop_metric/){
         next unless exists $settings->{$key} and exists $self->{$key};
         $self->{$key}->SetSelection( $self->{$key}->FindString($settings->{$key}) );
     }
@@ -259,8 +277,8 @@ sub get_settings {
         start_a  => $self->{'start_a'}->GetValue + 0,
         start_b  => $self->{'start_b'}->GetValue + 0,
         type     => $self->{'type'}->GetStringSelection,
-        stop_nr  => $self->{'stop_nr'}->GetStringSelection,
-        stop_value => $self->{'stop_value'}->GetStringSelection,
+        stop_nr  => $self->{'stop_nr'}->GetValue,
+        stop_value => $self->{'stop_value'}->GetValue,
         stop_metric => $self->{'stop_metric'}->GetStringSelection,
     }
 }

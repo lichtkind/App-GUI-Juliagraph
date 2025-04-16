@@ -55,7 +55,6 @@ sub new {
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_}, sub { $self->{'callback'}->() }) for qw/exponent/;
     Wx::Event::EVT_TEXT( $self, $self->{$_},     sub { $self->{'callback'}->() }) for qw/factor_r factor_i/;
 
-
     $std_margin //= 10;
     my $std  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $box  = $std | &Wx::wxTOP | &Wx::wxBOTTOM;
