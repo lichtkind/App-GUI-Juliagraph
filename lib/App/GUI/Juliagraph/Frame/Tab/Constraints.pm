@@ -48,9 +48,9 @@ sub new {
 
     $self->{'type'} = Wx::RadioBox->new( $self, -1, ' T y p e ', [-1,-1], [-1, -1], ['Mandelbrot', 'Julia', 'Any'] );
     $self->{'type'}->SetToolTip( "Choose fractal type: \njulia uses position as init value of iterator var and constant as such, mandelbrot is vice versa\nany means no such restrictions." );
-    $self->{'coor_as_start'} = Wx::CheckBox->new( $self, -1, ' Start',  [-1,-1], [-1, -1]);
-    $self->{'coor_as_const'} = Wx::CheckBox->new( $self, -1, ' Const.', [-1,-1], [-1, -1]);
-    $self->{'coor_as_monom'} = Wx::CheckBox->new( $self, -1, ' Monom',  [-1,-1], [-1, -1]);
+    $self->{'coor_as_start'} = Wx::CheckBox->new( $self, -1, ' Start Value', [-1,-1], [-1, -1]);
+    $self->{'coor_as_const'} = Wx::CheckBox->new( $self, -1, ' Constant',    [-1,-1], [-1, -1]);
+    $self->{'coor_as_monom'} = Wx::CheckBox->new( $self, -1, ' Monomial',    [-1,-1], [-1, -1]);
     $self->{'coor_as_start'}->SetToolTip( "Use current pixel coordinates as iteration start value, or add them to it." );
     $self->{'coor_as_const'}->SetToolTip( "Use current pixel coordinates as constant added at every iteration." );
     $self->{'coor_as_monom'}->SetToolTip( "Use current pixel coordinates as monomial factor in the next tab page." );
@@ -227,26 +227,6 @@ sub new {
 }
 
 sub init         { $_[0]->set_settings ( $default_settings ) }
-sub get_settings {
-    my ( $self ) = @_;
-    {
-        coor_as_start => int $self->{'coor_as_start'}->GetValue,
-        coor_as_const => int $self->{'coor_as_const'}->GetValue,
-        coor_as_monom => int $self->{'coor_as_monom'}->GetValue,
-        zoom     => $self->{'zoom'}->GetValue  + 0,
-        center_x => $self->{'center_x'}->GetValue + 0,
-        center_y => $self->{'center_y'}->GetValue + 0,
-        const_a  => $self->{'const_a'}->GetValue + 0,
-        const_b  => $self->{'const_b'}->GetValue + 0,
-        start_a  => $self->{'start_a'}->GetValue + 0,
-        start_b  => $self->{'start_b'}->GetValue + 0,
-        type     => $self->{'type'}->GetStringSelection,
-        stop_nr  => $self->{'stop_nr'}->GetStringSelection,
-        stop_value => $self->{'stop_value'}->GetStringSelection,
-        stop_metric => $self->{'stop_metric'}->GetStringSelection,
-    }
-}
-
 sub set_settings {
     my ( $self, $settings ) = @_;
     return 0 unless ref $settings eq 'HASH' and exists $settings->{'type'};
@@ -264,6 +244,25 @@ sub set_settings {
     $self->set_type( $settings->{'type'} );
     $self->RestoreCallBack();
     1;
+}
+sub get_settings {
+    my ( $self ) = @_;
+    return {
+        coor_as_start => int $self->{'coor_as_start'}->GetValue,
+        coor_as_const => int $self->{'coor_as_const'}->GetValue,
+        coor_as_monom => int $self->{'coor_as_monom'}->GetValue,
+        zoom     => $self->{'zoom'}->GetValue  + 0,
+        center_x => $self->{'center_x'}->GetValue + 0,
+        center_y => $self->{'center_y'}->GetValue + 0,
+        const_a  => $self->{'const_a'}->GetValue + 0,
+        const_b  => $self->{'const_b'}->GetValue + 0,
+        start_a  => $self->{'start_a'}->GetValue + 0,
+        start_b  => $self->{'start_b'}->GetValue + 0,
+        type     => $self->{'type'}->GetStringSelection,
+        stop_nr  => $self->{'stop_nr'}->GetStringSelection,
+        stop_value => $self->{'stop_value'}->GetStringSelection,
+        stop_metric => $self->{'stop_metric'}->GetStringSelection,
+    }
 }
 
 sub set_type {
@@ -302,7 +301,7 @@ sub set_coordinates_as_factor {
     $self->{'polynome'}->enable_coor( $on ) if ref $self->{'polynome'};
 }
 
-sub freeze_last_coor_option {
+sub freeze_last_coor_option { # keep always one option chosen
     my ( $self ) = @_;
     my %val = (s => int($self->{'coor_as_start'}->GetValue),
                c => int($self->{'coor_as_const'}->GetValue),
