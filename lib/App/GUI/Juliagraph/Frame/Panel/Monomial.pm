@@ -42,8 +42,8 @@ sub new {
     $self->{'factor_i'}  = Wx::TextCtrl->new( $self, -1, 0, [-1, -1],  [-1, 30] );
     $self->{'factor_r'}->SetToolTip('real value part of factor');
     $self->{'factor_i'}->SetToolTip('imaginary value part of factor');
-    $self->{'button_r'}  = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 140, 3, 0.3, 4, 2 );
-    $self->{'button_i'}  = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 140, 3, 0.3, 4, 2, );
+    $self->{'button_r'}  = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 160, 3, 0.3, 4, 2 );
+    $self->{'button_i'}  = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 160, 3, 0.3, 4, 2, );
 
     $self->{'button_r'}->SetCallBack(sub { $self->{'factor_r'}->SetValue( $self->{'factor_r'}->GetValue + shift ) });
     $self->{'button_i'}->SetCallBack(sub { $self->{'factor_i'}->SetValue( $self->{'factor_i'}->GetValue + shift ) });

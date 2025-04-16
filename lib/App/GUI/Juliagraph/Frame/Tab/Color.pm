@@ -74,19 +74,18 @@ sub new {
     Wx::Event::EVT_LEFT_DOWN( $self->{'color_display'}[$_], sub { $self->set_current_color_nr( $_[0]->get_nr ) }) for 0 .. $self->{'color_count'}-1;
     Wx::Event::EVT_LEFT_DOWN( $self->{'color_marker'}[$_], sub { $self->set_current_color_nr( $_[0]->get_nr ) }) for 0 .. $self->{'color_count'}-1;
 
-
     Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'gradient'}, sub {
         my @c = $self->get_all_colors;
-        my @new_colors = $c[0]->gradient( to => $c[ $self->{'current_color_nr'} ], in => 'RGB', steps => $self->{'current_color_nr'}+1, dynamic => $self->{'widget'}{'dynamic'}->GetValue);
-        $self->set_all_colors( @new_colors );
+        my @new_colors = $c[1]->gradient( to => $c[ $self->{'current_color_nr'} ], in => 'RGB', steps => $self->{'current_color_nr'}, dynamic => $self->{'widget'}{'dynamic'}->GetValue);
+        $self->set_all_colors( $c[0], @new_colors );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'complement'}, sub {
         my @c = $self->get_all_colors;
-        my @new_colors = $c[ $self->{'current_color_nr'} ]->complement( steps => $self->{'current_color_nr'}+1,
-                                                                     saturation_tilt => $self->{'widget'}{'delta_S'}->GetValue,
-                                                                     lightness_tilt => $self->{'widget'}{'delta_L'}->GetValue );
+        my @new_colors = $c[ $self->{'current_color_nr'} ]->complement( steps => $self->{'current_color_nr'},
+                                                              saturation_tilt => $self->{'widget'}{'delta_S'}->GetValue,
+                                                               lightness_tilt => $self->{'widget'}{'delta_L'}->GetValue );
         push @new_colors, shift @new_colors;
-        $self->set_all_colors( @new_colors );
+        $self->set_all_colors( $c[0], @new_colors );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'left'}, sub {
         my $pos = $self->get_current_color_nr;

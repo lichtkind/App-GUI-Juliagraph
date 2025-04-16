@@ -66,13 +66,14 @@ sub new {
     $self->{'reset_const_b'}  = Wx::Button->new( $self, -1, 0, [-1,-1], [ 30, -1] );
     $self->{'reset_start_a'}  = Wx::Button->new( $self, -1, 0, [-1,-1], [ 30, -1] );
     $self->{'reset_start_b'}  = Wx::Button->new( $self, -1, 0, [-1,-1], [ 30, -1] );
-    $self->{'button_zoom'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 0.3, 2, 2);
-    $self->{'button_x'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 1  , 5, 3);
-    $self->{'button_y'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 1  , 5, 3);
-    $self->{'button_ca'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 0.3, 3, 3);
-    $self->{'button_cb'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 0.3, 3, 3);
-    $self->{'button_sa'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 0.3, 3, 3);
-    $self->{'button_sb'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 130, 3, 0.3, 3, 3);
+    $self->{'button_zoom'} = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 150, 3, 0.3, 2, 2);
+    $self->{'button_x'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 150, 3, 1  , 7, 3);
+    $self->{'button_y'}    = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 150, 3, 1  , 7, 3);
+    $self->{'button_ca'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 150, 3, 0.3, 3, 3);
+    $self->{'button_cb'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 150, 3, 0.3, 3, 3);
+    $self->{'button_sa'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 150, 3, 0.3, 3, 3);
+    $self->{'button_sb'}   = App::GUI::Juliagraph::Widget::SliderStep->new( $self, 150, 3, 0.3, 3, 3);
+
     $self->{'button_zoom'}->SetToolTip('zoom factor: the larger the more you zoom in');
     $self->{'button_zoom'}->SetCallBack(sub { $self->{'zoom'}->SetValue( $self->{'zoom'}->GetValue + shift ) });
     $self->{'button_x'}->SetCallBack( sub { my $value = shift;$self->{'center_x'}->SetValue( $self->{'center_x'}->GetValue + ($value * $self->zoom_size) ) });
@@ -289,6 +290,8 @@ sub set_type {
     $type = ucfirst lc $type;
     my $selection_nr = $self->{'type'}->FindString( $type );
     return if $selection_nr == -1;
+    my $paused = $self->CallBackiIsPaused;
+    $self->PauseCallBack();
     $self->{'type'}->SetSelection( $selection_nr );
     if ($type eq 'Mandelbrot'){
         $self->{$_}->SetValue( 0 ) for qw/const_a const_b start_a start_b/;
@@ -311,6 +314,7 @@ sub set_type {
         $self->{'coor_as_monom'}->SetValue( 0 );
         $self->{'polynome'}->init() if ref $self->{'polynome'};
     }
+    $self->RestoreCallBack() unless $paused;
 }
 sub set_coordinates_as_factor {
     my ( $self, $on ) = @_;
@@ -334,7 +338,7 @@ sub freeze_last_coor_option { # keep always one option chosen
     }
 }
 
-sub zoom_size { 10 ** (-$_[0]->{'zoom'}->GetValue) }
+sub zoom_size { 0.1 / ($_[0]->{'zoom'}->GetValue ** 2) }
 
 sub set_polynome {
     my ($self, $ref) = @_;
@@ -355,14 +359,17 @@ sub SetCallBack {
 }
 sub PauseCallBack {
     my ($self) = @_;
-    $self->{'pause'} = $self->{'callback'};
+    return if $self->CallBackiIsPaused;
+    $self->{'paused_call'} = $self->{'callback'};
     $self->{'callback'} = sub {};
 }
+sub CallBackiIsPaused { exists $_[0]->{'paused_call'} }
+sub RunCallBack      { $_[0]->{'callback'}->() }
 sub RestoreCallBack {
     my ($self) = @_;
-    return unless exists $self->{'pause'};
-    $self->{'callback'} = $self->{'pause'};
-    delete $self->{'pause'};
+    return unless $self->CallBackiIsPaused;
+    $self->{'callback'} = $self->{'paused_call'};
+    delete $self->{'paused_call'};
 }
 
 1;
