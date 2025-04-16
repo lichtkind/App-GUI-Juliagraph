@@ -9,6 +9,7 @@ use Graphics::Toolkit::Color qw/color/;
 use Wx;
 use App::GUI::Juliagraph::Widget::SliderStep;
 use App::GUI::Juliagraph::Widget::SliderCombo;
+use App::GUI::Juliagraph::Widget::ProgressBar;
 
 my $default_settings =  {
         custom_partition => 1, scale_parts => 20, scale_min => 0, scale_distro => 'square',
@@ -73,10 +74,12 @@ sub new {
     $self->{'subgradient_steps'}  = Wx::ComboBox->new( $self, -1,   '10', [-1,-1],[80, -1], [qw/5 10 15 20 25 30 35/]);
     $self->{'subgradient_space'}  = Wx::ComboBox->new( $self, -1,  'RGB', [-1,-1],[80, -1], [qw/RGB HSL/]);
     $self->{'subgradient_dynamics'} = Wx::ComboBox->new($self, -1,     0, [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
-    $self->{'custom_partition'}->SetToolTip('use chosen color selection to compute color rainbow (on) or just a gray scale');
-    $self->{'user_colors'}->SetToolTip('use chosen color selection to compute color rainbow (on) or just a gray scale');
-    $self->{'background_color'}->SetToolTip('which color is used to paint areas where iteration stays below stop value');
+    $self->{'custom_partition'}->SetToolTip('Use chosen color selection to compute color rainbow (on) or just a gray scale');
+    $self->{'user_colors'}->SetToolTip('Use chosen color selection to compute color rainbow (on) or just a gray scale.');
+    $self->{'use_subgradient'}->SetToolTip('Make color gradient smoother by computing gradients between colored areas based on final value of iteration.');
+    $self->{'background_color'}->SetToolTip('Color that is used to paint areas where iteration stays below stop value.');
     $self->{'gradient_dynamics'}->SetToolTip('');
+    $self->{'progress_bar'} = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 30, [20, 20, 110]);
 
     Wx::Event::EVT_CHECKBOX( $self, $self->{'custom_partition'},sub { $self->enable_partition($self->{'custom_partition'}->GetValue); $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'user_colors'},     sub { $self->enable_user_colors($self->{'user_colors'}->GetValue);    $self->{'callback'}->() });
@@ -175,15 +178,17 @@ sub new {
     $sizer->Add( $scale_lbl,    0, $item,  $std_margin);
     $sizer->Add( $div_sizer,    0, $row,   8);
     $sizer->Add( $div2_sizer,   0, $row,  10);
-    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
+    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box,  10 );
     $sizer->Add( $map_lbl,      0, $item,  $std_margin);
     $sizer->Add( $color_sizer,  0, $row,   8);
     $sizer->Add( $map_sizer,    0, $row,  10);
-    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
+    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box,  10 );
     $sizer->Add( $submap_lbl,   0, $item, $std_margin);
     $sizer->Add( $sub_sizer,    0, $row,   8);
     $sizer->AddSpacer( 2 );
-    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box, 10 );
+    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box,  10 );
+    $sizer->Add( $self->{'progress_bar'},         0, $item | &Wx::wxRIGHT, 20 );
+    $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box,  10 );
     $sizer->AddStretchSpacer();
     $self->SetSizer($sizer);
 
