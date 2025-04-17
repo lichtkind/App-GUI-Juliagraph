@@ -1,9 +1,11 @@
+
+# main program (main loop), documentation
+
+package App::GUI::Juliagraph;
 use v5.12;
 use warnings;
 use Wx;
 use utf8;
-
-package App::GUI::Juliagraph;
 our $NAME = __PACKAGE__;
 our $VERSION = '0.7';
 

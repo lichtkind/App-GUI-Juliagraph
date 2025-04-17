@@ -170,6 +170,12 @@ sub from_settings {
     } else {
         push @paint_code, '    $img->SetRGB( $pixel_x, $pixel_y, @$color)';
     }
+    my $metric_code = {
+        '|var|' => '$z_a_q + $z_b_q', '|x*y|' => 'abs($z_a*$z_b)',
+          '|x|' => 'abs($z_a)',         '|y|' => 'abs($z_b)',
+        '|x+y|' => 'abs($z_a+$z_b)','|x|+|y|' => 'abs($z_b)+abs($z_b)',
+         'x+y'  => '$z_a+$z_b',        'x*y'  => '$z_a*$z_b',
+         'x-y'  => '$z_a-$z_b',        'y-x'  => '$z_b-$z_a'}->{ $set->{'constraint'}{'stop_metric'} };
 
     my @code = (
         'for my $pixel_x (0 .. $max_pixel_x){',
@@ -182,7 +188,7 @@ sub from_settings {
         '    for my $i (0 .. $max_iter - 1){',
         '      $z_a_q = $z_a * $z_a',
         '      $z_b_q = $z_b * $z_b',
-        '      $metrik = $z_a_q + $z_b_q',
+        '      $metrik = '.$metric_code,
         #'      say " ", sqrt($metrik - $schranke) if $metrik > $schranke',
         '      $color = $colors->[ $i ], last if $metrik >= $schranke',
         '      ($z_a, $z_b) = ($z_a_q - $z_b_q, 2 * $z_a * $z_b)',
@@ -305,14 +311,12 @@ __END__
             $color[$color_i] = [@c];
         }
     }
-
         if ($self->{'flag'}{'sketch'}){
         $x_delta_step *= SKETCH_FACTOR;
         $y_delta_step *= SKETCH_FACTOR;
         $colors = 25 if $colors > 25;
         $stop = 50 if $stop > 50;
     }
-
     my ($x_const, $y_const, $x, $y, $x_old, $y_old, $x_pot, $y_pot);
     my $last_color = $colors - 1;
 
@@ -355,39 +359,3 @@ __END__
         }
         $code .= '      $x += $x_pot '.$x_factor.';'."\n" if $x_factor;
         $code .= '      $y += $y_pot '.$y_factor.';'."\n" if $y_factor;
-    }
-    my $x_linear = (exists $factor{1} and $factor{1}[0]) ? ' * '.$factor{1}[0] : '';
-    my $y_linear = (exists $factor{1} and $factor{1}[1]) ? ' * '.$factor{1}[1] : '';
-    if ($position eq 1){
-        $x_linear .= ' * $x_num';
-        $y_linear .= ' * $y_num';
-    }
-    $code .= '      $x += $x_old '.$x_linear.';'."\n" if $x_linear;
-    $code .= '      $y += $y_old '.$y_linear.';'."\n" if $y_linear;
-    $code .= '      if ('.$metric.' > $stop){'."\n";
-    $code .= $subgradient
-           ? '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i][0]});'."\n"
-           : '        $img->SetRGB( $x_pix,   $y_pix,   @{$color[$i]});'."\n";
-    $code .= '        $img->SetRGB( $x_pix,   $y_pix+1, @{$color[$i]});'."\n".
-             '        $img->SetRGB( $x_pix+1, $y_pix,   @{$color[$i]});'."\n".
-             '        $img->SetRGB( $x_pix+1, $y_pix+1, @{$color[$i]});'."\n".
-             '        $img->SetRGB( $x_pix+1, $y_pix+2, @{$color[$i]});'."\n".
-             '        $img->SetRGB( $x_pix+2, $y_pix+1, @{$color[$i]});'."\n" if $self->{'flag'}{'sketch'}; # fat pixel
-    $code .= '        my $v = int (log( 1 * sqrt('.$metric.' ) / sqrt($stop) +1));'."\n";
-    $code .= '        $vals{$v}++;'."\n";
-  #  $code .= '        print " ",$v;'."\n";
-    $code .= '        last;'."\n";
-    $code .= '      }'."\n";
-    $code .= '      $img->SetRGB( $x_pix,   $y_pix,   @bg_color) if $i == $last_color;'."\n"
-            if $set->{'mapping'}{'use_bg_color'}; # and not $self->{'flag'}{'sketch'}
-    $code .= '    }'."\n";
-    $code .= '    $y_num += $y_delta_step;'."\n";
-    $code .= $self->{'flag'}{'sketch'}
-           ? '    $y_pix -= SKETCH_FACTOR;'."\n"
-           : '    $y_pix --;'."\n";
-    $code .= '  }'."\n";
-    $code .= '  $x_num += $x_delta_step;'."\n";
-    $code .= $self->{'flag'}{'sketch'}
-           ? '  $x_pix += SKETCH_FACTOR;'."\n"
-           : '  $x_pix ++;'."\n";
-    $code .= '}'."\n";
