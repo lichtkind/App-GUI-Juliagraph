@@ -15,13 +15,13 @@ our $data = {
     last_settings => [],
     tips => 1,
     color_set => {
-        grey   => [ '#FFF',  '#DDD',   '#BBB',   '#999',   '#777',   '#555',    '#333',    '#111', 'black' ],
-        basic  => [ 'white', 'gray92', 'gray86', 'gray79', 'gray69', 'gray56',  'gray39', 'gray25','black' ],
-        dawn   => [ 'white', '#f9d87b', '#936d1a', '#bf3136', '#8f1416', '#99158b', '#1d1d7c', '#111111', 'black' ],
-        day    => [ 'white', '#ffcf3d', '#e29955', '#ff1418', '#4acfab', '#48614a', 'gray20',  '#111111', 'black' ],
-        skye   => [ 'white', '#ffcf3d', '#173fab', '#82b8e8', '#faa8d4', '#8e8e8e', '#8e8e8e', '#8e8e8e', 'black' ],
-        sunset => [ 'white', '#f9d87b', '#936d1a', '#bf3136', '#94148e', '#c3baee', '#1d1d7c', '#111111', 'black' ],
-
+        basic =>  [ 'black', 'red',    'lime',   'blue',   'white',  'grey',   'grey',   'grey','grey','grey','grey' ],
+        dawn =>   [ 'black', '#f9d87b','#936d1a','#bf3136','#8f1416','#99158b','#1d1d7c','#111111','black','grey','grey' ],
+        day =>    [ 'black', '#ffcf3d','#e25555','#e65c60','#4acfab','#48614a','gray20', '#111111','black','grey','grey' ],
+        default =>[ 'black', '#f9e595','#ef9d1a','#b63a3e','#90663c','#633b3b','gray20', '#111111','grey','grey','grey' ],
+        grey =>   [ 'black', 'white',  '#d5d5d5','#aaaaaa','gray',   '#555555','gray17', 'black','grey','grey','grey' ],
+        skye =>   [ 'black', '#ffcf3d','#173fab','#8e8e8e','#8e8e8e','#8e8e8e','#8e8e8e','#8e8e8e','black','grey','grey' ],
+        sunset => [ 'black', '#f9d87b','#936d1a','#bf3136','#94148e','#c3baee','#1d1d7c','#111111','black' ],
     },
     color => {
         white            => [ 255, 255, 255],
