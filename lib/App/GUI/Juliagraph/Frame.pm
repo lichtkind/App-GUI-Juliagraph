@@ -39,6 +39,7 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},      'Colors');
     $self->{'tab'}{'constraint'}->set_polynome( $self->{'tab'}{'monomial'} );
     $self->{'tab'}{'constraint'}->set_mapping( $self->{'tab'}{'mapping'} );
+    $self->{'tab'}{'mapping'}->set_colors( $self->{'tab'}{'color'} );
 
     $self->{'tab_names'} = [keys %{ $self->{'tab'} }];
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'tab_names'}};
@@ -278,13 +279,12 @@ sub open_setting_file {
     my ($self, $file ) = @_;
     my $settings = App::GUI::Juliagraph::Settings::load( $file );
     if (ref $settings) {
+        $settings->{'monomial'}{$_} = delete $settings->{'monomial_'.$_} for 1..4;
         $self->set_settings( $settings );
         $self->draw;
         my $dir = App::GUI::Juliagraph::Settings::extract_dir( $file );
         $self->{'config'}->set_value('open_dir', $dir);
         $self->{'config'}->add_setting_file( $file );
-        $self->{'tab'}{'color'}->set_state_count( exists $settings->{'mapping'}{'select'}
-                                                ? $settings->{'mapping'}{'select'} - 1 : 8);
         $self->update_recent_settings_menu();
         $self->show_settings_save(1);
         $settings;
@@ -295,7 +295,10 @@ sub open_setting_file {
 
 sub write_settings_file {
     my ($self, $file)  = @_;
-    my $ret = App::GUI::Juliagraph::Settings::write( $file, $self->get_settings );
+    my $settings = $self->get_settings;
+    my $monomial = delete $settings->{'monomial'};
+    $settings->{'monomial_'.$_} = $monomial->{$_} for 1..4;
+    my $ret = App::GUI::Juliagraph::Settings::write( $file, $settings );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
     else     {
         $self->{'config'}->add_setting_file( $file );

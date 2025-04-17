@@ -19,8 +19,8 @@ sub new {
     my ( $class, $parent) = @_;
     my $self = $class->SUPER::new( $parent, -1);
     $self->{'callback'} = sub {};
-    $self->{'polynome'} = '';
-    $self->{'mapping'} = '';
+    $self->{'tab'}{'polynome'} = '';
+    $self->{'tab'}{'mapping'} = '';
 
     my $coor_lbl     = Wx::StaticText->new($self, -1, 'P i x e l   C o o r d i n a t e s : ' );
     my $zoom_lbl     = Wx::StaticText->new($self, -1, 'Z o o m : ' );
@@ -114,12 +114,11 @@ sub new {
     Wx::Event::EVT_CHECKBOX( $self, $self->{'coor_as_start'}, sub {
         $self->freeze_last_coor_option(); $self->{'callback'}->();
     });
-    Wx::Event::EVT_COMBOBOX( $self, $self->{'stop_nr'}, sub {
-        $self->{'mapping'}{'scale_max'}->SetValue( $self->{'stop_nr'}->GetValue ) if ref $self->{'mapping'};
-        $self->{'callback'}->();
-    });
+    $self->{'stop_nr'}->SetCallBack( sub { $self->update_iter_count(); $self->{'callback'}->(); });
+    $self->{'stop_value'}->SetCallBack( sub { $self->{'callback'}->(); });
+
     Wx::Event::EVT_TEXT( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/zoom center_x center_y const_a const_b start_a start_b/;
-    Wx::Event::EVT_COMBOBOX( $self, $self->{$_},      sub { $self->{'callback'}->() }) for qw/stop_value stop_metric/;
+    Wx::Event::EVT_COMBOBOX( $self, $self->{$_},      sub { $self->{'callback'}->() }) for qw/stop_metric/;
 
     my $std  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $box  = $std | &Wx::wxTOP | &Wx::wxBOTTOM;
@@ -261,6 +260,7 @@ sub set_settings {
     }
     $self->set_coordinates_as_factor( $settings->{'coor_as_monom'} );
     $self->set_type( $settings->{'type'} );
+    $self->update_iter_count();
     $self->RestoreCallBack();
     1;
 }
@@ -312,7 +312,7 @@ sub set_type {
         $self->{$_}->Enable(0) for @{$self->{'start_widgets'}},
                                    qw/coor_as_start coor_as_const coor_as_monom/;
         $self->{'coor_as_monom'}->SetValue( 0 );
-        $self->{'polynome'}->init() if ref $self->{'polynome'};
+        $self->{'tab'}{'polynome'}->init() if ref $self->{'tab'}{'polynome'};
     }
     $self->RestoreCallBack() unless $paused;
 }
@@ -320,7 +320,7 @@ sub set_coordinates_as_factor {
     my ( $self, $on ) = @_;
     $on //= $self->{'coor_as_monom'}->GetValue;
     $self->{'coor_as_monom'}->SetValue( $on );
-    $self->{'polynome'}->enable_coor( $on ) if ref $self->{'polynome'};
+    $self->{'tab'}{'polynome'}->enable_coor( $on ) if ref $self->{'tab'}{'polynome'};
 }
 
 sub freeze_last_coor_option { # keep always one option chosen
@@ -338,18 +338,24 @@ sub freeze_last_coor_option { # keep always one option chosen
     }
 }
 
+sub update_iter_count {
+    my ( $self ) = @_;
+    $self->{'tab'}{'mapping'}{'scale_max'}->SetValue( int $self->{'stop_nr'}->GetValue**2 ) if ref $self->{'tab'}{'mapping'};
+}
+
 sub zoom_size { 0.1 / ($_[0]->{'zoom'}->GetValue ** 2) }
 
 sub set_polynome {
     my ($self, $ref) = @_;
     return unless ref $ref eq 'App::GUI::Juliagraph::Frame::Tab::Polynomial';
-    $self->{'polynome'} = $ref;
+    $self->{'tab'}{'polynome'} = $ref;
 }
 sub set_mapping {
     my ($self, $ref) = @_;
     return unless ref $ref eq 'App::GUI::Juliagraph::Frame::Tab::Mapping';
-    $self->{'mapping'} = $ref;
-    $self->{'mapping'}{'scale_max'}->SetValue( $self->{'stop_nr'}->GetValue );
+    $self->{'tab'}{'mapping'} = $ref;
+    $self->{'tab'}{'mapping'}{'scale_max'}->SetValue( $self->{'stop_nr'}->GetValue );
+    $self->update_iter_count();
 }
 
 sub SetCallBack {

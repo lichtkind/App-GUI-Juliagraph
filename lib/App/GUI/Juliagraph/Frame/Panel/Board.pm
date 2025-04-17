@@ -11,7 +11,7 @@ use App::GUI::Juliagraph::Compute::Image;
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y] );
-    $self->{'menu_size'} = 27;
+    $self->{'menu_size'} = 28;
     $self->{'size'}{'x'} = $x;
     $self->{'size'}{'y'} = $y;
     $self->{'center'}{'x'} = $x / 2;

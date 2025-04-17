@@ -1,12 +1,14 @@
 0.7    2025-04-16  lichtkind
 -------
     * = major feature release
-    * * complete reworked color mapping
     * * rewritten drawing calculation
-    * * reworked constriants
-    * + added explicit start value, iter max
-    * + assigning coordinates ad factor to any monomial
-    * * copied over color tab from hormonograph
+    * * complete reworked color mapping tab
+    * * reworked constriants tab
+    * + add subgradient for smooth color gradients
+    * + smother changing of max iteraation and max (bailout) value
+    * + assigning pixel coordinates to any monomialfactor
+    * + assigning pixel coordinates to more than one destination
+    * + copied over color tab from hormonograph
     * + monomials have 2 more options (log + sign)
 
 

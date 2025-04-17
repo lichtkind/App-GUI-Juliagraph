@@ -7,15 +7,16 @@ use warnings;
 use base qw/Wx::Panel/;
 use Graphics::Toolkit::Color qw/color/;
 use Wx;
+use App::GUI::Juliagraph::Compute::Image;
 use App::GUI::Juliagraph::Widget::SliderStep;
 use App::GUI::Juliagraph::Widget::SliderCombo;
 use App::GUI::Juliagraph::Widget::ProgressBar;
 
 my $default_settings =  {
-        custom_partition => 1, scale_parts => 20, scale_min => 0, scale_distro => 'square',
+        custom_partition => 0, scale_parts => 20, scale_distro => 'square',
         user_colors => 1, begin_color => 'color 2', end_color => 'color 4', background_color => 'black',
-        gradient_dynamics => 0, gradient_space => 'HSL', use_subgradient => 0,
-        subgradient_steps => 10, subgradient_dynamics => 0, subgradient_space => 'HSL',
+        gradient_dynamic => 0, gradient_space => 'HSL', use_subgradient => 0,
+        subgradient_steps => 10, subgradient_dynamic => 0, subgradient_space => 'HSL', subgradient_distro => 'sqrt',
     };
 
 sub new {
@@ -24,26 +25,28 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1);
     $self->{'config'}   = $config;
     $self->{'callback'} = sub {};
+    $self->{'tab'}{'color'} = '';
 
     my $scale_lbl = Wx::StaticText->new($self, -1, 'P a r t i t i o n i n g   T h e   I t e r a t i o n   S c a l e : ' );
     my $custom_lbl = Wx::StaticText->new($self, -1, 'Custom : ' );
-    $self->{'lbl_max'} = Wx::StaticText->new($self, -1, 'Max. : ' );
-    $self->{'lbl_distro'} = Wx::StaticText->new($self, -1, 'Distro : ' );
+    $self->{'lbl_max'} = Wx::StaticText->new($self, -1, 'Iterations : ' );
+    $self->{'lbl_distro'} = Wx::StaticText->new($self, -1, 'Distribution : ' );
     my $map_lbl = Wx::StaticText->new($self, -1, 'C o l o r   M a p p i n g : ' );
     my $color_lbl = Wx::StaticText->new($self, -1, 'User Colors : ' );
     $self->{'lbl_backg'} = Wx::StaticText->new($self, -1, 'Background : ' );
     $self->{'lbl_begin'} = Wx::StaticText->new($self, -1, 'Begin : ' );
     $self->{'lbl_end'}   = Wx::StaticText->new($self, -1, 'End : ' );
-    my $map_dyn_lbl = Wx::StaticText->new($self, -1, 'Dynamics : ' );
+    my $map_dyn_lbl = Wx::StaticText->new($self, -1, 'Dynamic : ' );
     my $map_space_lbl = Wx::StaticText->new($self, -1, 'Space : ' );
     my $submap_lbl = Wx::StaticText->new($self, -1, 'S u b   G r a d i e n t : ' );
-    my $use_sub_lbl  = Wx::StaticText->new($self, -1, 'On : ' );
+    $self->{'lbl_sub_use'} = Wx::StaticText->new($self, -1, 'Activate : ' );
     $self->{'lbl_sub_step'} = Wx::StaticText->new($self, -1, 'Steps : ' );
-    $self->{'lbl_sub_dyn'} = Wx::StaticText->new($self, -1, 'Dyn. : ' );
+    $self->{'lbl_sub_dyn'} = Wx::StaticText->new($self, -1, 'Dynamic : ' );
     $self->{'lbl_sub_space'} = Wx::StaticText->new($self, -1, 'Space : ' );
-    $scale_lbl->SetToolTip('Divide the scale of possible iteration counts between minimum and maximum into goups (partitions) that can be mapped to colors.');
-    $custom_lbl->SetToolTip('Divide the scale of possible iteration counts between minimum and maximum into goups (partitions) that can be mapped to colors  (below min is the first group), if disabled every iteration count gets it own color');
-    $self->{'lbl_max'}->SetToolTip('Greatest possible iteration count');
+    $self->{'lbl_sub_distro'} = Wx::StaticText->new($self, -1, 'Distribution : ' );
+    $scale_lbl->SetToolTip('Divide the scale of possible iterations into goups (partitions) that can be mapped to colors.');
+    $custom_lbl->SetToolTip('Divide the scale of possible iterations into goups (partitions) that can be mapped to colors. Use every iteration count gets its own color when off.');
+    $self->{'lbl_max'}->SetToolTip('Maximal iteration count that gets partitioned.');
     $self->{'lbl_distro'}->SetToolTip('How to compute the partitioning of the iteration scale. Linear means evenly sized portions.');
     $map_lbl->SetToolTip('Decide which colors are used to paint the drawing.');
     $color_lbl->SetToolTip('Use slected colors (on) or just simple gray scale (off)');
@@ -53,7 +56,7 @@ sub new {
     $map_dyn_lbl->SetToolTip('How many big is the slant of a color gradient in one or another direction (between the selected colors in next tab)');
     $map_space_lbl->SetToolTip('In which color space will the gradient between chosen colors be computed ?');
     $submap_lbl->SetToolTip('Gradients between areas of iteration counts based on final value.');
-    $use_sub_lbl->SetToolTip('Make even more fine grained color gradients, my computing gradient between color regions.');
+    $self->{'lbl_sub_use'}->SetToolTip('Make even more fine grained color gradients, my computing gradient between color regions.');
     $self->{'lbl_sub_step'}->SetToolTip('How many steps (shades of color change) the subgradient will have?');
     $self->{'lbl_sub_dyn'}->SetToolTip('How big is the slant of a color sub gradient in one or another direction ?');
     $self->{'lbl_sub_space'}->SetToolTip('In which color space will the subgradient between chosen colors be computed ?');
@@ -63,28 +66,37 @@ sub new {
     $self->{'user_colors'}      = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[30, -1]);
     $self->{'use_subgradient'}  = Wx::CheckBox->new( $self, -1,  '', [-1,-1],[30, -1]);
     $self->{'scale_parts'}  = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 230, 'Partitions:', "In how many parts the scale (min .. max) will be partitioned, meaning: how many different colors we use to paint the fractal", 2, 100, 20);
-    $self->{'scale_min'}    = App::GUI::Juliagraph::Widget::SliderCombo->new( $self, 80, 'Min. :', "if zero the whole range (0..max) will be partitioned, if above zero, the first partition is zero .. min", 0, 100, 0);
-    $self->{'scale_max'}    = Wx::TextCtrl->new( $self, -1,         0, [-1,-1], [60,-1], &Wx::wxTE_RIGHT | &Wx::wxTE_READONLY);
+    $self->{'scale_max'}    = Wx::TextCtrl->new( $self, -1,         0, [-1,-1], [60, -1], &Wx::wxTE_RIGHT | &Wx::wxTE_READONLY);
     $self->{'scale_distro'} = Wx::ComboBox->new( $self, -1, 'linear',  [-1,-1],[100, -1], [qw/linear square cube sqrt cubert log exp/]);
     $self->{'begin_color'}  = Wx::ComboBox->new( $self, -1, 'color 3', [-1,-1],[100, -1], [@color_names]);
     $self->{'end_color'}    = Wx::ComboBox->new( $self, -1, 'color 4', [-1,-1],[100, -1], [@color_names]);
-    $self->{'background_color'}   = Wx::ComboBox->new( $self, -1,'black', [-1,-1],[100,-1], [qw/black white blue/, 'color 1']);
-    $self->{'gradient_dynamics'}  = Wx::ComboBox->new( $self, -1,      0, [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
+    $self->{'background_color'}   = Wx::ComboBox->new( $self, -1,'black', [-1,-1],[100,-1], [qw/black blue gray white/, 'color 1']);
+    $self->{'gradient_dynamic'}   = Wx::ComboBox->new( $self, -1,      0, [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
     $self->{'gradient_space'}     = Wx::ComboBox->new( $self, -1,  'RGB', [-1,-1],[80, -1], [qw/RGB HSL/]);
     $self->{'subgradient_steps'}  = Wx::ComboBox->new( $self, -1,   '10', [-1,-1],[80, -1], [qw/5 10 15 20 25 30 35/]);
     $self->{'subgradient_space'}  = Wx::ComboBox->new( $self, -1,  'RGB', [-1,-1],[80, -1], [qw/RGB HSL/]);
-    $self->{'subgradient_dynamics'} = Wx::ComboBox->new($self, -1,     0, [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
-    $self->{'custom_partition'}->SetToolTip('Use chosen color selection to compute color rainbow (on) or just a gray scale');
-    $self->{'user_colors'}->SetToolTip('Use chosen color selection to compute color rainbow (on) or just a gray scale.');
+    $self->{'subgradient_dynamic'}= Wx::ComboBox->new($self, -1,     0, [-1,-1],[80, -1], [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.5, -0.2, 0, 0.2, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
+    $self->{'subgradient_distro'} = Wx::ComboBox->new( $self, -1, 'linear',  [-1,-1],[100, -1], [qw/linear square cube sqrt cubert log exp/]);
+    $self->{'custom_partition'}->SetToolTip('Divide the scale of possible iterations into goups (partitions) that can be mapped to colors. Use every iteration count gets its own color when off.');
+    $self->{'user_colors'}->SetToolTip('Use chosen color selection to compute color rainbow (on) or just a gray scale (off).');
     $self->{'use_subgradient'}->SetToolTip('Make color gradient smoother by computing gradients between colored areas based on final value of iteration.');
     $self->{'background_color'}->SetToolTip('Color that is used to paint areas where iteration stays below stop value.');
-    $self->{'gradient_dynamics'}->SetToolTip('');
-    $self->{'progress_bar'} = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 30, [20, 20, 110]);
+    $self->{'gradient_dynamic'}->SetToolTip('skew direction of gradient (positive value = left)');
+    $self->{'subgradient_steps'}->SetToolTip('');
+    $self->{'subgradient_dynamic'}->SetToolTip('skew direction of gradient (positive value = left)');
+    $self->{'subgradient_distro'}->SetToolTip('relation between parts of subgradient size wise');
+    $self->{'color_rainbow'}      = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 30, [20, 20, 110]);
+    $self->{'background_rainbow'} = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 450, 10, [20, 20, 110]);
 
     Wx::Event::EVT_CHECKBOX( $self, $self->{'custom_partition'},sub { $self->enable_partition($self->{'custom_partition'}->GetValue); $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'user_colors'},     sub { $self->enable_user_colors($self->{'user_colors'}->GetValue);    $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'use_subgradient'}, sub { $self->enable_subgradient($self->{'use_subgradient'}->GetValue);$self->{'callback'}->() });
-    Wx::Event::EVT_COMBOBOX( $self, $self->{$_},          sub { $self->{'callback'}->() }) for qw/gradient_dynamics background_color/;
+    Wx::Event::EVT_COMBOBOX( $self, $self->{$_},                sub { $self->update_max_color; $self->{'callback'}->() })
+        for qw/begin_color end_color/;
+    Wx::Event::EVT_COMBOBOX( $self, $self->{$_},                sub { $self->{'callback'}->() })
+        for qw/scale_distro gradient_dynamic gradient_space background_color
+               subgradient_steps subgradient_distro subgradient_dynamic subgradient_space/;
+    $self->{$_}->SetCallBack( sub { $self->{'callback'}->(); }) for qw/scale_parts/;
 
     my $std_margin = 20;
     my $std  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
@@ -105,13 +117,11 @@ sub new {
 
     my $div2_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $div2_sizer->AddSpacer( $std_margin );
-    $div2_sizer->AddSpacer(  6 );
-    $div2_sizer->Add( $self->{'scale_min'},       0, $box,  5);
-    $div2_sizer->AddSpacer( 10 );
+    $div2_sizer->AddSpacer( 131 );
     $div2_sizer->Add( $self->{'lbl_max'},         0, $box, 12);
     $div2_sizer->AddSpacer( 10 );
     $div2_sizer->Add( $self->{'scale_max'},       0, $box,  5);
-    $div2_sizer->AddSpacer( 20 );
+    $div2_sizer->AddSpacer( 75 );
     $div2_sizer->Add(  $self->{'lbl_distro'},     0, $box, 12);
     $div2_sizer->AddSpacer( 10 );
     $div2_sizer->Add( $self->{'scale_distro'},    0, $box,  5);
@@ -141,37 +151,46 @@ sub new {
     $map_sizer->Add( $self->{'lbl_backg'},        0, $box, 12);
     $map_sizer->AddSpacer( 10 );
     $map_sizer->Add( $self->{'background_color'}, 0, $box,  5);
-    $map_sizer->AddSpacer( 20 );
-    $map_sizer->Add( $map_dyn_lbl,               0, $box, 12);
+    $map_sizer->AddSpacer( 23 );
+    $map_sizer->Add( $map_dyn_lbl,                0, $box, 12);
     $map_sizer->AddSpacer( 10 );
-    $map_sizer->Add( $self->{'gradient_dynamics'}, 0, $box,  5);
-    $map_sizer->AddSpacer( 19 );
+    $map_sizer->Add( $self->{'gradient_dynamic'}, 0, $box,  5);
+    $map_sizer->AddSpacer( 22 );
     $map_sizer->Add( $map_space_lbl,              0, $box, 12);
     $map_sizer->AddSpacer( 10 );
-    $map_sizer->Add( $self->{'gradient_space'},  0, $box,  5);
+    $map_sizer->Add( $self->{'gradient_space'},   0, $box,  5);
     $map_sizer->AddStretchSpacer();
     $map_sizer->AddSpacer( $std_margin );
 
     my $sub_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $sub_sizer->AddSpacer( $std_margin );
     $sub_sizer->AddSpacer( 10 );
-    $sub_sizer->Add( $use_sub_lbl,                 0, $box, 12);
+    $sub_sizer->Add( $self->{'lbl_sub_use'},        0, $box, 12);
     $sub_sizer->AddSpacer( 10 );
-    $sub_sizer->Add( $self->{'use_subgradient'},   0, $box,  4);
-    $sub_sizer->AddSpacer( 13 );
-    $sub_sizer->Add( $self->{'lbl_sub_step'},      0, $box, 12);
+    $sub_sizer->Add( $self->{'use_subgradient'},    0, $box,  4);
+    $sub_sizer->AddSpacer( 65 );
+    $sub_sizer->Add( $self->{'lbl_sub_step'},       0, $box, 12);
     $sub_sizer->AddSpacer( 10 );
-    $sub_sizer->Add( $self->{'subgradient_steps'}, 0, $box,  4);
-    $sub_sizer->AddSpacer( 25 );
-    $sub_sizer->Add( $self->{'lbl_sub_dyn'},       0, $box, 12);
+    $sub_sizer->Add( $self->{'subgradient_steps'},  0, $box,  4);
+    $sub_sizer->AddSpacer( 35 );
+    $sub_sizer->Add( $self->{'lbl_sub_distro'},     0, $box, 12);
     $sub_sizer->AddSpacer( 10 );
-    $sub_sizer->Add( $self->{'subgradient_dynamics'},0, $box,  4);
-    $sub_sizer->AddSpacer( 25 );
-    $sub_sizer->Add( $self->{'lbl_sub_space'},      0, $box, 12);
-    $sub_sizer->AddSpacer( 10 );
-    $sub_sizer->Add( $self->{'subgradient_space'},  0, $box,  4);
+    $sub_sizer->Add( $self->{'subgradient_distro'}, 0, $box,  4);
     $sub_sizer->AddStretchSpacer();
     $sub_sizer->AddSpacer( $std_margin );
+
+    my $sub2_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $sub2_sizer->AddSpacer( $std_margin );
+    $sub2_sizer->AddSpacer( 155 );
+    $sub2_sizer->Add( $self->{'lbl_sub_dyn'},        0, $box, 12);
+    $sub2_sizer->AddSpacer( 10 );
+    $sub2_sizer->Add( $self->{'subgradient_dynamic'},0, $box,  4);
+    $sub2_sizer->AddSpacer( 91 );
+    $sub2_sizer->Add( $self->{'lbl_sub_space'},      0, $box, 12);
+    $sub2_sizer->AddSpacer( 10 );
+    $sub2_sizer->Add( $self->{'subgradient_space'},  0, $box,  4);
+    $sub2_sizer->AddStretchSpacer();
+    $sub2_sizer->AddSpacer( $std_margin );
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->AddSpacer( 10 );
@@ -185,9 +204,14 @@ sub new {
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box,  10 );
     $sizer->Add( $submap_lbl,   0, $item, $std_margin);
     $sizer->Add( $sub_sizer,    0, $row,   8);
+    $sizer->Add( $sub2_sizer,   0, $row,  10);
     $sizer->AddSpacer( 2 );
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box,  10 );
-    $sizer->Add( $self->{'progress_bar'},         0, $item | &Wx::wxRIGHT, 20 );
+    $sizer->AddSpacer( 5 );
+    $sizer->Add( $self->{'color_rainbow'},        0, $item | &Wx::wxRIGHT, 20 );
+    $sizer->AddSpacer( 5 );
+    $sizer->Add( $self->{'background_rainbow'},   0, $item | &Wx::wxRIGHT, 20 );
+    $sizer->AddSpacer( 5 );
     $sizer->Add( Wx::StaticLine->new( $self, -1), 0, $box,  10 );
     $sizer->AddStretchSpacer();
     $self->SetSizer($sizer);
@@ -201,18 +225,19 @@ sub set_settings {
     my ( $self, $settings ) = @_;
     return 0 unless ref $settings eq 'HASH' and exists $settings->{'user_colors'};
     $self->PauseCallBack();
-    for my $key (qw/custom_partition user_colors use_subgradient scale_min scale_parts/){
+    for my $key (qw/custom_partition user_colors use_subgradient scale_parts/){
         next unless exists $settings->{$key} and exists $settings->{$key};
         $self->{$key}->SetValue( $settings->{$key} );
     }
-    for my $key (qw/scale_distro background_color begin_color end_color gradient_dynamics
-                gradient_space subgradient_steps subgradient_dynamics subgradient_space/){
+    for my $key (qw/scale_distro background_color begin_color end_color gradient_dynamic
+                gradient_space subgradient_steps subgradient_dynamic subgradient_space subgradient_distro/){
         next unless exists $settings->{$key} and exists $self->{$key};
         $self->{$key}->SetSelection( $self->{$key}->FindString($settings->{$key}) );
     }
     $self->enable_partition( $settings->{'custom_partition'} );
     $self->enable_user_colors( $settings->{'user_colors'} );
     $self->enable_subgradient( $settings->{'use_subgradient'} );
+    $self->update_max_color( );
     $self->RestoreCallBack();
     1;
 }
@@ -223,17 +248,17 @@ sub get_settings {
         custom_partition  => int $self->{'custom_partition'}->GetValue,
         user_colors       => int $self->{'user_colors'}->GetValue,
         use_subgradient   => int $self->{'use_subgradient'}->GetValue,
-        scale_min         => $self->{'scale_min'}->GetValue,
         scale_parts       => $self->{'scale_parts'}->GetValue,
         scale_distro      => $self->{'scale_distro'}->GetStringSelection,
         background_color  => $self->{'background_color'}->GetStringSelection,
         begin_color       => $self->{'begin_color'}->GetStringSelection,
         end_color         => $self->{'end_color'}->GetStringSelection,
-        gradient_dynamics => $self->{'gradient_dynamics'}->GetStringSelection,
+        gradient_dynamic  => $self->{'gradient_dynamic'}->GetStringSelection,
         gradient_space    => $self->{'gradient_space'}->GetStringSelection,
         subgradient_steps => $self->{'subgradient_steps'}->GetStringSelection,
-        subgradient_dynamics => $self->{'subgradient_dynamics'}->GetStringSelection,
+        subgradient_dynamic=>$self->{'subgradient_dynamic'}->GetStringSelection,
         subgradient_space => $self->{'subgradient_space'}->GetStringSelection,
+        subgradient_distro => $self->{'subgradient_distro'}->GetStringSelection,
     };
 }
 
@@ -241,7 +266,10 @@ sub enable_partition {
     my ( $self, $on ) = @_;
     $on //= $self->{'custom_partition'}->GetValue;
     $self->{'custom_partition'}->SetValue( $on ) unless int($on) == int $self->{'custom_partition'}->GetValue;
-    $self->{$_}->Enable( $on ) for qw/scale_parts scale_distro scale_min scale_max lbl_max lbl_distro/;
+    $self->{$_}->Enable( $on ) for qw/scale_parts scale_distro scale_max lbl_max lbl_distro/;
+    $self->enable_subgradient(0) if $on;
+    $self->{'use_subgradient'}->Enable( not $on );
+    $self->{'lbl_sub_use'}->Enable( not $on );
 }
 sub enable_user_colors {
     my ( $self, $on ) = @_;
@@ -253,8 +281,23 @@ sub enable_subgradient {
     my ( $self, $on ) = @_;
     $on //= $self->{'use_subgradient'}->GetValue;
     $self->{'use_subgradient'}->SetValue($on) unless int($on) == int $self->{'use_subgradient'}->GetValue;
-    $self->{$_}->Enable( $on ) for qw/subgradient_steps subgradient_dynamics subgradient_space
-                                    lbl_sub_step lbl_sub_dyn lbl_sub_space/;
+    $self->{$_}->Enable( $on ) for qw/subgradient_steps subgradient_dynamic subgradient_space subgradient_distro
+                                    lbl_sub_step lbl_sub_dyn lbl_sub_space lbl_sub_distro/;
+}
+
+sub update_max_color {
+    my ( $self ) = @_;
+    my $begin_color = substr $self->{'begin_color'}->GetStringSelection, 6;
+    my $end_color = substr $self->{'end_color'}->GetStringSelection, 6;
+    my $max_color = $begin_color > $end_color ? $begin_color : $end_color;
+    $self->{'tab'}{'color'}->set_active_color_count( $max_color ) if ref $self->{'tab'}{'color'};
+}
+
+sub set_colors {
+    my ($self, $ref) = @_;
+    return unless ref $ref eq 'App::GUI::Juliagraph::Frame::Tab::Color';
+    $self->{'tab'}{'color'} = $ref;
+    $self->update_max_color;
 }
 
 sub SetCallBack {
