@@ -20,6 +20,7 @@ our $data = {
         day =>    [ 'black', '#ffcf3d','#e25555','#e65c60','#4acfab','#48614a','gray20', '#111111','black','grey','grey' ],
         default =>[ 'black', '#f9e595','#ef9d1a','#b63a3e','#90663c','#633b3b','gray20', '#111111','grey','grey','grey' ],
         grey =>   [ 'black', 'white',  '#d5d5d5','#aaaaaa','gray',   '#555555','gray17', 'black','grey','grey','grey' ],
+        high_contrast => [ 'black','red','orange','#20afdf','#0222c0','grey','grey','grey','grey','grey','grey' ],
         skye =>   [ 'black', '#ffcf3d','#173fab','#8e8e8e','#8e8e8e','#8e8e8e','#8e8e8e','#8e8e8e','black','grey','grey' ],
         sunset => [ 'black', '#f9d87b','#936d1a','#bf3136','#94148e','#c3baee','#1d1d7c','#111111','black' ],
     },

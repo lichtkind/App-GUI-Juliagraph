@@ -126,11 +126,11 @@ sub set_settings {
     return 0 unless ref $settings eq 'HASH';
     $self->PauseCallBack();
     for my $key (qw/active use_log use_minus use_factor use_coor factor_r factor_i/){
-        next unless exists $settings->{$key} and exists $self->{$key};
+        next unless exists $settings->{$key};
         $self->{$key}->SetValue( $settings->{$key} );
     }
     for my $key (qw/exponent/){
-        next unless exists $settings->{$key} and exists $self->{$key};
+        next unless exists $settings->{$key};
         $self->{$key}->SetSelection( $self->{$key}->FindString( $settings->{$key}) );
     }
     $self->enable_factor( $settings->{'use_factor'} );

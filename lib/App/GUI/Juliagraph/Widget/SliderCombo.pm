@@ -26,7 +26,7 @@ sub new {
     my @l = map {length $_} $min, $min+$self->{'value_delta'}, $max-$self->{'value_delta'}, $max;
     my $max_txt_size = 0;
     map {$max_txt_size = $_ if $max_txt_size < $_} @l;
-    $self->{'widget'}{'txt'} = Wx::TextCtrl->new( $self, -1, $init_value, [-1,-1], [(4 * $max_txt_size) + 30,-1], &Wx::wxTE_RIGHT);
+    $self->{'widget'}{'txt'} = Wx::TextCtrl->new( $self, -1, $init_value, [-1,-1], [(6 * $max_txt_size) + 26,-1], &Wx::wxTE_RIGHT);
     $self->{'widget'}{'button'}{'-'} = Wx::Button->new( $self, -1, '-', [-1,-1],[27, 27] );
     $self->{'widget'}{'button'}{'+'} = Wx::Button->new( $self, -1, '+', [-1,-1],[27, 27] );
 

@@ -47,6 +47,9 @@ sub new {
     $self->{'progress_bar'}        = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 430, 5, [20, 20, 110]);
     $self->{'board'}               = App::GUI::Juliagraph::Frame::Panel::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}     = App::GUI::Juliagraph::Dialog::About->new();
+    App::GUI::Juliagraph::Compute::Image::add_progress_bar('pen', $self->{'progress_bar'});
+    App::GUI::Juliagraph::Compute::Image::add_progress_bar('preview', $self->{'tab'}{'mapping'}{'color_rainbow'});
+    App::GUI::Juliagraph::Compute::Image::add_progress_bar('background', $self->{'tab'}{'mapping'}{'background_rainbow'});
 
     my $btnw = 50; my $btnh     = 40;# button width and height
     $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[$btnw, $btnh] );
@@ -100,7 +103,6 @@ sub new {
     $image_menu->Append( 12100, "S&ize",  $image_size_menu,   "set image size" );
     $image_menu->Append( 12200, "&Format",  $image_format_menu, "set default image formate" );
     $image_menu->Append( 12400, "&Save\tCtrl+S", "save currently displayed image" );
-
 
     my $help_menu = Wx::Menu->new();
     $help_menu->Append( 13300, "&About\tAlt+A", "Dialog with general information about the program" );

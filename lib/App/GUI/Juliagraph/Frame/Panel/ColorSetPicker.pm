@@ -60,6 +60,7 @@ sub new {
             my $dialog = Wx::TextEntryDialog->new ( $self, "Please insert the color set name", 'Request Dialog');
             return if $dialog->ShowModal == &Wx::wxID_CANCEL;
             $name = $dialog->GetValue();
+            $name =~ tr/ /_/;
             last unless exists $self->{'sets'}{ $name };
         }
         $self->{'sets'}{ $name } = [ map { $_->name ? $_->name : $_->rgb_hex } $parent->get_all_colors ];

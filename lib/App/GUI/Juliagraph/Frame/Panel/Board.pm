@@ -39,7 +39,23 @@ sub new {
         }
         1;
     }); # Blit (xdest, ydest, width, height, DC *src, xsrc, ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false)
-    # Wx::Event::EVT_LEFT_DOWN( $self->{'board'}, sub {});
+  #  Wx::Event::EVT_ENTER_WINDOW( $self, sub {
+   # });
+  #  Wx::Event::EVT_LEFT_DOWN( $self, sub {
+# say "left";
+   # });
+    #~ Wx::Event::EVT_MOTION( $self, sub {
+ #~ say "move";
+    #~ });
+    #~ Wx::Event::EVT_LEFT_DCLICK( $self, sub {
+ #~ say "double left";
+   #~ });
+    #~ Wx::Event::EVT_RIGHT_UP( $self, sub {
+ #~ say "right";
+   #~ });
+    #~ Wx::Event::EVT_LEFT_UP( $self, sub {
+    #~ });
+
     return $self;
 }
 
@@ -60,7 +76,6 @@ sub sketch {
 sub set_settings {
     my( $self, $settings ) = @_;
     return unless ref $settings eq 'HASH';
-    $self->GetParent->{'progress_bar'}->reset;
     $self->{'settings'} = $settings;
     $self->{'flag'}{'new'} = 1;
 }
@@ -68,9 +83,8 @@ sub set_settings {
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
-    my $progress_bar = $self->GetParent->{'progress_bar'};
     my $img = App::GUI::Juliagraph::Compute::Image::from_settings(
-        $self->{'settings'}, $self->{'size'}, $progress_bar, $self->{'flag'}{'sketch'},
+        $self->{'settings'}, $self->{'size'}, $self->{'flag'}{'sketch'},
     );
     $dc->DrawBitmap( Wx::Bitmap->new( $img ), 0, 0, 0 ); # at point (0, 0) with no mask
     $self->{'image'} = $img unless $self->{'flag'}{'sketch'};
