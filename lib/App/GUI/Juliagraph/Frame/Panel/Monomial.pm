@@ -51,7 +51,7 @@ sub new {
 
     Wx::Event::EVT_CHECKBOX( $self, $self->{'active'},     sub { $self->enable_monomial( $self->{'active'}->GetValue ); $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'use_factor'}, sub { $self->enable_factor( $self->{'use_factor'}->GetValue ); $self->{'callback'}->(); });
-    Wx::Event::EVT_CHECKBOX( $self, $self->{$_}, sub { $self->{'callback'}->() }) for qw/use_minus use_log/;
+    Wx::Event::EVT_CHECKBOX( $self, $self->{$_}, sub { $self->{'callback'}->() }) for qw/use_minus use_log use_coor/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{$_}, sub { $self->{'callback'}->() }) for qw/exponent/;
     Wx::Event::EVT_TEXT( $self, $self->{$_},     sub { $self->{'callback'}->() }) for qw/factor_r factor_i/;
 
