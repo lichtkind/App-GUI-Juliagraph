@@ -197,17 +197,24 @@ sub from_settings {
         my $set = $set->{'monomial'}{ $monomial_nr };
         next unless $set->{'active'};
         my $sign = ($set->{'use_minus'}) ? '-' : '+';
-        my $log = ($set->{'use_log'}) ? 'log' : '';
-        $a_term .= $sign . $log .'(';
-        $b_term .= $sign . $log .'(';
+        $a_term .= $sign . '(';
+        $b_term .= $sign . '(';
         $a_term .= ($set->{'use_factor'}) ? $set->{'factor_r'}.' * ': '';
         $b_term .= ($set->{'use_factor'}) ? $set->{'factor_i'}.' * ': '';
         $a_term .= ($set->{'use_coor'}) ? ' $x * ': '';
         $b_term .= ($set->{'use_coor'}) ? ' $y * ': '';
-        $a_term .= ($set->{'exponent'} == 1) ? '$za)' : '$z['.$set->{'exponent'}.'][0])';
-        $b_term .= ($set->{'exponent'} == 1) ? '$zb)' : '$z['.$set->{'exponent'}.'][1])';
+        if ($set->{'use_log'}){
+            $a_term .= ($set->{'exponent'} == 1) ? 'sqrt($zqa + $zqb))'
+                                                 : 'sqrt($z['.$set->{'exponent'}.'][0]**2 + $z['.$set->{'exponent'}.'][1]**2))';
+            $b_term .= ($set->{'exponent'} == 1) ? 'atan2($za,$zb))'
+                                                 : 'atan2($z['.$set->{'exponent'}.'][0],$z['.$set->{'exponent'}.'][1]))';
+        } else {
+            $a_term .= ($set->{'exponent'} == 1) ? '$za)' : '$z['.$set->{'exponent'}.'][0])';
+            $b_term .= ($set->{'exponent'} == 1) ? '$zb)' : '$z['.$set->{'exponent'}.'][1])';
+        }
+
     }
-    $a_term .= ' $za' if length($a_term) == 6; # if no monomial is active
+    $a_term .= ' $za' if length($a_term) == 6; # self assign if no monomial is active
     $b_term .= ' $zb' if length($b_term) == 6;
     push @monomial_code, $a_term, $b_term;
 

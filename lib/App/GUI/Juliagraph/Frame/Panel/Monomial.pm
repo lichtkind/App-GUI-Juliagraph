@@ -66,11 +66,11 @@ sub new {
     $first_sizer->AddSpacer( $std_margin - 1 );
     $first_sizer->Add( $self->{'use_minus'},    0, $box,  5);
     $first_sizer->AddSpacer( $std_margin - 9);
-    $first_sizer->Add( $self->{'use_log'},      0, $box,  5);
-    $first_sizer->AddSpacer( $std_margin + 1);
     $first_sizer->Add( $self->{'use_factor'},   0, $box,  5);
-    $first_sizer->AddSpacer( $std_margin + 5);
+    $first_sizer->AddSpacer( $std_margin + 7);
     $first_sizer->Add( $self->{'use_coor'},     0, $box,  5);
+    $first_sizer->AddSpacer( $std_margin + 1);
+    $first_sizer->Add( $self->{'use_log'},      0, $box,  5);
     $first_sizer->AddStretchSpacer( );
     $first_sizer->Add( $self->{'lbl_exponent'}, 0, $box, 13);
     $first_sizer->AddSpacer( 10 );
