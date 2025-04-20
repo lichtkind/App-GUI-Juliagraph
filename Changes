@@ -10,7 +10,7 @@
     * + assigning pixel coordinates to any monomialfactor
     * + assigning pixel coordinates to more than one destination
     * + copied over color tab from hormonograph
-    * + monomials have 3 more options (log + sign + coor factor)
+    * + monomials have 3 more options (log + sign + coordinates factor)
 
 0.5    2023-11-27  lichtkind
 -------

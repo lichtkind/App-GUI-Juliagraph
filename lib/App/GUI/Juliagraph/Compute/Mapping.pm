@@ -64,4 +64,10 @@ sub scales {
     return \%mapping;
 }
 
+my $half      = 0.50000000000008;
+sub round {
+    $_[0] >= 0 ? int ($_[0] + $half)
+               : int ($_[0] - $half)
+}
+
 1;

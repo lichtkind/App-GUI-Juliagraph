@@ -1,11 +1,12 @@
 #!/usr/bin/perl -w
 use v5.12;
 use lib 'lib';
-use Test::More tests => 21;
+use Test::More tests => 22;
 
 use_ok( 'App::GUI::Juliagraph::Settings' );
 use_ok( 'App::GUI::Juliagraph::Config' );
 use_ok( 'App::GUI::Juliagraph::Config::Default' );
+use_ok( 'App::GUI::Juliagraph::Compute::Mapping' );
 use_ok( 'App::GUI::Juliagraph::Compute::Image' );
 use_ok( 'App::GUI::Juliagraph::Dialog::About' );
 use_ok( 'App::GUI::Juliagraph::Widget::ProgressBar' );

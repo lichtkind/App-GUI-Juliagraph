@@ -50,7 +50,6 @@ sub new {
             my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
             $self->{'tab'}{'constraint'}->move_center_position( $dx, $dy, 0);
         }
-
     });
     Wx::Event::EVT_LEFT_DCLICK( $self, sub {
         if (ref $self->{'tab'}{'constraint'}){

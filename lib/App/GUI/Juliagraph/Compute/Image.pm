@@ -229,7 +229,7 @@ sub from_settings {
     my @bailout_code = (
         '      $metrik = '.$metric_code,
     ($set->{'mapping'}{'use_subgradient'})
-     ? ('      $metrik = $color_index_max if $metrik > $color_index_max',
+     ? ('      $metrik = $color_index_max - 1 if $metrik >= $color_index_max',
         '      $color = $colors->[ $i ][$metrik-$schranke], last if $metrik >= $schranke' )
      :  '      $color = $colors->[ $i ], last if $metrik >= $schranke'
     );
@@ -282,13 +282,6 @@ sub from_settings {
     say "compile:",timestr(timediff(Benchmark->new, $t0));
 
     return $img;
-}
-
-
-my $half      = 0.50000000000008;
-sub round {
-    $_[0] >= 0 ? int ($_[0] + $half)
-               : int ($_[0] - $half)
 }
 
 1;
