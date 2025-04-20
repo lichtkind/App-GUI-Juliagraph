@@ -198,7 +198,7 @@ the shape around the main shape (the crwon - corona).
 =head2 Monomials
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/POD/Tab_Polynomial.png"    alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Juliagraph/master/img/POD/Tab_Polynomials.png"    alt=""  width="630" height="410">
 </p>
 
 The second tab contains 4 identical sections which also work the same way.
