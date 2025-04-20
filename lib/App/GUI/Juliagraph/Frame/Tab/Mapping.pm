@@ -302,7 +302,7 @@ sub update_max_color {
     $self->{'tab'}{'color'}->set_active_color_count( $max_color ) if ref $self->{'tab'}{'color'};
 }
 
-sub set_colors {
+sub connect_color_tab {
     my ($self, $ref) = @_;
     return unless ref $ref eq 'App::GUI::Juliagraph::Frame::Tab::Color';
     $self->{'tab'}{'color'} = $ref;

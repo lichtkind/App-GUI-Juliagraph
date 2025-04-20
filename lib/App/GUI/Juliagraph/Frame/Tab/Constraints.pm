@@ -338,6 +338,25 @@ sub freeze_last_coor_option { # keep always one option chosen
     }
 }
 
+sub move_center_position { # after mouse click
+    my ( $self, $delta_x_percent, $delta_y_percent, $zoom_dir ) = @_;
+    $self->PauseCallBack;
+    my $zoom  =  $self->{'zoom'}->GetValue;
+    my $cx = $self->{'center_x'}->GetValue;
+    my $cy = $self->{'center_y'}->GetValue;
+    my $d = sqrt( $delta_x_percent**2 + $delta_y_percent**2 );
+    if ($zoom_dir){
+        $self->{'zoom'}->SetValue( $zoom + (0.1 * $zoom_dir * $zoom) );
+    } else {
+        my $new_x = ($delta_x_percent / 2 / $zoom ) + $cx;
+        my $new_y = -($delta_y_percent / 2 / $zoom ) + $cy;
+        $self->{'center_x'}->SetValue( $new_x );
+        $self->{'center_y'}->SetValue( $new_y );
+    }
+    $self->RestoreCallBack;
+    $self->RunCallBack;
+}
+
 sub update_iter_count {
     my ( $self ) = @_;
     $self->{'tab'}{'mapping'}{'scale_max'}->SetValue( int $self->{'stop_nr'}->GetValue**2 ) if ref $self->{'tab'}{'mapping'};
@@ -345,12 +364,13 @@ sub update_iter_count {
 
 sub zoom_size { 0.1 / ($_[0]->{'zoom'}->GetValue ** 2) }
 
-sub set_polynome {
+sub connect_polynome_tab {
     my ($self, $ref) = @_;
     return unless ref $ref eq 'App::GUI::Juliagraph::Frame::Tab::Polynomial';
     $self->{'tab'}{'polynome'} = $ref;
 }
-sub set_mapping {
+
+sub connect_mapping_tab {
     my ($self, $ref) = @_;
     return unless ref $ref eq 'App::GUI::Juliagraph::Frame::Tab::Mapping';
     $self->{'tab'}{'mapping'} = $ref;

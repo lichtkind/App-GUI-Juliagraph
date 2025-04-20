@@ -11,6 +11,7 @@ use App::GUI::Juliagraph::Widget::ProgressBar;
 use App::GUI::Juliagraph::Compute::Mapping;
 
 use constant SKETCH_FACTOR => 4;
+# 'π' => 3.1415926535,  'τ' => 6.2831853071795,
 
 my %progress_bar;
 sub add_progress_bar {
@@ -99,15 +100,14 @@ sub from_settings {
     my( $set, $size, $sketch ) = @_;
     my $img = Wx::Image->new( $size->{'x'}, $size->{'y'} );
     my $sketch_factor = (defined $sketch) ? SKETCH_FACTOR : 0;
-
     my $t0 = Benchmark->new();
 
     my $max_iter  =  int $set->{'constraint'}{'stop_nr'} ** 2;
     my $max_value =  int $set->{'constraint'}{'stop_value'} ** 2;
     my $zoom      = 140 * $set->{'constraint'}{'zoom'};
     my $schranke  = $max_value;
-    my $color_index_max = $schranke + $set->{'mapping'}{'subgradient_size'};
 
+    my $color_index_max = $schranke + $set->{'mapping'}{'subgradient_size'};
     my ($colors, $background_color) = compute_colors( $set, $max_iter );
     for my $bar_name (keys %progress_bar){
         my $bar = $progress_bar{$bar_name};
@@ -141,7 +141,7 @@ sub from_settings {
     my $max_pixel_x  = $size->{x}-1;
     my $max_pixel_y  = $size->{y}-1;
     my $offset_x = (- $size->{'x'} / 2 / $zoom) + $set->{'constraint'}{'center_x'};
-    my $offset_y = (- $size->{'y'} / 2 / $zoom) + $set->{'constraint'}{'center_y'};
+    my $offset_y = (- $size->{'y'} / 2 / $zoom) - $set->{'constraint'}{'center_y'};
     my $delta_x  = 1 / $zoom;
     my $delta_y  = 1 / $zoom;
     my $start_a  = $set->{'constraint'}{'start_a'};
@@ -169,6 +169,7 @@ sub from_settings {
         my $half = $power / 2;
         push @monomial_code, '      $z['.$power.'][0] = ($z['.$half.'][0] * $z['.$half.'][0]) - ($z['.$half.'][1] * $z['.$half.'][1])'
                            , '      $z['.$power.'][1] =  2 * ($z['.$half.'][0] * $z['.$half.'][1])';
+        delete $needed_power{$power} if exists $needed_power{$power};
     }
     for my $power (4, 2){
         for my $factor (3, 5, 7) {

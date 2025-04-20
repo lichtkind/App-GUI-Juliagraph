@@ -19,6 +19,7 @@ sub new {
     $self->{'dc'} = Wx::MemoryDC->new( );
     $self->{'bmp'} = Wx::Bitmap->new( $self->{'size'}{'x'} + 10, $self->{'size'}{'y'} +10 + $self->{'menu_size'}, 24);
     $self->{'dc'}->SelectObject( $self->{'bmp'} );
+    $self->{'tab'}{'constraint'} = '';
 
     Wx::Event::EVT_PAINT( $self, sub {
         my( $self, $event ) = @_;
@@ -38,25 +39,44 @@ sub new {
                                                    $self->{'x_pos'} , $self->{'y_pos'} + $self->{'menu_size'} );
         }
         1;
-    }); # Blit (xdest, ydest, width, height, DC *src, xsrc, ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false)
-  #  Wx::Event::EVT_ENTER_WINDOW( $self, sub {
-   # });
-  #  Wx::Event::EVT_LEFT_DOWN( $self, sub {
-# say "left";
-   # });
-    #~ Wx::Event::EVT_MOTION( $self, sub {
- #~ say "move";
-    #~ });
-    #~ Wx::Event::EVT_LEFT_DCLICK( $self, sub {
- #~ say "double left";
-   #~ });
-    #~ Wx::Event::EVT_RIGHT_UP( $self, sub {
- #~ say "right";
-   #~ });
-    #~ Wx::Event::EVT_LEFT_UP( $self, sub {
-    #~ });
+    }); # Blit
+    #  Wx::Event::EVT_ENTER_WINDOW( $self, sub {  });
+    #  Wx::Event::EVT_LEFT_DOWN( $self, sub { });
+    #  Wx::Event::EVT_MOTION( $self, sub { });
+    Wx::Event::EVT_LEFT_DOWN( $self, sub {
+        if (ref $self->{'tab'}{'constraint'}){
+            my $pos = $_[1]->GetLogicalPosition( $self->{'dc'} );
+            my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+            my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
+            $self->{'tab'}{'constraint'}->move_center_position( $dx, $dy, 0);
+        }
+
+    });
+    Wx::Event::EVT_LEFT_DCLICK( $self, sub {
+        if (ref $self->{'tab'}{'constraint'}){
+            my $pos = $_[1]->GetLogicalPosition($self->{'dc'});
+            my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+            my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
+            $self->{'tab'}{'constraint'}->move_center_position( $dx, $dy, 1);
+        }
+    });
+    Wx::Event::EVT_RIGHT_DOWN( $self, sub {
+        if (ref $self->{'tab'}{'constraint'}){
+            my $pos = $_[1]->GetLogicalPosition($self->{'dc'});
+            my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+            my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
+            $self->{'tab'}{'constraint'}->move_center_position( $dx, $dy, -1);
+        }
+    });
+    Wx::Event::EVT_MIDDLE_DOWN( $self, sub { $self->GetParent->draw });
 
     return $self;
+}
+
+sub connect_constrains_tab {
+    my ($self, $ref) = @_;
+    return unless ref $ref eq 'App::GUI::Juliagraph::Frame::Tab::Constraints';
+    $self->{'tab'}{'constraint'} = $ref;
 }
 
 sub draw {

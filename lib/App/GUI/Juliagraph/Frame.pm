@@ -37,16 +37,17 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'tab'}{'monomial'},   'Monomials');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'mapping'},    'Color Mapping');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},      'Colors');
-    $self->{'tab'}{'constraint'}->set_polynome( $self->{'tab'}{'monomial'} );
-    $self->{'tab'}{'constraint'}->set_mapping( $self->{'tab'}{'mapping'} );
-    $self->{'tab'}{'mapping'}->set_colors( $self->{'tab'}{'color'} );
+    $self->{'tab'}{'constraint'}->connect_polynome_tab( $self->{'tab'}{'monomial'} );
+    $self->{'tab'}{'constraint'}->connect_mapping_tab( $self->{'tab'}{'mapping'} );
+    $self->{'tab'}{'mapping'}->connect_color_tab( $self->{'tab'}{'color'} );
 
     $self->{'tab_names'} = [keys %{ $self->{'tab'} }];
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'tab_names'}};
 
+    $self->{'dialog'}{'about'}     = App::GUI::Juliagraph::Dialog::About->new();
     $self->{'progress_bar'}        = App::GUI::Juliagraph::Widget::ProgressBar->new( $self, 430, 5, [20, 20, 110]);
     $self->{'board'}               = App::GUI::Juliagraph::Frame::Panel::Board->new( $self , 600, 600 );
-    $self->{'dialog'}{'about'}     = App::GUI::Juliagraph::Dialog::About->new();
+    $self->{'board'}->connect_constrains_tab( $self->{'tab'}{'constraint'} );
     App::GUI::Juliagraph::Compute::Image::add_progress_bar('pen', $self->{'progress_bar'});
     App::GUI::Juliagraph::Compute::Image::add_progress_bar('preview', $self->{'tab'}{'mapping'}{'color_rainbow'});
     App::GUI::Juliagraph::Compute::Image::add_progress_bar('background', $self->{'tab'}{'mapping'}{'background_rainbow'});
