@@ -286,7 +286,7 @@ and the currently selected. This can be either a gradient (with C<Gradient>
 button). Right beside is a text box to skew the gradient in one or anotehr
 direction. To get complementary colors push the C<Complement> button.
 This also can be skewed on the saturation and lightness axis (text boxes
-beside). The arrow butons there help oýou to move colors to another position.
+beside). The arrow butons there help you to move colors to another position.
 
 To change a color you have to fist select it by clicking on it or the
 marker below. After that the marker turns into an arrow pointing down.
