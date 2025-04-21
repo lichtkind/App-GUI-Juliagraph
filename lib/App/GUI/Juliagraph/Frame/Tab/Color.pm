@@ -20,12 +20,12 @@ my $default_settings = { 1=> 'black', 2=> 'red', 3=> 'orange', 4 => 'blue',
                          dynamic => 0, delta_S => 0, delta_L => 0 };
 
 sub new {
-    my ( $class, $parent, $config ) = @_;
+    my ( $class, $parent, $config, $size ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
     $self->{'call_back'}  = sub {};
     $self->{'config'}     = $config;
-    $self->{'color_count'} = 11;        # number of displayed colors
+    $self->{'color_count'} = $size;     # number of displayed colors
     $self->{'active_color_count'} = 4;  # nr of currently used colors, overwritten on init
     $self->{'current_color_nr'} = 0;    # index starts from 0
     $self->{'display_size'} = 30;

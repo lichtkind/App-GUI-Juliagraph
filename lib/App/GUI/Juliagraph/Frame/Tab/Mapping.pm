@@ -20,10 +20,9 @@ my $default_settings =  {
     };
 
 sub new {
-    my ( $class, $parent, $config ) = @_;
+    my ( $class, $parent ) = @_;
 
     my $self = $class->SUPER::new( $parent, -1);
-    $self->{'config'}   = $config;
     $self->{'callback'} = sub {};
     $self->{'tab'}{'color'} = '';
 

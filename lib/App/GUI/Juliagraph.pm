@@ -7,7 +7,7 @@ use warnings;
 use Wx;
 use utf8;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.7';
+our $VERSION = '0.71';
 
 use base qw/Wx::App/;
 use App::GUI::Juliagraph::Frame;
