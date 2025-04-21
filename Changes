@@ -1,3 +1,10 @@
+0.71   2025-04-21  lichtkind
+-------
+    * = minor fix release
+    * & minor architecture fix (to reuse this version of color tab)
+    * ' POD fixes
+
+
 0.7    2025-04-20  lichtkind
 -------
     * = major feature release

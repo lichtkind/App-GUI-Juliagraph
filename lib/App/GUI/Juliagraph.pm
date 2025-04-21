@@ -32,7 +32,7 @@ __END__
 
 =head1 NAME
 
-App::GUI::Juliagraph - drawing Mandelbrot and Julia fractals with complex equations
+App::GUI::Juliagraph - drawing Mandelbrot-, Julia fractals and more
 
 =head1 SYNOPSIS
 
@@ -324,7 +324,9 @@ The submenu above onle set the preferred format, which is the format
 of serial images and the first wild card in dialog. Above that is another
 submenu for setting the image size.
 
-The third menu has only a dialog with some additional information of version numbers and our homepage.
+The third menu has only one item that opens a help dialog. That displays
+some core information about author, version number and a link to this page,
+the main documentation.
 
 =head1 SEE ALSO
 
