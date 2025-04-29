@@ -57,7 +57,7 @@ sub compute_colors {
             pop @color_object if $color_nr != $end_nr;
         }
         $background_color = (substr($set->{'mapping'}{'background_color'}, 0, 5) eq 'color')
-                          ? $set->{'color'}{'1'}
+                          ? $set->{'color'}{'11'}
                           : $set->{'mapping'}{'background_color'};
         $background_color = '#001845' if $background_color eq 'blue';
         $background_color = color( $background_color );

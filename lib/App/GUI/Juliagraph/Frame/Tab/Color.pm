@@ -37,10 +37,10 @@ sub new {
     $self->{'color_display'}[$_] = App::GUI::Juliagraph::Widget::ColorDisplay->new
         ($self, $self->{'display_size'}-2, $self->{'display_size'},
          $_, $self->{'used_colors'}[$_]->values(as => 'hash')      ) for 0 .. $self->{'color_count'}-1;
-    $self->{'color_marker'}[$_-1]->SetToolTip("color $_, to change (marked by arrow - crosses mark currently passive colors)") for 2 .. $self->{'color_count'};
-    $self->{'color_display'}[$_-1]->SetToolTip("color $_, to change (marked by arrow - crosses mark currently passive colors)") for 2 .. $self->{'color_count'};
-    $self->{'color_marker'}[0]->SetToolTip("color 1, often background color, shown where values do not converge");
-    $self->{'color_display'}[0]->SetToolTip("color 1, often background color, shown where values do not converge");
+    $self->{'color_marker'}[$_-1]->SetToolTip("color $_, to change (marked by arrow - crosses mark currently passive colors)") for 1 .. $self->{'color_count'}-1;
+    $self->{'color_display'}[$_-1]->SetToolTip("color $_, to change (marked by arrow - crosses mark currently passive colors)") for 1 .. $self->{'color_count'}-1;
+    $self->{'color_marker'}[$size-1]->SetToolTip("lost color, often background color, shown where values do not converge");
+    $self->{'color_display'}[$size-1]->SetToolTip("last color, often background color, shown where values do not converge");
 
     $self->{'label'}{'color_set_store'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'label'}{'color_set_funct'} = Wx::StaticText->new($self, -1, 'Colors Set Function' );
@@ -54,7 +54,7 @@ sub new {
 
     $self->{'button'}{'gradient'}   = Wx::Button->new( $self, -1, 'Gradient',   [-1,-1], [ 75, 17] );
     $self->{'button'}{'complement'} = Wx::Button->new( $self, -1, 'Complement', [-1,-1], [100, 17] );
-    $self->{'button'}{'left'} = Wx::Button->new( $self, -1, '<', [-1,-1], [30, 17] );
+    $self->{'button'}{'left'}  = Wx::Button->new( $self, -1, '<', [-1,-1], [30, 17] );
     $self->{'button'}{'right'} = Wx::Button->new( $self, -1, '>', [-1,-1], [30, 17] );
     $self->{'button'}{'left'}->SetToolTip("Move currently selected color to the left.");
     $self->{'button'}{'right'}->SetToolTip("Move currently selected color to the left.");
@@ -76,16 +76,18 @@ sub new {
 
     Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'gradient'}, sub {
         my @c = $self->get_all_colors;
-        my @new_colors = $c[1]->gradient( to => $c[ $self->{'current_color_nr'} ], in => 'RGB', steps => $self->{'current_color_nr'}, dynamic => $self->{'widget'}{'dynamic'}->GetValue);
-        $self->set_all_colors( $c[0], @new_colors );
+        my @new_colors = $c[0]->gradient( to => $c[ $self->{'current_color_nr'} ], in => 'RGB',
+                                       steps => $self->{'current_color_nr'}+1,
+                                     dynamic => $self->{'widget'}{'dynamic'}->GetValue );
+        $self->set_all_colors( @new_colors );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'complement'}, sub {
         my @c = $self->get_all_colors;
-        my @new_colors = $c[ $self->{'current_color_nr'} ]->complement( steps => $self->{'current_color_nr'},
+        my @new_colors = $c[ $self->{'current_color_nr'} ]->complement( steps => $self->{'current_color_nr'}+1,
                                                               saturation_tilt => $self->{'widget'}{'delta_S'}->GetValue,
                                                                lightness_tilt => $self->{'widget'}{'delta_L'}->GetValue );
         push @new_colors, shift @new_colors;
-        $self->set_all_colors( $c[0], @new_colors );
+        $self->set_all_colors( @new_colors );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'left'}, sub {
         my $pos = $self->get_current_color_nr;
@@ -137,7 +139,7 @@ sub new {
         $state_sizer->Add( $option_sizer[$nr],                 0, $all_attr, 6);
         #$state_sizer->AddSpacer( 1 );
     }
-    $state_sizer->Insert( 2, Wx::StaticLine->new( $self, -1,[-1,-1],[-1,-1], &Wx::wxLI_VERTICAL), 0, &Wx::wxGROW);
+    $state_sizer->Insert( 11, Wx::StaticLine->new( $self, -1,[-1,-1],[-1,-1], &Wx::wxLI_VERTICAL), 0, &Wx::wxGROW);
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
