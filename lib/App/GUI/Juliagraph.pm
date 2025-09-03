@@ -32,7 +32,7 @@ __END__
 
 =head1 NAME
 
-App::GUI::Juliagraph - drawing Mandelbrot-, Julia fractals and more
+App::GUI::Juliagraph - draw Mandelbrot-, Julia fractals and more
 
 =head1 SYNOPSIS
 
