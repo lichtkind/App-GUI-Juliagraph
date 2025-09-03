@@ -62,7 +62,7 @@
     FindBin 1
     File::Spec 3
     File::HomeDir 1
-    Graphics::Toolkit::Color 1.71
+    Graphics::Toolkit::Color 1.9
     WxPerl (Wx) 0.9
 
 [SEE ALSO](https://lichtkind.de/code)
