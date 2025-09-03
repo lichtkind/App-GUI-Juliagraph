@@ -7,7 +7,7 @@ use warnings;
 use Wx;
 use utf8;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.71';
+our $VERSION = '0.72';
 
 use base qw/Wx::App/;
 use App::GUI::Juliagraph::Frame;
@@ -44,7 +44,7 @@ read this POD
 
 =item 2.
 
-start the program ins shell: > C<juliagraph>
+start the program in the shell: > C<juliagraph>
 
 =item 3.
 

@@ -4,7 +4,7 @@
 
 ### VERSION
 
-    0.71
+    0.72
 
 [Home on CPAN](https://metacpan.org/pod/App::GUI::Juliagraph)
 
